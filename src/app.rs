@@ -242,6 +242,5 @@ impl eframe::App for FeriteApp {
                 }
             });
         }
-        exit(0);
     }
 }
