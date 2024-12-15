@@ -1,9 +1,11 @@
 use eframe::Error;
 use ferrite_cli::Args;
 use ferrite_logging::{init, LogConfig};
+use tracing::instrument;
 
 mod app;
 
+#[instrument]
 fn main() -> Result<(), Error> {
     let args = Args::parse();
 

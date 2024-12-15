@@ -3,6 +3,7 @@ use config::{Config, File};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use tracing::instrument;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FeriteConfig {
@@ -59,6 +60,7 @@ impl Default for ZoomConfig {
 }
 
 impl FeriteConfig {
+    #[instrument]
     pub fn load() -> Result<Self> {
         let config_path = Self::get_config_path()?;
 
@@ -82,6 +84,7 @@ impl FeriteConfig {
             .context("Failed to deserialize configuration")
     }
 
+    #[instrument]
     pub fn save(&self) -> Result<()> {
         let config_path = Self::get_config_path()?;
 

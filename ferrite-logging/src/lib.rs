@@ -1,9 +1,9 @@
-// src/lib.rs
 use std::str::FromStr;
-use tracing::Level;
-use tracing_subscriber::prelude::*;
+use tracing::{instrument, Level};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{prelude::*, registry::Registry};
 
-/// Log levels supported by the application
 #[derive(Debug, Clone, Copy)]
 pub enum LogLevel {
     Trace,
@@ -40,7 +40,6 @@ impl From<LogLevel> for Level {
     }
 }
 
-/// Configuration for logging setup
 #[derive(Debug)]
 pub struct LogConfig {
     pub level: LogLevel,
@@ -56,23 +55,34 @@ impl Default for LogConfig {
     }
 }
 
-/// Initialize logging with the provided configuration
+#[instrument]
 pub fn init(config: LogConfig) {
     let level = Level::from(config.level);
     let filter = tracing_subscriber::filter::LevelFilter::from_level(level);
 
-    let subscriber = tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer().with_filter(filter.clone()));
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .with_line_number(true)
+        .with_thread_ids(true)
+        .with_file(true)
+        .with_filter(filter.clone());
+
+    let registry = Registry::default().with(fmt_layer);
 
     if config.enable_tracy {
-        let subscriber = subscriber.with(tracing_tracy::TracyLayer::new().with_filter(filter));
-        subscriber.init();
+        let tracy_layer = tracing_tracy::TracyLayer::new().with_filter(filter);
+
+        registry
+            .with(tracy_layer)
+            .try_init()
+            .expect("Failed to initialize global logging");
     } else {
-        subscriber.init();
+        registry
+            .try_init()
+            .expect("Failed to initialize global logging");
     }
 }
 
-/// Parse log level from environment or default to Info
+#[instrument]
 pub fn get_log_level_from_env() -> LogLevel {
     std::env::var("RUST_LOG")
         .ok()

@@ -16,3 +16,4 @@ config.workspace = true
 directories.workspace = true
 serde.workspace = true
 toml.workspace = true
+tracing.workspace = true
