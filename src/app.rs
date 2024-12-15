@@ -5,33 +5,32 @@ use lru::LruCache;
 use std::{path::PathBuf, process::exit};
 use tracing::{info, instrument, warn};
 
-// The main application state structure holds all the data needed for the image viewer
+/// The main application state structure holds all the data needed for the image viewer
 pub struct FeriteApp {
     // Image handling components
-    // LRU cache helps manage memory by keeping only the most recently used images
+    /// LRU cache helps manage memory by keeping only the most recently used images
     image_cache: LruCache<PathBuf, DynamicImage>,
-    // Current image being displayed, wrapped in Option since we might not have an image loaded
+    /// Current image being displayed, wrapped in Option since we might not have an image loaded
     current_image: Option<ImageData>,
-    // Path to the current image, useful for displaying filename and handling reloads
+    /// Path to the current image, useful for displaying filename and handling reloads
     current_path: Option<PathBuf>,
 
     // UI state components
-    // Zoom level affects how large the image appears (1.0 is actual size)
+    /// Zoom level affects how large the image appears (1.0 is actual size)
     zoom_level: f32,
-    // Tracks how far the user has dragged the image from its center position
+    /// Tracks how far the user has dragged the image from its center position
     drag_offset: Vec2,
-    // Controls visibility of the performance monitoring window
+    /// Controls visibility of the performance monitoring window
     show_performance: bool,
 }
 
-// Helper structure that keeps together the original image data and its GPU texture
-// The texture is optional because we create it lazily when first rendering
+/// Helper structure that keeps together the original image data and its GPU texture
+/// The texture is optional because we create it lazily when first rendering
 struct ImageData {
     texture: Option<egui::TextureHandle>,
     original: DynamicImage,
 }
 
-// Default implementation provides initial values for a new FeriteApp instance
 impl Default for FeriteApp {
     fn default() -> Self {
         Self {
@@ -47,8 +46,7 @@ impl Default for FeriteApp {
 }
 
 impl FeriteApp {
-    // Creates a new instance of the application
-    // The #[instrument] attribute enables tracing for performance monitoring
+    /// Creates a new instance of the application
     #[instrument(skip(cc))]
     pub fn new(cc: &eframe::CreationContext<'_>, initial_image: Option<PathBuf>) -> Self {
         info!("Initializing Ferrite");
@@ -74,8 +72,8 @@ impl FeriteApp {
         app
     }
 
-    // Handles loading a new image from a path
-    // The image is stored both in the cache and set as the current image
+    /// Handles loading a new image from a path
+    /// The image is stored both in the cache and set as the current image
     #[instrument(skip(self, path))]
     fn load_image(&mut self, path: PathBuf) {
         info!("Loading image: {:?}", path);
@@ -111,7 +109,7 @@ impl FeriteApp {
         }
     }
 
-    // Handles files being dropped onto the application window
+    /// Handles files being dropped onto the application window
     fn handle_files_dropped(&mut self, _ctx: &egui::Context, files: Vec<PathBuf>) {
         if let Some(path) = files.first() {
             if let Some(extension) = path.extension() {
@@ -126,9 +124,34 @@ impl FeriteApp {
         }
     }
 
-    // Renders the current image to the UI, handling zoom and pan
     fn render_image(&mut self, ui: &mut Ui) {
-        let available_size = ui.available_size();
+        // Handle zooming with Mouse Wheel
+        let scroll_delta = ui.input(|i| i.raw_scroll_delta.y);
+
+        if scroll_delta != 0.0 {
+            // Calculate zoom factor based on scroll direction
+            // Using a smaller factor (0.001) makes zooming smoother
+            let zoom_factor = 1.0 - (scroll_delta * 0.001);
+
+            // Apply zoom to current level
+            let new_zoom = self.zoom_level * zoom_factor;
+
+            // Get pointer position before applying zoom
+            if let Some(pointer_pos) = ui.input(|i| i.pointer.hover_pos()) {
+                let screen_rect = ui.clip_rect();
+                let screen_center = screen_rect.center().to_vec2();
+                let zoom_center = pointer_pos.to_vec2() - screen_center;
+
+                // Update zoom level with clamping to prevent extreme zooms
+                self.zoom_level = new_zoom.clamp(0.1, 10.0);
+
+                // Update offset to maintain zoom center position
+                self.drag_offset = zoom_center * (1.0 - zoom_factor) + self.drag_offset;
+            } else {
+                // If no pointer position, just update zoom level
+                self.zoom_level = new_zoom.clamp(0.1, 10.0);
+            }
+        }
 
         if let Some(image_data) = &mut self.current_image {
             // Create or get the texture for rendering
@@ -153,39 +176,36 @@ impl FeriteApp {
                 }
             };
 
-            // Calculate display size while maintaining aspect ratio
-            let aspect_ratio = texture.size_vec2().x / texture.size_vec2().y;
-            let mut size = texture.size_vec2() * self.zoom_level;
+            // Calculate the desired display size based on zoom level
+            let base_size = texture.size_vec2();
+            let size = base_size * self.zoom_level;
 
-            // Ensure the image fits within the available space
-            if size.x > available_size.x {
-                size.x = available_size.x;
-                size.y = size.x / aspect_ratio;
-            }
-            if size.y > available_size.y {
-                size.y = available_size.y;
-                size.x = size.y * aspect_ratio;
-            }
+            // Create a container for our image that allows for dragging
+            egui::CentralPanel::default().show_inside(ui, |ui| {
+                // Create a response area that we can use for dragging
+                let response = ui.allocate_response(size, Sense::drag());
 
-            // Position the image in the center of the available space
-            let image_rect = Rect::from_center_size(
-                ui.available_rect_before_wrap().center() + self.drag_offset,
-                size,
-            );
+                // Handle dragging if the response area is being dragged
+                if response.dragged() {
+                    self.drag_offset += response.drag_delta();
+                }
 
-            // Handle dragging the image around
-            let response = ui.allocate_rect(image_rect, Sense::drag());
-            if response.dragged() {
-                self.drag_offset += response.drag_delta();
-            }
+                // Calculate the position for our image based on the center and drag offset
+                let rect = response.rect;
+                let image_pos = rect.min + self.drag_offset;
 
-            // Draw the actual image
-            ui.put(image_rect, egui::Image::new(texture));
+                // Paint the image at the calculated position with the specified size
+                ui.painter().image(
+                    texture.id(),
+                    Rect::from_min_size(image_pos, size),
+                    Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
+                    Color32::WHITE,
+                );
+            });
         }
     }
 }
 
-// Implementation of the eframe::App trait which provides the main update loop
 impl eframe::App for FeriteApp {
     #[instrument(skip(self, ctx, _frame))]
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -198,14 +218,6 @@ impl eframe::App for FeriteApp {
                 .collect();
             self.handle_files_dropped(ctx, files);
         }
-
-        // Handle zooming with Ctrl + Mouse Wheel
-        ctx.input(|i| {
-            if i.modifiers.ctrl {
-                self.zoom_level *= 1.0 - (i.raw_scroll_delta.y / 1000.0);
-                self.zoom_level = self.zoom_level.clamp(0.1, 10.0);
-            }
-        });
 
         // Main UI layout
         egui::CentralPanel::default().show(ctx, |ui| {
