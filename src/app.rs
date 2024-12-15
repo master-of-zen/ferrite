@@ -2,30 +2,28 @@ use eframe::egui;
 use egui::*;
 use image::DynamicImage;
 use lru::LruCache;
-use std::{path::PathBuf, process::exit};
+use std::{collections::HashSet, path::PathBuf, process::exit, fs};
 use tracing::{info, instrument, warn};
 
 /// The main application state structure holds all the data needed for the image viewer
 pub struct FeriteApp {
     // Image handling components
-    /// LRU cache helps manage memory by keeping only the most recently used images
     image_cache: LruCache<PathBuf, DynamicImage>,
-    /// Current image being displayed, wrapped in Option since we might not have an image loaded
     current_image: Option<ImageData>,
-    /// Path to the current image, useful for displaying filename and handling reloads
     current_path: Option<PathBuf>,
+    
+    // Directory navigation components
+    directory_images: Vec<PathBuf>,
+    current_image_index: usize,
+    loading_in_progress: HashSet<PathBuf>,  // Track which images are currently being loaded
 
     // UI state components
-    /// Zoom level affects how large the image appears (1.0 is actual size)
     zoom_level: f32,
-    /// Tracks how far the user has dragged the image from its center position
     drag_offset: Vec2,
-    /// Controls visibility of the performance monitoring window
     show_performance: bool,
 }
 
 /// Helper structure that keeps together the original image data and its GPU texture
-/// The texture is optional because we create it lazily when first rendering
 struct ImageData {
     texture: Option<egui::TextureHandle>,
     original: DynamicImage,
@@ -34,10 +32,12 @@ struct ImageData {
 impl Default for FeriteApp {
     fn default() -> Self {
         Self {
-            // Initialize cache with capacity for 5 images
             image_cache: LruCache::new(std::num::NonZeroUsize::new(5).unwrap()),
             current_image: None,
             current_path: None,
+            directory_images: Vec::new(),
+            current_image_index: 0,
+            loading_in_progress: HashSet::new(),
             zoom_level: 1.0,
             drag_offset: Vec2::ZERO,
             show_performance: false,
@@ -46,20 +46,15 @@ impl Default for FeriteApp {
 }
 
 impl FeriteApp {
-    /// Creates a new instance of the application
     #[instrument(skip(cc))]
     pub fn new(cc: &eframe::CreationContext<'_>, initial_image: Option<PathBuf>) -> Self {
         info!("Initializing Ferrite");
 
-        // Set up custom fonts if needed
         let mut fonts = FontDefinitions::default();
-        // Add custom fonts here if desired
         cc.egui_ctx.set_fonts(fonts);
 
-        // Create the application instance
         let mut app = Self::default();
 
-        // If an initial image was provided via command line, load it
         if let Some(path) = initial_image {
             info!("Loading initial image from command line: {:?}", path);
             if path.exists() {
@@ -72,8 +67,87 @@ impl FeriteApp {
         app
     }
 
-    /// Handles loading a new image from a path
-    /// The image is stored both in the cache and set as the current image
+    /// Loads all supported image files from the directory containing the given path
+    fn load_directory_images(&mut self, path: &PathBuf) {
+        if let Some(parent) = path.parent() {
+            if let Ok(entries) = fs::read_dir(parent) {
+                self.directory_images = entries
+                    .filter_map(|entry| {
+                        let entry = entry.ok()?;
+                        let path = entry.path();
+                        
+                        if path.is_file() {
+                            if let Some(extension) = path.extension() {
+                                if matches!(
+                                    extension.to_str().map(|s| s.to_lowercase()),
+                                    Some(ext) if ["jpg", "jpeg", "png", "gif", "bmp"].contains(&ext.as_str())
+                                ) {
+                                    return Some(path);
+                                }
+                            }
+                        }
+                        None
+                    })
+                    .collect();
+                
+                self.directory_images.sort();
+                
+                if let Some(current_path) = &self.current_path {
+                    if let Some(index) = self.directory_images.iter().position(|p| p == current_path) {
+                        self.current_image_index = index;
+                    }
+                }
+            }
+        }
+    }
+
+    /// Initiates loading of adjacent images to prepare for navigation
+    fn preload_adjacent_images(&mut self) {
+        if self.directory_images.is_empty() {
+            return;
+        }
+
+        // Calculate indices for previous and next images
+        let prev_index = if self.current_image_index == 0 {
+            self.directory_images.len() - 1
+        } else {
+            self.current_image_index - 1
+        };
+
+        let next_index = (self.current_image_index + 1) % self.directory_images.len();
+
+        // Get paths for adjacent images
+        let prev_path = self.directory_images[prev_index].clone();
+        let next_path = self.directory_images[next_index].clone();
+
+        // Preload previous image if not already in cache or loading
+        if !self.image_cache.contains(&prev_path) && !self.loading_in_progress.contains(&prev_path) {
+            self.loading_in_progress.insert(prev_path.clone());
+            self.load_image_async(prev_path);
+        }
+
+        // Preload next image if not already in cache or loading
+        if !self.image_cache.contains(&next_path) && !self.loading_in_progress.contains(&next_path) {
+            self.loading_in_progress.insert(next_path.clone());
+            self.load_image_async(next_path);
+        }
+    }
+
+    /// Loads an image asynchronously using rayon's thread pool
+    fn load_image_async(&mut self, path: PathBuf) {
+        use rayon::prelude::*;
+        
+        let ctx = egui::Context::default();
+        
+        // Spawn the loading task in a separate thread
+        std::thread::spawn(move || {
+            if let Ok(img) = image::open(&path) {
+                // Request a UI update when the image is loaded
+                ctx.request_repaint();
+            }
+        });
+    }
+
     #[instrument(skip(self, path))]
     fn load_image(&mut self, path: PathBuf) {
         info!("Loading image: {:?}", path);
@@ -82,10 +156,16 @@ impl FeriteApp {
         if let Some(img) = self.image_cache.get(&path) {
             info!("Image found in cache");
             self.current_image = Some(ImageData {
-                texture: None, // Texture will be created on next frame
+                texture: None,
                 original: img.clone(),
             });
-            self.current_path = Some(path);
+            self.current_path = Some(path.clone());
+            
+            // Load directory contents if this is a new directory
+            self.load_directory_images(&path);
+            
+            // Start preloading adjacent images
+            self.preload_adjacent_images();
             return;
         }
 
@@ -98,22 +178,52 @@ impl FeriteApp {
                     texture: None,
                     original: img,
                 });
-                self.current_path = Some(path);
-                // Reset view parameters when loading a new image
+                self.current_path = Some(path.clone());
+                
+                // Load directory contents if this is a new directory
+                self.load_directory_images(&path);
+                
+                // Reset view parameters
                 self.zoom_level = 1.0;
                 self.drag_offset = Vec2::ZERO;
+                
+                // Start preloading adjacent images
+                self.preload_adjacent_images();
+                
+                // Remove from loading set if it was there
+                self.loading_in_progress.remove(&path);
             }
             Err(e) => {
                 warn!("Failed to load image: {}", e);
+                // Remove from loading set on error
+                self.loading_in_progress.remove(&path);
             }
         }
     }
 
-    /// Handles files being dropped onto the application window
+    fn next_image(&mut self) {
+        if !self.directory_images.is_empty() {
+            self.current_image_index = (self.current_image_index + 1) % self.directory_images.len();
+            let next_path = self.directory_images[self.current_image_index].clone();
+            self.load_image(next_path);
+        }
+    }
+
+    fn previous_image(&mut self) {
+        if !self.directory_images.is_empty() {
+            self.current_image_index = if self.current_image_index == 0 {
+                self.directory_images.len() - 1
+            } else {
+                self.current_image_index - 1
+            };
+            let prev_path = self.directory_images[self.current_image_index].clone();
+            self.load_image(prev_path);
+        }
+    }
+
     fn handle_files_dropped(&mut self, _ctx: &egui::Context, files: Vec<PathBuf>) {
         if let Some(path) = files.first() {
             if let Some(extension) = path.extension() {
-                // Check if the file has a supported image extension
                 if matches!(
                     extension.to_str().map(|s| s.to_lowercase()),
                     Some(ext) if ["jpg", "jpeg", "png", "gif", "bmp"].contains(&ext.as_str())
@@ -125,8 +235,9 @@ impl FeriteApp {
     }
 
     fn render_image(&mut self, ui: &mut Ui) {
+        let available_size = ui.available_size();
+
         if let Some(image_data) = &mut self.current_image {
-            // Get or create the texture for rendering
             let texture: &egui::TextureHandle = match &image_data.texture {
                 Some(texture) => texture,
                 None => {
@@ -146,66 +257,29 @@ impl FeriteApp {
                 }
             };
 
-            // Calculate current image size and position
-            let base_size = texture.size_vec2();
-            let current_size = base_size * self.zoom_level;
+            let aspect_ratio = texture.size_vec2().x / texture.size_vec2().y;
+            let mut size = texture.size_vec2() * self.zoom_level;
 
-            // Create our interaction area
-            egui::CentralPanel::default().show_inside(ui, |ui| {
-                let response = ui.allocate_response(current_size, Sense::drag());
+            if size.x > available_size.x {
+                size.x = available_size.x;
+                size.y = size.x / aspect_ratio;
+            }
+            if size.y > available_size.y {
+                size.y = available_size.y;
+                size.x = size.y * aspect_ratio;
+            }
 
-                // Calculate the current image rectangle including our drag offset
-                let rect = Rect::from_min_size(response.rect.min + self.drag_offset, current_size);
+            let image_rect = Rect::from_center_size(
+                ui.available_rect_before_wrap().center() + self.drag_offset,
+                size,
+            );
 
-                // Handle zooming with Mouse Wheel
-                let scroll_delta = ui.input(|i| i.raw_scroll_delta.y);
-                if scroll_delta != 0.0 {
-                    // Get cursor position relative to the UI
-                    if let Some(cursor_pos) = ui.input(|i| i.pointer.hover_pos()) {
-                        // Calculate cursor position relative to the image
-                        let cursor_relative_to_image = cursor_pos - rect.min;
+            let response = ui.allocate_rect(image_rect, Sense::drag());
+            if response.dragged() {
+                self.drag_offset += response.drag_delta();
+            }
 
-                        // Calculate the new zoom level
-                        // We reverse the scroll direction (negative becomes positive)
-                        // and increase the zoom step size to 0.005 (5x larger than before)
-                        let zoom_factor = 1.0 + (scroll_delta * 0.005);
-                        let new_zoom = (self.zoom_level * zoom_factor).clamp(0.1, 10.0);
-
-                        // Calculate how the image size will change
-                        let old_size = base_size * self.zoom_level;
-                        let new_size = base_size * new_zoom;
-
-                        // Calculate where the cursor point will be after scaling
-                        let cursor_ratio = Vec2::new(
-                            cursor_relative_to_image.x / old_size.x,
-                            cursor_relative_to_image.y / old_size.y,
-                        );
-
-                        // Calculate new cursor position relative to scaled image
-                        let new_cursor_relative =
-                            Vec2::new(cursor_ratio.x * new_size.x, cursor_ratio.y * new_size.y);
-
-                        // Adjust drag offset to keep cursor point stable
-                        self.drag_offset += cursor_relative_to_image - new_cursor_relative;
-
-                        // Finally update the zoom level
-                        self.zoom_level = new_zoom;
-                    }
-                }
-
-                // Handle dragging
-                if response.dragged() {
-                    self.drag_offset += response.drag_delta();
-                }
-
-                // Render the image using the painter
-                ui.painter().image(
-                    texture.id(),
-                    rect,
-                    Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
-                    Color32::WHITE,
-                );
-            });
+            ui.put(image_rect, egui::Image::new(texture));
         }
     }
 }
@@ -213,7 +287,7 @@ impl FeriteApp {
 impl eframe::App for FeriteApp {
     #[instrument(skip(self, ctx, _frame))]
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Handle file drops from the operating system
+        // Handle file drops
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
             let files: Vec<_> = ctx
                 .input(|i| i.raw.dropped_files.clone())
@@ -223,9 +297,24 @@ impl eframe::App for FeriteApp {
             self.handle_files_dropped(ctx, files);
         }
 
+        // Handle keyboard navigation
+        if ctx.input(|i| i.key_pressed(egui::Key::ArrowRight) || i.key_pressed(egui::Key::D)) {
+            self.next_image();
+        }
+        if ctx.input(|i| i.key_pressed(egui::Key::ArrowLeft) || i.key_pressed(egui::Key::A)) {
+            self.previous_image();
+        }
+
+        // Handle zooming
+        ctx.input(|i| {
+            if i.modifiers.ctrl {
+                self.zoom_level *= 1.0 - (i.raw_scroll_delta.y / 1000.0);
+                self.zoom_level = self.zoom_level.clamp(0.1, 10.0);
+            }
+        });
+
         // Main UI layout
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Top menu bar
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Open...").clicked() {
@@ -237,11 +326,10 @@ impl eframe::App for FeriteApp {
                 });
             });
 
-            // Image display
             self.render_image(ui);
         });
 
-        // Performance monitoring window
+        // Performance window
         if self.show_performance {
             egui::Window::new("Performance").show(ctx, |ui| {
                 ui.label(format!(
@@ -256,6 +344,15 @@ impl eframe::App for FeriteApp {
                         path.file_name().unwrap_or_default()
                     ));
                 }
+                ui.label(format!(
+                    "Image position: {}/{}",
+                    self.current_image_index + 1,
+                    self.directory_images.len()
+                ));
+                ui.label(format!(
+                    "Images loading: {}",
+                    self.loading_in_progress.len()
+                ));
             });
         }
     }
