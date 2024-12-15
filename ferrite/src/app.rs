@@ -214,8 +214,8 @@ impl FeriteApp {
     }
 
     /// Loads and navigates to the next image in the directory
-#[instrument(skip(self))]
-fn next_image(&mut self) {
+    #[instrument(skip(self))]
+    fn next_image(&mut self) {
     if !self.directory_images.is_empty() {
         info!("Navigating to next image");
         // Calculate next index with wrapping
@@ -398,7 +398,7 @@ fn handle_navigation(&mut self, ctx: &egui::Context) {
 
 
 impl eframe::App for FeriteApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         // Handle file drops from the system
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
             let files: Vec<_> = ctx
@@ -446,6 +446,7 @@ impl eframe::App for FeriteApp {
             self.drag_offset = Vec2::ZERO;
             ctx.request_repaint();
         }
+
 
         // Main UI layout
         egui::CentralPanel::default().show(ctx, |ui| {

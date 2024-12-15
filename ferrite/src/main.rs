@@ -23,11 +23,14 @@ fn main() -> Result<(), Error> {
     });
     args.apply_to_config(&mut config);
 
-    // Start the application
     let native_options = eframe::NativeOptions::default();
+
     eframe::run_native(
         "Ferrite",
         native_options,
-        Box::new(move |cc| Box::new(app::FeriteApp::new(cc, args.image_path, config))),
+        Box::new(move |cc| {
+            let app = app::FeriteApp::new(cc, args.image_path, config);
+            Box::new(app)
+        }),
     )
 }

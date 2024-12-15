@@ -46,9 +46,8 @@ pub struct Args {
 
 impl Args {
     pub fn parse() -> Self {
-        Self::parse()
+        <Self as clap::Parser>::parse()
     }
-
     pub fn get_log_level(&self) -> LogLevel {
         self.log_level
             .as_deref()
