@@ -1,5 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
+use tracing::Level;
 
 /// Ferrite - A fast and efficient image viewer
 #[derive(Parser, Debug)]
@@ -24,6 +25,10 @@ pub struct CliArgs {
     /// Override the maximum number of recent files to remember
     #[arg(long, value_name = "COUNT")]
     pub max_recent: Option<usize>,
+
+    /// Set the logging level (trace, debug, info, warn, error)    
+    #[arg(long, value_name = "LEVEL", default_value = "info")]
+    pub log_level: Option<String>,
 }
 
 impl CliArgs {
@@ -45,6 +50,34 @@ impl CliArgs {
         }
         if let Some(max_recent) = self.max_recent {
             config.max_recent_files = max_recent;
+        }
+    }
+
+    /// Convert string log level to tracing::Level
+    pub fn parse_log_level(&self) -> Level {
+        // First check CLI argument
+        if let Some(level_str) = &self.log_level {
+            match level_str.to_lowercase().as_str() {
+                "trace" => Level::TRACE,
+                "debug" => Level::DEBUG,
+                "info" => Level::INFO,
+                "warn" => Level::WARN,
+                "error" => Level::ERROR,
+                _ => Level::INFO, // Default to INFO for invalid values
+            }
+        } else {
+            // If no CLI argument, check environment variable
+            std::env::var("RUST_LOG")
+                .ok()
+                .and_then(|env_level| match env_level.to_lowercase().as_str() {
+                    "trace" => Some(Level::TRACE),
+                    "debug" => Some(Level::DEBUG),
+                    "info" => Some(Level::INFO),
+                    "warn" => Some(Level::WARN),
+                    "error" => Some(Level::ERROR),
+                    _ => None,
+                })
+                .unwrap_or(Level::INFO) // Default to INFO if env var is not set or invalid
         }
     }
 }

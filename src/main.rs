@@ -5,21 +5,27 @@ mod ferrite_config;
 use app::FeriteApp;
 use cli::CliArgs;
 use ferrite_config::FeriteConfig;
+use tracing::level_filters::LevelFilter;
 use tracing::{info, instrument};
 use tracing_subscriber::prelude::*;
 
 #[instrument]
 fn main() -> Result<(), eframe::Error> {
+    // Parse command line arguments first
+    let args = CliArgs::parse_args();
+
     // Initialize tracing with both console output and Tracy profiler
+    let log_level = args.parse_log_level();
+
     tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
-        .with(tracing_tracy::TracyLayer::new())
+        .with(tracing_subscriber::fmt::layer().with_filter(LevelFilter::from_level(log_level)))
+        .with(tracing_tracy::TracyLayer::new().with_filter(LevelFilter::from_level(log_level)))
         .init();
 
-    info!("Starting Ferrite image viewer");
-
-    // Parse command line arguments
-    let args = CliArgs::parse_args();
+    info!(
+        "Starting Ferrite image viewer with log level: {}",
+        log_level
+    );
 
     // Load configuration and apply CLI overrides
     let mut config = FeriteConfig::load().expect("Failed to load configuration");
