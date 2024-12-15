@@ -235,25 +235,47 @@ impl FeriteApp {
         }
     }
 
-    fn next_image(&mut self) {
-        if !self.directory_images.is_empty() {
-            self.current_image_index = (self.current_image_index + 1) % self.directory_images.len();
-            let next_path = self.directory_images[self.current_image_index].clone();
-            self.load_image(next_path);
+    /// Loads and navigates to the next image in the directory
+#[instrument(skip(self))]
+fn next_image(&mut self) {
+    if !self.directory_images.is_empty() {
+        info!("Navigating to next image");
+        // Calculate next index with wrapping
+        self.current_image_index = (self.current_image_index + 1) % self.directory_images.len();
+        let next_path = self.directory_images[self.current_image_index].clone();
+        
+        // Load the image and reset view parameters
+        self.load_image(next_path);
+        // Don't reset zoom and position if they're at default values
+        if self.zoom_level != self.config.default_zoom || self.drag_offset != Vec2::ZERO {
+            self.zoom_level = self.config.default_zoom;
+            self.drag_offset = Vec2::ZERO;
         }
     }
+}
 
-    fn previous_image(&mut self) {
-        if !self.directory_images.is_empty() {
-            self.current_image_index = if self.current_image_index == 0 {
-                self.directory_images.len() - 1
-            } else {
-                self.current_image_index - 1
-            };
-            let prev_path = self.directory_images[self.current_image_index].clone();
-            self.load_image(prev_path);
+    /// Loads and navigates to the previous image in the directory
+#[instrument(skip(self))]
+fn previous_image(&mut self) {
+    if !self.directory_images.is_empty() {
+        info!("Navigating to previous image");
+        // Calculate previous index with wrapping
+        self.current_image_index = if self.current_image_index == 0 {
+            self.directory_images.len() - 1
+        } else {
+            self.current_image_index - 1
+        };
+        let prev_path = self.directory_images[self.current_image_index].clone();
+        
+        // Load the image and reset view parameters
+        self.load_image(prev_path);
+        // Don't reset zoom and position if they're at default values
+        if self.zoom_level != self.config.default_zoom || self.drag_offset != Vec2::ZERO {
+            self.zoom_level = self.config.default_zoom;
+            self.drag_offset = Vec2::ZERO;
         }
     }
+}
 
     fn handle_files_dropped(&mut self, _ctx: &egui::Context, files: Vec<PathBuf>) {
         if let Some(path) = files.first() {
@@ -377,6 +399,23 @@ impl FeriteApp {
             }
         }
     }
+    /// Handles keyboard navigation commands for image browsing
+fn handle_navigation(&mut self, ctx: &egui::Context) {
+    // Check for navigation key presses - both arrows and A/D keys
+    let next_pressed = ctx.input(|i| {
+        i.key_pressed(egui::Key::ArrowRight) || i.key_pressed(egui::Key::D)
+    });
+    let prev_pressed = ctx.input(|i| {
+        i.key_pressed(egui::Key::ArrowLeft) || i.key_pressed(egui::Key::A)
+    });
+
+    // Navigate based on key press
+    if next_pressed {
+        self.next_image();
+    } else if prev_pressed {
+        self.previous_image();
+    }
+}
 }
 
 
@@ -419,6 +458,9 @@ impl eframe::App for FeriteApp {
                 self.handle_zoom(ui, -10.0);  // Negative value for zoom out
             });
         }
+
+        // Handle keyboard navigation
+        self.handle_navigation(ctx);
         
         // Reset zoom and position with the 0 key (no Ctrl required)
         if ctx.input(|i| i.key_pressed(Key::Num0)) {
