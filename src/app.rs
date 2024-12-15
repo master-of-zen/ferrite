@@ -125,40 +125,11 @@ impl FeriteApp {
     }
 
     fn render_image(&mut self, ui: &mut Ui) {
-        // Handle zooming with Mouse Wheel
-        let scroll_delta = ui.input(|i| i.raw_scroll_delta.y);
-
-        if scroll_delta != 0.0 {
-            // Calculate zoom factor based on scroll direction
-            // Using a smaller factor (0.001) makes zooming smoother
-            let zoom_factor = 1.0 - (scroll_delta * 0.001);
-
-            // Apply zoom to current level
-            let new_zoom = self.zoom_level * zoom_factor;
-
-            // Get pointer position before applying zoom
-            if let Some(pointer_pos) = ui.input(|i| i.pointer.hover_pos()) {
-                let screen_rect = ui.clip_rect();
-                let screen_center = screen_rect.center().to_vec2();
-                let zoom_center = pointer_pos.to_vec2() - screen_center;
-
-                // Update zoom level with clamping to prevent extreme zooms
-                self.zoom_level = new_zoom.clamp(0.1, 10.0);
-
-                // Update offset to maintain zoom center position
-                self.drag_offset = zoom_center * (1.0 - zoom_factor) + self.drag_offset;
-            } else {
-                // If no pointer position, just update zoom level
-                self.zoom_level = new_zoom.clamp(0.1, 10.0);
-            }
-        }
-
         if let Some(image_data) = &mut self.current_image {
-            // Create or get the texture for rendering
+            // Get or create the texture for rendering
             let texture: &egui::TextureHandle = match &image_data.texture {
                 Some(texture) => texture,
                 None => {
-                    // Convert image data to a format egui can display
                     let size = [
                         image_data.original.width() as usize,
                         image_data.original.height() as usize,
@@ -166,7 +137,6 @@ impl FeriteApp {
                     let image = image_data.original.to_rgba8();
                     let pixels = image.as_flat_samples();
 
-                    // Create the GPU texture from our image data
                     image_data.texture = Some(ui.ctx().load_texture(
                         "current-image",
                         egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice()),
@@ -176,28 +146,62 @@ impl FeriteApp {
                 }
             };
 
-            // Calculate the desired display size based on zoom level
+            // Calculate current image size and position
             let base_size = texture.size_vec2();
-            let size = base_size * self.zoom_level;
+            let current_size = base_size * self.zoom_level;
 
-            // Create a container for our image that allows for dragging
+            // Create our interaction area
             egui::CentralPanel::default().show_inside(ui, |ui| {
-                // Create a response area that we can use for dragging
-                let response = ui.allocate_response(size, Sense::drag());
+                let response = ui.allocate_response(current_size, Sense::drag());
 
-                // Handle dragging if the response area is being dragged
+                // Calculate the current image rectangle including our drag offset
+                let rect = Rect::from_min_size(response.rect.min + self.drag_offset, current_size);
+
+                // Handle zooming with Mouse Wheel
+                let scroll_delta = ui.input(|i| i.raw_scroll_delta.y);
+                if scroll_delta != 0.0 {
+                    // Get cursor position relative to the UI
+                    if let Some(cursor_pos) = ui.input(|i| i.pointer.hover_pos()) {
+                        // Calculate cursor position relative to the image
+                        let cursor_relative_to_image = cursor_pos - rect.min;
+
+                        // Calculate the new zoom level
+                        // We reverse the scroll direction (negative becomes positive)
+                        // and increase the zoom step size to 0.005 (5x larger than before)
+                        let zoom_factor = 1.0 + (scroll_delta * 0.005);
+                        let new_zoom = (self.zoom_level * zoom_factor).clamp(0.1, 10.0);
+
+                        // Calculate how the image size will change
+                        let old_size = base_size * self.zoom_level;
+                        let new_size = base_size * new_zoom;
+
+                        // Calculate where the cursor point will be after scaling
+                        let cursor_ratio = Vec2::new(
+                            cursor_relative_to_image.x / old_size.x,
+                            cursor_relative_to_image.y / old_size.y,
+                        );
+
+                        // Calculate new cursor position relative to scaled image
+                        let new_cursor_relative =
+                            Vec2::new(cursor_ratio.x * new_size.x, cursor_ratio.y * new_size.y);
+
+                        // Adjust drag offset to keep cursor point stable
+                        self.drag_offset += cursor_relative_to_image - new_cursor_relative;
+
+                        // Finally update the zoom level
+                        self.zoom_level = new_zoom;
+                    }
+                }
+
+                // Handle dragging
                 if response.dragged() {
                     self.drag_offset += response.drag_delta();
                 }
 
-                // Calculate the position for our image based on the center and drag offset
-                let rect = response.rect;
-                let image_pos = rect.min + self.drag_offset;
-
-                // Paint the image at the calculated position with the specified size
+                // Render the image using the painter
                 ui.painter().image(
                     texture.id(),
-                    Rect::from_min_size(image_pos, size),
+                    rect,
                     Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
                     Color32::WHITE,
                 );
