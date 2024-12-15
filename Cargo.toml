@@ -2,6 +2,8 @@
 name = "ferrite"
 version = "0.1.0"
 edition = "2021"
+description = "Heavily WIP image viewer with focus on speed and features"
+license = "GPL-3.0-or-later"
 
 [dependencies]
 eframe = "0.26.0"
