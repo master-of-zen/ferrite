@@ -5,34 +5,27 @@ use lru::LruCache;
 use std::{collections::HashSet, fs, num::NonZeroUsize, path::PathBuf, process::exit};
 use tracing::{info, instrument, warn};
 
-use crate::ferrite_config::{Corner, FeriteConfig};
+use ferrite_config::{Corner, FeriteConfig};
 
-/// The main application state structure holds all the data needed for the image viewer
+
 pub struct FeriteApp {
-    // Configuration
-    pub config: FeriteConfig,
-
-    // Image handling components
+    config: FeriteConfig,
     image_cache: LruCache<PathBuf, DynamicImage>,
     current_image: Option<ImageData>,
     current_path: Option<PathBuf>,
-    
-    // Directory navigation components
     directory_images: Vec<PathBuf>,
     current_image_index: usize,
-    loading_in_progress: HashSet<PathBuf>,  // Track which images are currently being loaded
-
-    // UI state components
+    loading_in_progress: HashSet<PathBuf>,
     zoom_level: f32,
     drag_offset: Vec2,
-    show_performance: bool,
 }
 
-/// Helper structure that keeps together the original image data and its GPU texture
 struct ImageData {
     texture: Option<egui::TextureHandle>,
     original: DynamicImage,
 }
+
+    
 
 impl Default for FeriteApp {
     fn default() -> Self {
@@ -57,7 +50,6 @@ impl Default for FeriteApp {
             // UI state - initialize with configured values
             zoom_level: config.default_zoom,
             drag_offset: Vec2::ZERO,
-            show_performance: config.show_performance,
             
             // Store the configuration
             config,
@@ -67,16 +59,9 @@ impl Default for FeriteApp {
 impl FeriteApp {
 
 
-    pub fn new(cc: &eframe::CreationContext<'_>, initial_image: Option<PathBuf>) -> Self {
-        info!("Initializing Ferrite");
-
-        let mut fonts = FontDefinitions::default();
-        cc.egui_ctx.set_fonts(fonts);
-
-        let config = FeriteConfig::load().expect("Failed to load configuration");
-        
+    pub fn new(cc: &eframe::CreationContext<'_>, initial_image: Option<PathBuf>, config: FeriteConfig) -> Self {
         let mut app = Self {
-            image_cache: LruCache::new(std::num::NonZeroUsize::new(config.cache_size).unwrap()),
+            image_cache: LruCache::new(NonZeroUsize::new(config.cache_size).unwrap()),
             current_image: None,
             current_path: None,
             directory_images: Vec::new(),
@@ -84,17 +69,11 @@ impl FeriteApp {
             loading_in_progress: HashSet::new(),
             zoom_level: config.default_zoom,
             drag_offset: Vec2::ZERO,
-            show_performance: config.show_performance,
             config,
         };
 
         if let Some(path) = initial_image {
-            info!("Loading initial image from command line: {:?}", path);
-            if path.exists() {
-                app.load_image(path);
-            } else {
-                warn!("Initial image path does not exist: {:?}", path);
-            }
+            app.load_image(path);
         }
 
         app
@@ -169,7 +148,6 @@ impl FeriteApp {
 
     /// Loads an image asynchronously using rayon's thread pool
     fn load_image_async(&mut self, path: PathBuf) {
-        use rayon::prelude::*;
         
         let ctx = egui::Context::default();
         
@@ -479,7 +457,7 @@ impl eframe::App for FeriteApp {
                         ui.close_menu();
                     }
                     if ui.button("Toggle Performance").clicked() {
-                        self.show_performance = !self.show_performance;
+                        self.config.show_performance = !self.config.show_performance;
                         ui.close_menu();
                     }
                 });
@@ -512,7 +490,7 @@ impl eframe::App for FeriteApp {
         });
 
         // Performance monitoring window
-        if self.show_performance {
+        if self.config.show_performance {
             egui::Window::new("Performance").show(ctx, |ui| {
                 ui.label(format!(
                     "Cache size: {}/{}",

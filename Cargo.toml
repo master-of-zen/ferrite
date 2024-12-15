@@ -1,37 +1,29 @@
-[package]
-name = "ferrite"
-version = "0.1.0"
-edition = "2021"
-description = "Heavily WIP image viewer with focus on speed and features"
-license = "GPL-3.0-or-later"
-keywords = ["image", "viewer", "gui", "egui"]
-categories = ["graphics", "gui"]
-documentation = "https://docs.rs/ferrite"
-repository = "https://github.com/master-of-zen/ferrite"
+[workspace]
+members = ["ferrite", "ferrite-config", "ferrite-cli", "ferrite-logging"]
+resolver = "2"
 
-[dependencies]
+[workspace.package]
+version = "0.1.1"
+edition = "2021"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/master-of-zen/ferrite"
+authors = ["master_of_zen master_of_zen@protonmail.com"]
+documentation = "https://docs.rs/ferrite"
+
+[workspace.dependencies]
+anyhow = "1.0"
+clap = { version = "4.4", features = ["derive"] }
+config = { version = "0.14.1", features = ["toml"] }
+directories = "5.0"
 eframe = "0.26.0"
 egui = "0.26.0"
+futures = "0.3"
 image = "0.24.8"
+lru = "0.12"
+rayon = "1.8"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-tracy = "0.10"
 tracy-client = "0.16"
-lru = "0.12"
-rayon = "1.8"
-futures = "0.3"
-anyhow = "1.0"
-config = { version = "0.14.1", features = ["toml"] }
-serde = { version = "1.0", features = ["derive"] }
-directories = "5.0"
-toml = "0.8"
-clap = { version = "4.4", features = ["derive"] }
-
-[profile.dev]
-opt-level = 1 # Slightly better performance in debug mode
-debug = true  # Keep debug symbols for profiling
-
-[profile.release]
-opt-level = 3
-lto = true    # Enable link-time optimization
-debug = true  # Keep debug symbols even in release mode for profiling

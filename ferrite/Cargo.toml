@@ -1,0 +1,28 @@
+[package]
+name = "ferrite"
+version.workspace = true
+edition.workspace = true
+description = "Fast and efficient image viewer with focus on performance"
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/ferrite"
+readme = "README.md"
+keywords = ["image", "viewer", "gui", "egui"]
+categories = ["graphics", "gui"]
+
+[dependencies]
+eframe.workspace = true
+egui.workspace = true
+futures.workspace = true
+image.workspace = true
+lru.workspace = true
+rayon.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+
+ferrite-config = { version = "^0.1.1", path = "../ferrite-config" }
+ferrite-cli = { version = "^0.1.1", path = "../ferrite-cli" }
+ferrite-logging = { version = "^0.1.1", path = "../ferrite-logging" }
+
+[dev-dependencies]
+criterion = "0.5"

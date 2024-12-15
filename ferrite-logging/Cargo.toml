@@ -1,0 +1,17 @@
+[package]
+name = "ferrite-logging"
+version.workspace = true
+edition.workspace = true
+description = "Logging infrastructure for Ferrite image viewer"
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/ferrite-logging"
+readme = "README.md"
+keywords = ["logging", "tracing", "ferrite"]
+categories = ["development-tools::debugging"]
+
+[dependencies]
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-tracy.workspace = true
+tracy-client.workspace = true

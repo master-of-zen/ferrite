@@ -1,0 +1,17 @@
+[package]
+name = "ferrite-cli"
+version.workspace = true
+edition.workspace = true
+description = "Command-line interface for Ferrite image viewer"
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/ferrite-cli"
+readme = "README.md"
+keywords = ["cli", "ferrite"]
+categories = ["command-line-interface"]
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+ferrite-config = { version = "^0.1.0", path = "../ferrite-config" }
+ferrite-logging = { version = "^0.1.0", path = "../ferrite-logging" }
