@@ -1,4 +1,5 @@
 mod app;
+mod ferrite_config;
 use app::FeriteApp;
 use std::path::PathBuf;
 use tracing::{info, instrument};
