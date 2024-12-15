@@ -1,0 +1,26 @@
+[package]
+name = "ferrite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = "0.26.0"
+egui = "0.26.0"
+image = "0.24.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-tracy = "0.10"
+tracy-client = "0.16"
+lru = "0.12"
+rayon = "1.8"
+futures = "0.3"
+anyhow = "1.0"
+
+[profile.dev]
+opt-level = 1 # Slightly better performance in debug mode
+debug = true  # Keep debug symbols for profiling
+
+[profile.release]
+opt-level = 3
+lto = true    # Enable link-time optimization
+debug = true  # Keep debug symbols even in release mode for profiling
