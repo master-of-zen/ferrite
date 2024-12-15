@@ -1,7 +1,10 @@
 mod app;
+mod cli;
 mod ferrite_config;
+
 use app::FeriteApp;
-use std::path::PathBuf;
+use cli::CliArgs;
+use ferrite_config::FeriteConfig;
 use tracing::{info, instrument};
 use tracing_subscriber::prelude::*;
 
@@ -15,20 +18,21 @@ fn main() -> Result<(), eframe::Error> {
 
     info!("Starting Ferrite image viewer");
 
-    // Get the command line arguments, skipping the program name
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    // Parse command line arguments
+    let args = CliArgs::parse_args();
 
-    // Convert the first argument to a PathBuf if it exists
-    let initial_image = args.first().map(PathBuf::from);
+    // Load configuration and apply CLI overrides
+    let mut config = FeriteConfig::load().expect("Failed to load configuration");
+    args.apply_to_config(&mut config);
 
     let native_options = eframe::NativeOptions {
         ..Default::default()
     };
 
-    // Start the main application with the initial image path
+    // Start the main application with the CLI arguments
     eframe::run_native(
         "Ferrite",
         native_options,
-        Box::new(move |cc| Box::new(FeriteApp::new(cc, initial_image))),
+        Box::new(move |cc| Box::new(FeriteApp::new(cc, args.image_path))),
     )
 }
