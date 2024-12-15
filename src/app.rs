@@ -234,11 +234,49 @@ impl FeriteApp {
         }
     }
 
-    fn render_image(&mut self, ui: &mut Ui) {
-        let available_size = ui.available_size();
 
+    // Helper method to convert zoom level to percentage for display
+    fn zoom_percentage(&self) -> f32 {
+        self.zoom_level * 100.0
+    }
+
+    // Implement smoother zoom handling with wider range
+    fn handle_zoom(&mut self, ui: &Ui, scroll_delta: f32) {
+        // Get current mouse position
+        if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
+            // Calculate zoom center (mouse position)
+            let panel_rect = ui.available_rect_before_wrap();
+            let old_center = panel_rect.center() + self.drag_offset;
+            
+            // Calculate zoom factor - larger steps for faster zooming
+            let zoom_step = if scroll_delta > 0.0 { 1.25 } else { 0.8 };
+            let new_zoom = (self.zoom_level * zoom_step).clamp(0.1, 10.0);
+            
+            // Calculate relative position of mouse to image center
+            let mouse_to_center = mouse_pos - old_center;
+            
+            // Scale the offset based on zoom change
+            let scale_factor = new_zoom / self.zoom_level;
+            let new_mouse_to_center = mouse_to_center * scale_factor;
+            
+            // Update the offset to maintain mouse position
+            self.drag_offset += mouse_to_center - new_mouse_to_center;
+            
+            // Apply new zoom level
+            self.zoom_level = new_zoom;
+            
+            // Request repaint for smooth updates
+            ui.ctx().request_repaint();
+        }
+    }
+
+    // Enhanced image rendering with proper scaling
+    fn render_image(&mut self, ui: &mut Ui) {
+        let panel_rect = ui.available_rect_before_wrap();
+        
         if let Some(image_data) = &mut self.current_image {
-            let texture: &egui::TextureHandle = match &image_data.texture {
+            // Get or create texture
+            let texture: &TextureHandle = match &image_data.texture {
                 Some(texture) => texture,
                 None => {
                     let size = [
@@ -246,48 +284,56 @@ impl FeriteApp {
                         image_data.original.height() as usize,
                     ];
                     let image = image_data.original.to_rgba8();
-                    let pixels = image.as_flat_samples();
-
+                    
                     image_data.texture = Some(ui.ctx().load_texture(
                         "current-image",
-                        egui::ColorImage::from_rgba_unmultiplied(size, pixels.as_slice()),
-                        Default::default(),
+                        ColorImage::from_rgba_unmultiplied(size, image.as_flat_samples().as_slice()),
+                        TextureOptions::LINEAR,  // Use linear filtering for smoother scaling
                     ));
                     image_data.texture.as_ref().unwrap()
                 }
             };
 
-            let aspect_ratio = texture.size_vec2().x / texture.size_vec2().y;
-            let mut size = texture.size_vec2() * self.zoom_level;
-
-            if size.x > available_size.x {
-                size.x = available_size.x;
-                size.y = size.x / aspect_ratio;
-            }
-            if size.y > available_size.y {
-                size.y = available_size.y;
-                size.x = size.y * aspect_ratio;
-            }
-
+            // Calculate scaled dimensions while preserving aspect ratio
+            let original_size = texture.size_vec2();
+            let scaled_size = original_size * self.zoom_level;
+            
+            // Calculate image rectangle
             let image_rect = Rect::from_center_size(
-                ui.available_rect_before_wrap().center() + self.drag_offset,
-                size,
+                panel_rect.center() + self.drag_offset,
+                scaled_size,
             );
-
+            
+            // Handle dragging
             let response = ui.allocate_rect(image_rect, Sense::drag());
             if response.dragged() {
                 self.drag_offset += response.drag_delta();
             }
-
-            ui.put(image_rect, egui::Image::new(texture));
+            
+            // Draw the image
+            let uv = Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0));
+            ui.painter().image(
+                texture.id(),
+                image_rect,
+                uv,
+                Color32::WHITE,
+            );
+            
+            // Display zoom percentage in corner
+            let zoom_text = format!("{:.0}%", self.zoom_percentage());
+            ui.put(
+                Rect::from_min_max(panel_rect.min + vec2(5.0, 5.0), panel_rect.min + vec2(60.0, 25.0)),
+                Label::new(RichText::new(zoom_text).monospace()),
+            );
         }
     }
 }
 
+
 impl eframe::App for FeriteApp {
     #[instrument(skip(self, ctx, _frame))]
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Handle file drops
+        // Handle file drops from the system
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
             let files: Vec<_> = ctx
                 .input(|i| i.raw.dropped_files.clone())
@@ -297,7 +343,7 @@ impl eframe::App for FeriteApp {
             self.handle_files_dropped(ctx, files);
         }
 
-        // Handle keyboard navigation
+        // Handle keyboard navigation between images
         if ctx.input(|i| i.key_pressed(egui::Key::ArrowRight) || i.key_pressed(egui::Key::D)) {
             self.next_image();
         }
@@ -305,31 +351,79 @@ impl eframe::App for FeriteApp {
             self.previous_image();
         }
 
-        // Handle zooming
-        ctx.input(|i| {
-            if i.modifiers.ctrl {
-                self.zoom_level *= 1.0 - (i.raw_scroll_delta.y / 1000.0);
-                self.zoom_level = self.zoom_level.clamp(0.1, 10.0);
+        // Handle all zoom-related inputs
+        if ctx.input(|i| i.modifiers.ctrl) {
+            // Handle scroll wheel zooming
+            let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
+            if scroll_delta != 0.0 {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    self.handle_zoom(ui, scroll_delta);
+                });
             }
-        });
+            
+            // Handle keyboard zoom controls (plus/minus keys)
+            if ctx.input(|i| i.key_pressed(Key::Equals) || i.key_pressed(Key::Plus)) {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    self.handle_zoom(ui, 10.0);  // Positive value for zoom in
+                });
+            }
+            if ctx.input(|i| i.key_pressed(Key::Minus)) {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    self.handle_zoom(ui, -10.0);  // Negative value for zoom out
+                });
+            }
+            
+            // Reset zoom and position with Ctrl+0
+            if ctx.input(|i| i.key_pressed(Key::Num0)) {
+                self.zoom_level = 1.0;
+                self.drag_offset = Vec2::ZERO;
+                ctx.request_repaint();
+            }
+        }
 
         // Main UI layout
         egui::CentralPanel::default().show(ctx, |ui| {
+            // Top menu bar
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Open...").clicked() {
                         // TODO: Implement file dialog
+                        ui.close_menu();
                     }
                     if ui.button("Toggle Performance").clicked() {
                         self.show_performance = !self.show_performance;
+                        ui.close_menu();
+                    }
+                });
+                
+                // Add View menu for zoom controls
+                ui.menu_button("View", |ui| {
+                    if ui.button("Zoom In (Ctrl++)").clicked() {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            self.handle_zoom(ui, 10.0);
+                        });
+                        ui.close_menu();
+                    }
+                    if ui.button("Zoom Out (Ctrl-)").clicked() {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            self.handle_zoom(ui, -10.0);
+                        });
+                        ui.close_menu();
+                    }
+                    if ui.button("Reset Zoom (Ctrl+0)").clicked() {
+                        self.zoom_level = 1.0;
+                        self.drag_offset = Vec2::ZERO;
+                        ctx.request_repaint();
+                        ui.close_menu();
                     }
                 });
             });
 
+            // Render the main image
             self.render_image(ui);
         });
 
-        // Performance window
+        // Performance monitoring window
         if self.show_performance {
             egui::Window::new("Performance").show(ctx, |ui| {
                 ui.label(format!(
@@ -337,7 +431,7 @@ impl eframe::App for FeriteApp {
                     self.image_cache.len(),
                     self.image_cache.cap()
                 ));
-                ui.label(format!("Zoom level: {:.2}x", self.zoom_level));
+                ui.label(format!("Zoom level: {:.1}%", self.zoom_percentage()));
                 if let Some(path) = &self.current_path {
                     ui.label(format!(
                         "Current image: {:?}",
