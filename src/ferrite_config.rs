@@ -22,31 +22,12 @@ pub struct FeriteConfig {
     pub zoom: ZoomConfig,
 }
 
-impl Default for FeriteConfig {
-    fn default() -> Self {
-        Self {
-            cache_size: 5,
-            default_zoom: 1.0,
-            show_performance: false,
-            recent_files: Vec::new(),
-            max_recent_files: 10,
-            zoom: ZoomConfig::default(),
-        }
-    }
-}
-
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Corner {
     TopLeft,
     TopRight,
     BottomLeft,
     BottomRight,
-}
-
-impl Default for Corner {
-    fn default() -> Self {
-        Corner::TopLeft
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -59,28 +40,18 @@ pub struct ZoomConfig {
     pub show_zoom_level: bool,
 }
 
-impl Default for ZoomConfig {
-    fn default() -> Self {
-        Self {
-            require_ctrl_for_zoom: false,
-            zoom_display_corner: Corner::default(),
-            show_zoom_level: true,
-        }
-    }
-}
-
 impl FeriteConfig {
-    /// Loads the configuration from disk, creating default config if none exists
+    /// Loads the configuration from disk
     #[instrument]
     pub fn load() -> Result<Self> {
         let config_path = Self::get_config_path()?;
 
-        // If config file doesn't exist, create it with default values
+        // If config file doesn't exist, return an error
         if !config_path.exists() {
-            info!("No config file found, creating default configuration");
-            let default_config = Self::default();
-            default_config.save()?;
-            return Ok(default_config);
+            return Err(anyhow::anyhow!(
+                "No configuration file found at {:?}. Run with --generate-config to create one.",
+                config_path
+            ));
         }
 
         info!("Loading configuration from {:?}", config_path);
@@ -122,20 +93,6 @@ impl FeriteConfig {
 
         info!("Configuration saved to {:?}", config_path);
         Ok(())
-    }
-
-    /// Adds a file to the recent files list, maintaining the maximum size
-    pub fn add_recent_file(&mut self, path: PathBuf) {
-        // Remove the path if it already exists to avoid duplicates
-        self.recent_files.retain(|p| p != &path);
-
-        // Add the new path at the beginning
-        self.recent_files.insert(0, path);
-
-        // Truncate to maximum size
-        if self.recent_files.len() > self.max_recent_files {
-            self.recent_files.truncate(self.max_recent_files);
-        }
     }
 
     /// Gets the path to the configuration file

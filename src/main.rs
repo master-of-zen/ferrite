@@ -1,6 +1,7 @@
 mod app;
 mod cli;
-mod ferrite_config;
+mod config_defaults;
+mod ferrite_config; // Add the new module
 
 use app::FeriteApp;
 use cli::CliArgs;
@@ -27,8 +28,11 @@ fn main() -> Result<(), eframe::Error> {
         log_level
     );
 
-    // Load configuration and apply CLI overrides
-    let mut config = FeriteConfig::load().expect("Failed to load configuration");
+    // Handle configuration initialization and CLI overrides
+    let mut config = args.handle_config().unwrap_or_else(|e| {
+        eprintln!("Configuration error: {}. Run with --generate-config to create a default configuration.", e);
+        std::process::exit(1);
+    });
     args.apply_to_config(&mut config);
 
     let native_options = eframe::NativeOptions {

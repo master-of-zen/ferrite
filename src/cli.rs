@@ -1,8 +1,9 @@
+use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
 use tracing::Level;
 
-use crate::ferrite_config::Corner;
+use crate::ferrite_config::{Corner, FeriteConfig};
 
 /// Ferrite - A fast and efficient image viewer
 #[derive(Parser, Debug)]
@@ -39,6 +40,10 @@ pub struct CliArgs {
     /// Toggle zoom level display
     #[arg(long)]
     pub hide_zoom: bool,
+
+    /// Generate a default configuration file
+    #[arg(long)]
+    pub generate_config: bool,
 }
 
 impl CliArgs {
@@ -47,8 +52,23 @@ impl CliArgs {
         Self::parse()
     }
 
+    /// Handle configuration initialization based on CLI arguments
+    pub fn handle_config(&self) -> Result<FeriteConfig> {
+        if self.generate_config {
+            // Generate default config file
+            let default_config = FeriteConfig::default();
+            default_config
+                .save()
+                .context("Failed to save default configuration")?;
+            Ok(default_config)
+        } else {
+            // Try to load existing config
+            FeriteConfig::load().context("Failed to load configuration")
+        }
+    }
+
     /// Apply CLI arguments to the provided configuration
-    pub fn apply_to_config(&self, config: &mut crate::ferrite_config::FeriteConfig) {
+    pub fn apply_to_config(&self, config: &mut FeriteConfig) {
         if let Some(cache_size) = self.cache_size {
             config.cache_size = cache_size;
         }
