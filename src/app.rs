@@ -2,11 +2,16 @@ use eframe::egui;
 use egui::*;
 use image::DynamicImage;
 use lru::LruCache;
-use std::{collections::HashSet, path::PathBuf, process::exit, fs};
+use std::{collections::HashSet, fs, num::NonZeroUsize, path::PathBuf, process::exit};
 use tracing::{info, instrument, warn};
+
+use crate::ferrite_config::{Corner, FeriteConfig};
 
 /// The main application state structure holds all the data needed for the image viewer
 pub struct FeriteApp {
+    // Configuration
+    pub config: FeriteConfig,
+
     // Image handling components
     image_cache: LruCache<PathBuf, DynamicImage>,
     current_image: Option<ImageData>,
@@ -31,29 +36,57 @@ struct ImageData {
 
 impl Default for FeriteApp {
     fn default() -> Self {
+        // Load the configuration, falling back to default if loading fails
+        let config = FeriteConfig::load().unwrap_or_default();
+        
+        // Initialize the LRU cache with the configured size
+        let cache_size = NonZeroUsize::new(config.cache_size)
+            .unwrap_or(NonZeroUsize::new(5).unwrap());
+        
         Self {
-            image_cache: LruCache::new(std::num::NonZeroUsize::new(5).unwrap()),
+            // Image handling components
+            image_cache: LruCache::new(cache_size),
             current_image: None,
             current_path: None,
+            
+            // Directory navigation
             directory_images: Vec::new(),
             current_image_index: 0,
             loading_in_progress: HashSet::new(),
-            zoom_level: 1.0,
+            
+            // UI state - initialize with configured values
+            zoom_level: config.default_zoom,
             drag_offset: Vec2::ZERO,
-            show_performance: false,
+            show_performance: config.show_performance,
+            
+            // Store the configuration
+            config,
         }
     }
 }
-
 impl FeriteApp {
-    #[instrument(skip(cc))]
+
+
     pub fn new(cc: &eframe::CreationContext<'_>, initial_image: Option<PathBuf>) -> Self {
         info!("Initializing Ferrite");
 
         let mut fonts = FontDefinitions::default();
         cc.egui_ctx.set_fonts(fonts);
 
-        let mut app = Self::default();
+        let config = FeriteConfig::load().expect("Failed to load configuration");
+        
+        let mut app = Self {
+            image_cache: LruCache::new(std::num::NonZeroUsize::new(config.cache_size).unwrap()),
+            current_image: None,
+            current_path: None,
+            directory_images: Vec::new(),
+            current_image_index: 0,
+            loading_in_progress: HashSet::new(),
+            zoom_level: config.default_zoom,
+            drag_offset: Vec2::ZERO,
+            show_performance: config.show_performance,
+            config,
+        };
 
         if let Some(path) = initial_image {
             info!("Loading initial image from command line: {:?}", path);
@@ -66,6 +99,7 @@ impl FeriteApp {
 
         app
     }
+
 
     /// Loads all supported image files from the directory containing the given path
     fn load_directory_images(&mut self, path: &PathBuf) {
@@ -240,7 +274,7 @@ impl FeriteApp {
         self.zoom_level * 100.0
     }
 
-    // Implement smoother zoom handling with wider range
+    // Replace the handle_zoom method with this improved version
     fn handle_zoom(&mut self, ui: &Ui, scroll_delta: f32) {
         // Get current mouse position
         if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
@@ -248,8 +282,8 @@ impl FeriteApp {
             let panel_rect = ui.available_rect_before_wrap();
             let old_center = panel_rect.center() + self.drag_offset;
             
-            // Calculate zoom factor - larger steps for faster zooming
-            let zoom_step = if scroll_delta > 0.0 { 1.25 } else { 0.8 };
+            // Calculate zoom factor - adjust for smoother zooming
+            let zoom_step = if scroll_delta > 0.0 { 1.1 } else { 0.9 };
             let new_zoom = (self.zoom_level * zoom_step).clamp(0.1, 10.0);
             
             // Calculate relative position of mouse to image center
@@ -270,7 +304,7 @@ impl FeriteApp {
         }
     }
 
-    // Enhanced image rendering with proper scaling
+    // Update the render_image method to include configurable zoom display
     fn render_image(&mut self, ui: &mut Ui) {
         let panel_rect = ui.available_rect_before_wrap();
         
@@ -319,19 +353,34 @@ impl FeriteApp {
                 Color32::WHITE,
             );
             
-            // Display zoom percentage in corner
-            let zoom_text = format!("{:.0}%", self.zoom_percentage());
-            ui.put(
-                Rect::from_min_max(panel_rect.min + vec2(5.0, 5.0), panel_rect.min + vec2(60.0, 25.0)),
-                Label::new(RichText::new(zoom_text).monospace()),
-            );
+            // Display zoom percentage in configured corner if enabled
+            if self.config.zoom.show_zoom_level {
+                let zoom_text = format!("{:.0}%", self.zoom_percentage());
+                let text_size = vec2(60.0, 20.0);
+                
+                let corner_pos = match self.config.zoom.zoom_display_corner {
+                    Corner::TopLeft => panel_rect.min + vec2(5.0, 5.0),
+                    Corner::TopRight => panel_rect.max - vec2(text_size.x + 5.0, -5.0),
+                    Corner::BottomLeft => panel_rect.max - vec2(-5.0, text_size.y + 5.0),
+                    Corner::BottomRight => panel_rect.max - vec2(text_size.x + 5.0, text_size.y + 5.0),
+                };
+                
+                let text_rect = Rect::from_min_max(
+                    corner_pos,
+                    corner_pos + text_size
+                );
+                
+                ui.put(
+                    text_rect,
+                    Label::new(RichText::new(zoom_text).monospace()),
+                );
+            }
         }
     }
 }
 
 
 impl eframe::App for FeriteApp {
-    #[instrument(skip(self, ctx, _frame))]
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // Handle file drops from the system
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
@@ -351,34 +400,31 @@ impl eframe::App for FeriteApp {
             self.previous_image();
         }
 
-        // Handle all zoom-related inputs
-        if ctx.input(|i| i.modifiers.ctrl) {
-            // Handle scroll wheel zooming
-            let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
-            if scroll_delta != 0.0 {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    self.handle_zoom(ui, scroll_delta);
-                });
-            }
+        // Modify zoom handling to work without Ctrl
+        let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
+        if scroll_delta != 0.0 {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                self.handle_zoom(ui, scroll_delta);
+            });
+        }
             
-            // Handle keyboard zoom controls (plus/minus keys)
-            if ctx.input(|i| i.key_pressed(Key::Equals) || i.key_pressed(Key::Plus)) {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    self.handle_zoom(ui, 10.0);  // Positive value for zoom in
-                });
-            }
-            if ctx.input(|i| i.key_pressed(Key::Minus)) {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    self.handle_zoom(ui, -10.0);  // Negative value for zoom out
-                });
-            }
-            
-            // Reset zoom and position with Ctrl+0
-            if ctx.input(|i| i.key_pressed(Key::Num0)) {
-                self.zoom_level = 1.0;
-                self.drag_offset = Vec2::ZERO;
-                ctx.request_repaint();
-            }
+        // Handle keyboard zoom controls (plus/minus keys)
+        if ctx.input(|i| i.key_pressed(Key::Equals) || i.key_pressed(Key::Plus)) {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                self.handle_zoom(ui, 10.0);  // Positive value for zoom in
+            });
+        }
+        if ctx.input(|i| i.key_pressed(Key::Minus)) {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                self.handle_zoom(ui, -10.0);  // Negative value for zoom out
+            });
+        }
+        
+        // Reset zoom and position with the 0 key (no Ctrl required)
+        if ctx.input(|i| i.key_pressed(Key::Num0)) {
+            self.zoom_level = 1.0;
+            self.drag_offset = Vec2::ZERO;
+            ctx.request_repaint();
         }
 
         // Main UI layout

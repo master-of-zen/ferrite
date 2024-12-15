@@ -18,6 +18,8 @@ pub struct FeriteConfig {
     pub recent_files: Vec<PathBuf>,
     /// Maximum number of recent files to remember
     pub max_recent_files: usize,
+    /// Zoom-related configuration
+    pub zoom: ZoomConfig,
 }
 
 impl Default for FeriteConfig {
@@ -28,6 +30,41 @@ impl Default for FeriteConfig {
             show_performance: false,
             recent_files: Vec::new(),
             max_recent_files: 10,
+            zoom: ZoomConfig::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum Corner {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+}
+
+impl Default for Corner {
+    fn default() -> Self {
+        Corner::TopLeft
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ZoomConfig {
+    /// Whether Ctrl key is required for zoom
+    pub require_ctrl_for_zoom: bool,
+    /// Corner where zoom level is displayed
+    pub zoom_display_corner: Corner,
+    /// Whether to show zoom level
+    pub show_zoom_level: bool,
+}
+
+impl Default for ZoomConfig {
+    fn default() -> Self {
+        Self {
+            require_ctrl_for_zoom: false,
+            zoom_display_corner: Corner::default(),
+            show_zoom_level: true,
         }
     }
 }

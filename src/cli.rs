@@ -2,6 +2,8 @@ use clap::Parser;
 use std::path::PathBuf;
 use tracing::Level;
 
+use crate::ferrite_config::Corner;
+
 /// Ferrite - A fast and efficient image viewer
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
@@ -29,6 +31,14 @@ pub struct CliArgs {
     /// Set the logging level (trace, debug, info, warn, error)    
     #[arg(long, value_name = "LEVEL", default_value = "info")]
     pub log_level: Option<String>,
+
+    /// Set the corner for zoom level display (top-left, top-right, bottom-left, bottom-right)
+    #[arg(long, value_name = "CORNER")]
+    pub zoom_corner: Option<String>,
+
+    /// Toggle zoom level display
+    #[arg(long)]
+    pub hide_zoom: bool,
 }
 
 impl CliArgs {
@@ -50,6 +60,20 @@ impl CliArgs {
         }
         if let Some(max_recent) = self.max_recent {
             config.max_recent_files = max_recent;
+        }
+
+        if let Some(corner) = &self.zoom_corner {
+            config.zoom.zoom_display_corner = match corner.to_lowercase().as_str() {
+                "top-left" => Corner::TopLeft,
+                "top-right" => Corner::TopRight,
+                "bottom-left" => Corner::BottomLeft,
+                "bottom-right" => Corner::BottomRight,
+                _ => Corner::TopLeft,
+            };
+        }
+
+        if self.hide_zoom {
+            config.zoom.show_zoom_level = false;
         }
     }
 
