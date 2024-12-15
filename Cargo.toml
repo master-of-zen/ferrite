@@ -21,7 +21,7 @@ lru = "0.12"
 rayon = "1.8"
 futures = "0.3"
 anyhow = "1.0"
-config = { version = "0.13", features = ["toml"] }
+config = { version = "0.14.1", features = ["toml"] }
 serde = { version = "1.0", features = ["derive"] }
 directories = "5.0"
 toml = "0.8"
