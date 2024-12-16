@@ -16,9 +16,15 @@ impl NavigationManager {
         }
     }
 
-    pub fn handle_keyboard_input(&mut self, ctx: &Context, image_manager: &mut ImageManager) {
-        let next_pressed = ctx.input(|i| i.key_pressed(Key::ArrowRight) || i.key_pressed(Key::D));
-        let prev_pressed = ctx.input(|i| i.key_pressed(Key::ArrowLeft) || i.key_pressed(Key::A));
+    pub fn handle_keyboard_input(
+        &mut self,
+        ctx: &Context,
+        image_manager: &mut ImageManager,
+    ) {
+        let next_pressed = ctx
+            .input(|i| i.key_pressed(Key::ArrowRight) || i.key_pressed(Key::D));
+        let prev_pressed = ctx
+            .input(|i| i.key_pressed(Key::ArrowLeft) || i.key_pressed(Key::A));
 
         if next_pressed {
             self.next_image(image_manager);
@@ -29,8 +35,10 @@ impl NavigationManager {
 
     fn next_image(&mut self, image_manager: &mut ImageManager) {
         if !self.directory_images.is_empty() {
-            self.current_index = (self.current_index + 1) % self.directory_images.len();
-            image_manager.load_image(self.directory_images[self.current_index].clone());
+            self.current_index =
+                (self.current_index + 1) % self.directory_images.len();
+            image_manager
+                .load_image(self.directory_images[self.current_index].clone());
         }
     }
 
@@ -41,7 +49,8 @@ impl NavigationManager {
             } else {
                 self.current_index - 1
             };
-            image_manager.load_image(self.directory_images[self.current_index].clone());
+            image_manager
+                .load_image(self.directory_images[self.current_index].clone());
         }
     }
 
@@ -67,7 +76,10 @@ impl NavigationManager {
                     .collect();
 
                 self.directory_images.sort();
-                info!("Found {} images in directory", self.directory_images.len());
+                info!(
+                    "Found {} images in directory",
+                    self.directory_images.len()
+                );
             }
         }
     }

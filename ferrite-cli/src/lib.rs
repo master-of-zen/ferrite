@@ -5,7 +5,11 @@ use ferrite_logging::LogLevel;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(author, version, about = "Ferrite - A fast and efficient image viewer")]
+#[command(
+    author,
+    version,
+    about = "Ferrite - A fast and efficient image viewer"
+)]
 pub struct Args {
     /// Initial image file to open
     #[arg(value_name = "IMAGE")]
@@ -66,7 +70,10 @@ impl Args {
     }
 
     pub fn get_log_level(&self) -> LogLevel {
-        self.log_level.as_deref().and_then(|s| s.parse().ok()).unwrap_or(LogLevel::Info)
+        self.log_level
+            .as_deref()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(LogLevel::Info)
     }
 
     pub fn handle_config(&self) -> Result<FeriteConfig> {
@@ -93,13 +100,14 @@ impl Args {
             config.max_recent_files = max_recent;
         }
         if let Some(corner) = &self.zoom_corner {
-            config.zoom.zoom_display_corner = match corner.to_lowercase().as_str() {
-                "top-left" => Corner::TopLeft,
-                "top-right" => Corner::TopRight,
-                "bottom-left" => Corner::BottomLeft,
-                "bottom-right" => Corner::BottomRight,
-                _ => Corner::TopLeft,
-            };
+            config.zoom.zoom_display_corner =
+                match corner.to_lowercase().as_str() {
+                    "top-left" => Corner::TopLeft,
+                    "top-right" => Corner::TopRight,
+                    "bottom-left" => Corner::BottomLeft,
+                    "bottom-right" => Corner::BottomRight,
+                    _ => Corner::TopLeft,
+                };
         }
         if self.hide_zoom {
             config.zoom.show_zoom_level = false;

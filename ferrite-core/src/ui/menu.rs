@@ -20,7 +20,12 @@ impl MenuBar {
         self.hidden = !self.hidden;
     }
 
-    pub fn render(&self, ui: &mut Ui, ctx: &Context, config: &mut FeriteConfig) {
+    pub fn render(
+        &self,
+        ui: &mut Ui,
+        ctx: &Context,
+        config: &mut FeriteConfig,
+    ) {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {
                 if ui.button("Toggle Performance").clicked() {

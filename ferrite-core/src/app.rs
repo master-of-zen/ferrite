@@ -69,7 +69,8 @@ impl eframe::App for FeriteApp {
         }
 
         // Handle navigation keyboard events
-        self.navigation.handle_keyboard_input(ctx, &mut self.image_manager);
+        self.navigation
+            .handle_keyboard_input(ctx, &mut self.image_manager);
 
         // Toggle menu visibility
         if ctx.input(|i| i.key_pressed(Key::M)) {

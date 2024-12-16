@@ -17,24 +17,31 @@ impl ImageRenderer {
     ) {
         let panel_rect = ui.available_rect_before_wrap();
 
-        // Handle texture creation/retrieval separately before other UI operations
-        let texture_handle = if let Some(image_data) = image_manager.current_image() {
-            if image_data.texture.is_none() {
-                let size =
-                    [image_data.original.width() as usize, image_data.original.height() as usize];
-                let image = image_data.original.to_rgba8();
+        // Handle texture creation/retrieval separately before other UI
+        // operations
+        let texture_handle =
+            if let Some(image_data) = image_manager.current_image() {
+                if image_data.texture.is_none() {
+                    let size = [
+                        image_data.original.width() as usize,
+                        image_data.original.height() as usize,
+                    ];
+                    let image = image_data.original.to_rgba8();
 
-                let texture = ctx.load_texture(
-                    "current-image",
-                    ColorImage::from_rgba_unmultiplied(size, image.as_flat_samples().as_slice()),
-                    TextureOptions::LINEAR,
-                );
-                image_data.texture = Some(texture);
-            }
-            image_data.texture.as_ref()
-        } else {
-            None
-        };
+                    let texture = ctx.load_texture(
+                        "current-image",
+                        ColorImage::from_rgba_unmultiplied(
+                            size,
+                            image.as_flat_samples().as_slice(),
+                        ),
+                        TextureOptions::LINEAR,
+                    );
+                    image_data.texture = Some(texture);
+                }
+                image_data.texture.as_ref()
+            } else {
+                None
+            };
 
         if let Some(texture) = texture_handle {
             let original_size = texture.size_vec2();
@@ -44,8 +51,12 @@ impl ImageRenderer {
             _ = Self::handle_input(ctx, ui, zoom_handler, panel_rect);
 
             // Calculate image position and handle dragging
-            let (image_rect, response) =
-                Self::handle_image_positioning(ui, panel_rect, scaled_size, zoom_handler);
+            let (image_rect, response) = Self::handle_image_positioning(
+                ui,
+                panel_rect,
+                scaled_size,
+                zoom_handler,
+            );
 
             // Update offset if dragged
             if response.dragged() {
@@ -73,9 +84,16 @@ impl ImageRenderer {
     }
 
     // Handle all input events in one place
-    fn handle_input(ctx: &Context, ui: &Ui, zoom_handler: &mut ZoomHandler, panel_rect: Rect) {
+    fn handle_input(
+        ctx: &Context,
+        ui: &Ui,
+        zoom_handler: &mut ZoomHandler,
+        panel_rect: Rect,
+    ) {
         // Keyboard zoom controls
-        if ctx.input(|i| i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)) {
+        if ctx.input(|i| {
+            i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)
+        }) {
             _ = Self::handle_zoom(ui, zoom_handler, 1.0);
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Minus)) {
@@ -99,7 +117,8 @@ impl ImageRenderer {
         if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
             // Calculate zoom factor - adjust for smoother zooming
             let zoom_step = if scroll_delta > 0.0 { 1.1 } else { 0.9 };
-            let new_zoom = (zoom_handler.zoom_level() * zoom_step).clamp(0.1, 10.0);
+            let new_zoom =
+                (zoom_handler.zoom_level() * zoom_step).clamp(0.1, 10.0);
 
             // Apply new zoom level
             zoom_handler.set_zoom(new_zoom);
@@ -113,8 +132,10 @@ impl ImageRenderer {
         scaled_size: Vec2,
         zoom_handler: &ZoomHandler,
     ) -> (Rect, egui::Response) {
-        let image_rect =
-            Rect::from_center_size(panel_rect.center() + zoom_handler.offset(), scaled_size);
+        let image_rect = Rect::from_center_size(
+            panel_rect.center() + zoom_handler.offset(),
+            scaled_size,
+        );
         let response = ui.allocate_rect(image_rect, Sense::drag());
         (image_rect, response)
     }
@@ -131,9 +152,15 @@ impl ImageRenderer {
 
         let corner_pos = match corner {
             Corner::TopLeft => panel_rect.min + Vec2::new(5.0, 5.0),
-            Corner::TopRight => panel_rect.max - Vec2::new(text_size.x + 5.0, -5.0),
-            Corner::BottomLeft => panel_rect.max - Vec2::new(-5.0, text_size.y + 5.0),
-            Corner::BottomRight => panel_rect.max - Vec2::new(text_size.x + 5.0, text_size.y + 5.0),
+            Corner::TopRight => {
+                panel_rect.max - Vec2::new(text_size.x + 5.0, -5.0)
+            },
+            Corner::BottomLeft => {
+                panel_rect.max - Vec2::new(-5.0, text_size.y + 5.0)
+            },
+            Corner::BottomRight => {
+                panel_rect.max - Vec2::new(text_size.x + 5.0, text_size.y + 5.0)
+            },
         };
 
         let text_rect = Rect::from_min_size(corner_pos, text_size);

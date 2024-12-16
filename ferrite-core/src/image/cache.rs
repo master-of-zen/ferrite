@@ -9,7 +9,10 @@ pub struct ImageCache {
 impl ImageCache {
     pub fn new(size: usize) -> Self {
         Self {
-            cache: LruCache::new(NonZeroUsize::new(size).unwrap_or(NonZeroUsize::new(5).unwrap())),
+            cache: LruCache::new(
+                NonZeroUsize::new(size)
+                    .unwrap_or(NonZeroUsize::new(5).unwrap()),
+            ),
         }
     }
 

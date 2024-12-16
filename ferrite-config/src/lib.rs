@@ -16,7 +16,10 @@ pub struct WindowConfig {
 impl Default for WindowConfig {
     fn default() -> Self {
         Self {
-            width: None, height: None, borderless: false, hide_menu: false
+            width:      None,
+            height:     None,
+            borderless: false,
+            hide_menu:  false,
         }
     }
 }
@@ -84,7 +87,8 @@ impl FeriteConfig {
 
         if !config_path.exists() {
             return Err(anyhow::anyhow!(
-                "No configuration file found at {:?}. Run with --generate-config to create one.",
+                "No configuration file found at {:?}. Run with \
+                 --generate-config to create one.",
                 config_path
             ));
         }
@@ -97,7 +101,9 @@ impl FeriteConfig {
             .add_source(File::from(config_path))
             .build()?;
 
-        config.try_deserialize().context("Failed to deserialize configuration")
+        config
+            .try_deserialize()
+            .context("Failed to deserialize configuration")
     }
 
     #[instrument]
@@ -105,11 +111,14 @@ impl FeriteConfig {
         let config_path = Self::get_config_path()?;
 
         if let Some(parent) = config_path.parent() {
-            std::fs::create_dir_all(parent).context("Failed to create config directory")?;
+            std::fs::create_dir_all(parent)
+                .context("Failed to create config directory")?;
         }
 
-        let toml = toml::to_string_pretty(self).context("Failed to serialize configuration")?;
-        std::fs::write(&config_path, toml).context("Failed to write configuration file")?;
+        let toml = toml::to_string_pretty(self)
+            .context("Failed to serialize configuration")?;
+        std::fs::write(&config_path, toml)
+            .context("Failed to write configuration file")?;
 
         Ok(())
     }

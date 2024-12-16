@@ -78,7 +78,9 @@ pub fn init(config: LogConfig) {
             .try_init()
             .expect("Failed to initialize global logging");
     } else {
-        registry.try_init().expect("Failed to initialize global logging");
+        registry
+            .try_init()
+            .expect("Failed to initialize global logging");
     }
 }
 

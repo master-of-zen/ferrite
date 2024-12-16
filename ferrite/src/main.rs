@@ -14,7 +14,11 @@ fn main() -> Result<(), Error> {
 
     // Handle configuration
     let mut config = args.handle_config().unwrap_or_else(|e| {
-        eprintln!("Configuration error: {}. Run with --generate-config to create one.", e);
+        eprintln!(
+            "Configuration error: {}. Run with --generate-config to create \
+             one.",
+            e
+        );
         std::process::exit(1);
     });
     args.apply_to_config(&mut config);
@@ -26,14 +30,16 @@ fn main() -> Result<(), Error> {
     native_options.default_theme = eframe::Theme::Dark;
 
     // Set initial window size if configured
-    if let (Some(width), Some(height)) = (config.window.width, config.window.height) {
+    if let (Some(width), Some(height)) =
+        (config.window.width, config.window.height)
+    {
         native_options.viewport = ViewportBuilder::default()
             .with_inner_size([width as f32, height as f32])
             .with_decorations(!config.window.borderless);
     } else {
         // If no size specified, just set decorations
-        native_options.viewport =
-            ViewportBuilder::default().with_decorations(!config.window.borderless);
+        native_options.viewport = ViewportBuilder::default()
+            .with_decorations(!config.window.borderless);
     }
 
     eframe::run_native(

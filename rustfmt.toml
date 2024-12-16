@@ -2,9 +2,10 @@
 edition = "2021"
 newline_style = "Unix"
 use_small_heuristics = "Max"
+unstable_features = true
 
 # Width and alignment  
-max_width = 100
+max_width = 80
 hard_tabs = false
 tab_spaces = 4
 indent_style = "Block"
@@ -33,7 +34,7 @@ struct_field_align_threshold = 20
 struct_lit_single_line = false
 
 # Misc
-chain_width = 80
+chain_width = 50
 fn_params_layout = "Tall"
 match_arm_blocks = true
 match_block_trailing_comma = true

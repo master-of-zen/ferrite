@@ -46,9 +46,16 @@ impl ImageManager {
 
     pub fn show_performance_window(&self, ctx: &Context) {
         egui::Window::new("Performance").show(ctx, |ui| {
-            ui.label(format!("Cache size: {}/{}", self.cache.len(), self.cache.capacity()));
+            ui.label(format!(
+                "Cache size: {}/{}",
+                self.cache.len(),
+                self.cache.capacity()
+            ));
             if let Some(path) = &self.current_path {
-                ui.label(format!("Current image: {:?}", path.file_name().unwrap_or_default()));
+                ui.label(format!(
+                    "Current image: {:?}",
+                    path.file_name().unwrap_or_default()
+                ));
             }
         });
     }
