@@ -1,22 +1,22 @@
 use eframe::egui::Vec2;
 
 pub struct ZoomHandler {
-    zoom_level: f32,
+    zoom_level: f64,
     pan_offset: Vec2,
 }
 
 impl ZoomHandler {
-    pub fn new(default_zoom: f32) -> Self {
+    pub fn new(default_zoom: f64) -> Self {
         Self {
             zoom_level: default_zoom, pan_offset: Vec2::ZERO
         }
     }
 
-    pub fn zoom_level(&self) -> f32 {
+    pub fn zoom_level(&self) -> f64 {
         self.zoom_level
     }
 
-    pub fn zoom_percentage(&self) -> f32 {
+    pub fn zoom_percentage(&self) -> f64 {
         self.zoom_level * 100.0
     }
 
@@ -28,7 +28,7 @@ impl ZoomHandler {
         self.pan_offset += delta;
     }
 
-    pub fn set_zoom(&mut self, new_zoom: f32) {
+    pub fn set_zoom(&mut self, new_zoom: f64) {
         self.zoom_level = new_zoom;
     }
 

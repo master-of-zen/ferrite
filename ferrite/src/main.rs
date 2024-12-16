@@ -34,7 +34,7 @@ fn main() -> Result<(), Error> {
         (config.window.width, config.window.height)
     {
         native_options.viewport = ViewportBuilder::default()
-            .with_inner_size([width as f32, height as f32])
+            .with_inner_size([width as f64, height as f64])
             .with_decorations(!config.window.borderless);
     } else {
         // If no size specified, just set decorations

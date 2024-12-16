@@ -10,6 +10,11 @@ readme = "README.md"
 keywords = ["config", "settings", "ferrite"]
 categories = ["config"]
 
+# Bin just prints default config
+[[bin]]
+name = "print_config"
+path = "src/bin/print_config.rs"
+
 [dependencies]
 anyhow.workspace = true
 config.workspace = true

@@ -21,7 +21,7 @@ pub struct Args {
 
     /// Set the initial zoom level (e.g., 1.0 for 100%)
     #[arg(short, long, value_name = "LEVEL")]
-    pub zoom: Option<f32>,
+    pub zoom: Option<f64>,
 
     /// Show the performance monitoring window
     #[arg(short, long)]

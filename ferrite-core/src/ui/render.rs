@@ -115,7 +115,7 @@ impl ImageRenderer {
     }
 
     // Handle zoom operations and return whether a redraw is needed
-    fn handle_zoom(ui: &Ui, zoom_handler: &mut ZoomHandler, scroll_delta: f32) {
+    fn handle_zoom(ui: &Ui, zoom_handler: &mut ZoomHandler, scroll_delta: f64) {
         if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
             // Calculate zoom factor - adjust for smoother zooming
             let zoom_step = if scroll_delta > 0.0 { 1.1 } else { 0.9 };
