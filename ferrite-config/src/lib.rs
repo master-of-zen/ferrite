@@ -7,32 +7,29 @@ use tracing::instrument;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WindowConfig {
-    pub width: Option<u32>,
-    pub height: Option<u32>,
+    pub width:      Option<u32>,
+    pub height:     Option<u32>,
     pub borderless: bool,
-    pub hide_menu: bool,
+    pub hide_menu:  bool,
 }
 
 impl Default for WindowConfig {
     fn default() -> Self {
         Self {
-            width: None,
-            height: None,
-            borderless: false,
-            hide_menu: false,
+            width: None, height: None, borderless: false, hide_menu: false
         }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FeriteConfig {
-    pub cache_size: usize,
-    pub default_zoom: f32,
+    pub cache_size:       usize,
+    pub default_zoom:     f32,
     pub show_performance: bool,
-    pub recent_files: Vec<PathBuf>,
+    pub recent_files:     Vec<PathBuf>,
     pub max_recent_files: usize,
-    pub zoom: ZoomConfig,
-    pub window: WindowConfig,
+    pub zoom:             ZoomConfig,
+    pub window:           WindowConfig,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -46,20 +43,20 @@ pub enum Corner {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ZoomConfig {
     pub require_ctrl_for_zoom: bool,
-    pub zoom_display_corner: Corner,
-    pub show_zoom_level: bool,
+    pub zoom_display_corner:   Corner,
+    pub show_zoom_level:       bool,
 }
 
 impl Default for FeriteConfig {
     fn default() -> Self {
         Self {
-            cache_size: 5,
-            default_zoom: 1.0,
+            cache_size:       5,
+            default_zoom:     1.0,
             show_performance: false,
-            recent_files: Vec::new(),
+            recent_files:     Vec::new(),
             max_recent_files: 10,
-            zoom: ZoomConfig::default(),
-            window: WindowConfig::default(),
+            zoom:             ZoomConfig::default(),
+            window:           WindowConfig::default(),
         }
     }
 }
@@ -74,8 +71,8 @@ impl Default for ZoomConfig {
     fn default() -> Self {
         Self {
             require_ctrl_for_zoom: false,
-            zoom_display_corner: Corner::default(),
-            show_zoom_level: true,
+            zoom_display_corner:   Corner::default(),
+            show_zoom_level:       true,
         }
     }
 }
@@ -100,9 +97,7 @@ impl FeriteConfig {
             .add_source(File::from(config_path))
             .build()?;
 
-        config
-            .try_deserialize()
-            .context("Failed to deserialize configuration")
+        config.try_deserialize().context("Failed to deserialize configuration")
     }
 
     #[instrument]

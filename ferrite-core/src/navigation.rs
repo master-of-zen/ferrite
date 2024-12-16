@@ -6,14 +6,13 @@ use crate::image::ImageManager;
 
 pub struct NavigationManager {
     directory_images: Vec<PathBuf>,
-    current_index: usize,
+    current_index:    usize,
 }
 
 impl NavigationManager {
     pub fn new() -> Self {
         Self {
-            directory_images: Vec::new(),
-            current_index: 0,
+            directory_images: Vec::new(), current_index: 0
         }
     }
 

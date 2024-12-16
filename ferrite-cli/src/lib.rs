@@ -64,11 +64,9 @@ impl Args {
     pub fn parse() -> Self {
         <Self as clap::Parser>::parse()
     }
+
     pub fn get_log_level(&self) -> LogLevel {
-        self.log_level
-            .as_deref()
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(LogLevel::Info)
+        self.log_level.as_deref().and_then(|s| s.parse().ok()).unwrap_or(LogLevel::Info)
     }
 
     pub fn handle_config(&self) -> Result<FeriteConfig> {

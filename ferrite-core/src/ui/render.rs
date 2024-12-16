@@ -20,10 +20,8 @@ impl ImageRenderer {
         // Handle texture creation/retrieval separately before other UI operations
         let texture_handle = if let Some(image_data) = image_manager.current_image() {
             if image_data.texture.is_none() {
-                let size = [
-                    image_data.original.width() as usize,
-                    image_data.original.height() as usize,
-                ];
+                let size =
+                    [image_data.original.width() as usize, image_data.original.height() as usize];
                 let image = image_data.original.to_rgba8();
 
                 let texture = ctx.load_texture(

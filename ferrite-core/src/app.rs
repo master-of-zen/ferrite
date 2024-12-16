@@ -9,11 +9,11 @@ use crate::{
 use ferrite_config::FeriteConfig;
 
 pub struct FeriteApp {
-    config: FeriteConfig,
+    config:        FeriteConfig,
     image_manager: ImageManager,
-    navigation: NavigationManager,
-    zoom_handler: ZoomHandler,
-    menu_bar: MenuBar,
+    navigation:    NavigationManager,
+    zoom_handler:  ZoomHandler,
+    menu_bar:      MenuBar,
 }
 
 impl FeriteApp {
@@ -69,8 +69,7 @@ impl eframe::App for FeriteApp {
         }
 
         // Handle navigation keyboard events
-        self.navigation
-            .handle_keyboard_input(ctx, &mut self.image_manager);
+        self.navigation.handle_keyboard_input(ctx, &mut self.image_manager);
 
         // Toggle menu visibility
         if ctx.input(|i| i.key_pressed(Key::M)) {

@@ -8,8 +8,7 @@ pub struct ZoomHandler {
 impl ZoomHandler {
     pub fn new(default_zoom: f32) -> Self {
         Self {
-            zoom_level: default_zoom,
-            pan_offset: Vec2::ZERO,
+            zoom_level: default_zoom, pan_offset: Vec2::ZERO
         }
     }
 

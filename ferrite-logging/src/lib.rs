@@ -1,8 +1,11 @@
 use std::str::FromStr;
 use tracing::{instrument, Level};
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::{prelude::*, registry::Registry};
+use tracing_subscriber::{
+    layer::SubscriberExt,
+    prelude::*,
+    registry::Registry,
+    util::SubscriberInitExt,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub enum LogLevel {
@@ -42,15 +45,14 @@ impl From<LogLevel> for Level {
 
 #[derive(Debug)]
 pub struct LogConfig {
-    pub level: LogLevel,
+    pub level:        LogLevel,
     pub enable_tracy: bool,
 }
 
 impl Default for LogConfig {
     fn default() -> Self {
         Self {
-            level: LogLevel::Info,
-            enable_tracy: false,
+            level: LogLevel::Info, enable_tracy: false
         }
     }
 }
@@ -76,9 +78,7 @@ pub fn init(config: LogConfig) {
             .try_init()
             .expect("Failed to initialize global logging");
     } else {
-        registry
-            .try_init()
-            .expect("Failed to initialize global logging");
+        registry.try_init().expect("Failed to initialize global logging");
     }
 }
 

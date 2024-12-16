@@ -7,7 +7,9 @@ pub struct MenuBar {
 
 impl MenuBar {
     pub fn new(hidden: bool) -> Self {
-        Self { hidden }
+        Self {
+            hidden,
+        }
     }
 
     pub fn is_hidden(&self) -> bool {
