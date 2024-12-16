@@ -1,12 +1,9 @@
 use eframe::Error;
 use egui::ViewportBuilder;
 use ferrite_cli::Args;
+use ferrite_core::FeriteApp;
 use ferrite_logging::{init, LogConfig};
-use tracing::instrument;
 
-mod app;
-
-#[instrument]
 fn main() -> Result<(), Error> {
     let args = Args::parse();
 
@@ -47,7 +44,7 @@ fn main() -> Result<(), Error> {
         "Ferrite",
         native_options,
         Box::new(move |cc| {
-            let app = app::FeriteApp::new(cc, args.image_path, config);
+            let app = FeriteApp::new(cc, args.image_path, config);
             Box::new(app)
         }),
     )

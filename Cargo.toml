@@ -1,5 +1,12 @@
 [workspace]
-members = ["ferrite", "ferrite-config", "ferrite-cli", "ferrite-logging"]
+members = [
+    "ferrite",
+    "ferrite-core",
+    "ferrite-config",
+    "ferrite-cli",
+    "ferrite-logging",
+    "ferrite-core",
+]
 resolver = "2"
 
 [workspace.package]

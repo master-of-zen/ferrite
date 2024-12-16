@@ -1,0 +1,15 @@
+[package]
+name = "ferrite-core"
+version.workspace = true
+edition.workspace = true
+description = "Core functionality for Ferrite image viewer"
+
+[dependencies]
+eframe.workspace = true
+egui.workspace = true
+image.workspace = true
+lru.workspace = true
+rayon.workspace = true
+tracing.workspace = true
+ferrite-config = { path = "../ferrite-config" }
+ferrite-logging = { path = "../ferrite-logging" }
