@@ -1,3 +1,4 @@
+use crate::ui::input;
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Color32, Context, Sense, Vec2};
 use ferrite_config::{Corner, FeriteConfig};
@@ -17,6 +18,7 @@ impl ImageRenderer {
     ) {
         let panel_rect = ui.available_rect_before_wrap();
 
+        input::handle_input(ctx, ui, zoom_handler, panel_rect);
         // Handle texture creation/retrieval separately before other UI
         // operations
         let texture_handle =
