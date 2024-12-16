@@ -85,7 +85,7 @@ impl eframe::App for FeriteApp {
             }
 
             // Render the image and handle all interactions
-            _ = ImageRenderer::render(
+            ImageRenderer::render(
                 ui,
                 ctx,
                 &mut self.image_manager,
