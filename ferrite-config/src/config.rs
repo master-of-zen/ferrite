@@ -35,8 +35,51 @@ impl Default for FerriteConfig {
         }
     }
 }
+
+use std::env;
+
 impl FerriteConfig {
-    // Core configuration management methods
+    /// Determines the configuration file path by checking:
+    /// 1. FERRITE_CONF environment variable
+    /// 2. Default XDG config path
+    pub fn resolve_config_path() -> Result<PathBuf> {
+        // First check environment variable
+        if let Ok(env_path) = env::var("FERRITE_CONF") {
+            let path = PathBuf::from(env_path);
+
+            // Validate the path from environment variable
+            if let Some(parent) = path.parent() {
+                if !parent.exists() {
+                    return Err(ConfigError::InvalidPath(format!(
+                        "Directory {} from FERRITE_CONF does not exist",
+                        parent.display()
+                    )));
+                }
+            }
+
+            return Ok(path);
+        }
+
+        // Fall back to default XDG config path
+        Self::get_default_path()
+    }
+
+    /// Loads configuration using environment-aware path resolution
+    pub fn load() -> Result<Self> {
+        let config_path = Self::resolve_config_path()?;
+
+        if !config_path.exists() {
+            info!(
+                "No configuration file found at {:?}, using defaults",
+                config_path
+            );
+            return Ok(Self::default());
+        }
+
+        info!("Loading configuration from {:?}", config_path);
+        Self::load_from_path(&config_path)
+    }
+
     pub fn load_from_path(path: &PathBuf) -> Result<Self> {
         if !path.exists() {
             debug!("No config file found at {:?}, using defaults", path);

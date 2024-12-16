@@ -1,25 +1,19 @@
 # Ferrite CLI
 
-Command-line interface handling for the Ferrite image viewer.
+Command-line interface for the Ferrite image viewer.
 
-## Features
-- Command-line argument parsing using clap
-- Configuration file generation and management
-- Log level configuration
-- UI preferences customization
+## Configuration
 
-## Usage
+Ferrite uses a TOML configuration file that can be located in one of two ways:
 
-```rust
-use ferrite_cli::Args;
-use ferrite_config::FeriteConfig;
+1. Environment variable: `FERRITE_CONF=/path/to/config.toml`
+2. Default system location:
+   - Linux: ~/.config/ferrite/config.toml
+   - macOS: ~/Library/Application Support/ferrite/config.toml
+   - Windows: %APPDATA%\ferrite\config.toml
 
-let args = Args::parse();
-let mut config = args.handle_config().unwrap_or_default();
-args.apply_to_config(&mut config);
+### Setting Up Configuration
 
-// Access parsed arguments
-if let Some(image_path) = args.image_path {
-    // Handle initial image
-}
-```
+Generate a default configuration file:
+```bash
+ferrite --generate-config

@@ -52,6 +52,12 @@ pub enum ConfigError {
 
     #[error("Parse error: {0}")]
     ParseError(String),
+
+    #[error("Environment configuration error: {0}")]
+    EnvError(String),
+
+    #[error("Invalid configuration path: {0}")]
+    InvalidPath(String),
 }
 
 /// Type alias for Result types using our ConfigError
