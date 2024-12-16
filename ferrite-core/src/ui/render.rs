@@ -47,10 +47,10 @@ impl ImageRenderer {
 
         if let Some(texture) = texture_handle {
             let original_size = texture.size_vec2();
-            let scaled_size = original_size * zoom_handler.zoom_level();
+            let scaled_size = original_size * zoom_handler.zoom_level().into();
 
             // Handle all input events and track if they require a redraw
-            _ = Self::handle_input(ctx, ui, zoom_handler, panel_rect);
+            Self::handle_input(ctx, ui, zoom_handler, panel_rect);
 
             // Calculate image position and handle dragging
             let (image_rect, response) = Self::handle_image_positioning(

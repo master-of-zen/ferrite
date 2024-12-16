@@ -1,5 +1,5 @@
 use eframe::egui::{self, Context, Ui};
-use ferrite_config::FeriteConfig;
+use ferrite_config::FerriteConfig;
 
 pub struct MenuBar {
     hidden: bool,
@@ -24,7 +24,7 @@ impl MenuBar {
         &self,
         ui: &mut Ui,
         ctx: &Context,
-        config: &mut FeriteConfig,
+        config: &mut FerriteConfig,
     ) {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {

@@ -20,7 +20,7 @@ pub fn handle_input(
     // Scroll wheel zoom
     let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
     if scroll_delta != 0.0 {
-        handle_zoom(ui, zoom_handler, scroll_delta);
+        handle_zoom(ui, zoom_handler, scroll_delta.into());
     }
 
     // Reset zoom and position

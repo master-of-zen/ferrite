@@ -49,6 +49,9 @@ pub enum ConfigError {
     /// Indicates an invalid keyboard or mouse button configuration
     #[error("Invalid input configuration: {0}")]
     InputError(String),
+
+    #[error("Parse error: {0}")]
+    ParseError(String),
 }
 
 /// Type alias for Result types using our ConfigError
