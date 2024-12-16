@@ -42,6 +42,22 @@ pub struct Args {
     /// Generate a default configuration file
     #[arg(long)]
     pub generate_config: bool,
+
+    /// Set initial window width
+    #[arg(long, value_name = "PIXELS")]
+    pub window_width: Option<u32>,
+
+    /// Set initial window height
+    #[arg(long, value_name = "PIXELS")]
+    pub window_height: Option<u32>,
+
+    /// Enable borderless window mode
+    #[arg(long)]
+    pub borderless: bool,
+
+    /// Hide the menu toolbar
+    #[arg(long)]
+    pub hide_menu: bool,
 }
 
 impl Args {

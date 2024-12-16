@@ -6,6 +6,25 @@ use std::path::PathBuf;
 use tracing::instrument;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct WindowConfig {
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub borderless: bool,
+    pub hide_menu: bool,
+}
+
+impl Default for WindowConfig {
+    fn default() -> Self {
+        Self {
+            width: None,
+            height: None,
+            borderless: false,
+            hide_menu: false,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FeriteConfig {
     pub cache_size: usize,
     pub default_zoom: f32,
@@ -13,6 +32,7 @@ pub struct FeriteConfig {
     pub recent_files: Vec<PathBuf>,
     pub max_recent_files: usize,
     pub zoom: ZoomConfig,
+    pub window: WindowConfig,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -39,6 +59,7 @@ impl Default for FeriteConfig {
             recent_files: Vec::new(),
             max_recent_files: 10,
             zoom: ZoomConfig::default(),
+            window: WindowConfig::default(),
         }
     }
 }

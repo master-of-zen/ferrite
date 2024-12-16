@@ -1,4 +1,5 @@
 use eframe::Error;
+use egui::ViewportBuilder;
 use ferrite_cli::Args;
 use ferrite_logging::{init, LogConfig};
 use tracing::instrument;
@@ -25,7 +26,22 @@ fn main() -> Result<(), Error> {
     });
     args.apply_to_config(&mut config);
 
-    let native_options = eframe::NativeOptions::default();
+    // Configure native window options based on config
+    let mut native_options = eframe::NativeOptions::default();
+
+    // Set window options
+    native_options.default_theme = eframe::Theme::Dark;
+
+    // Set initial window size if configured
+    if let (Some(width), Some(height)) = (config.window.width, config.window.height) {
+        native_options.viewport = ViewportBuilder::default()
+            .with_inner_size([width as f32, height as f32])
+            .with_decorations(!config.window.borderless);
+    } else {
+        // If no size specified, just set decorations
+        native_options.viewport =
+            ViewportBuilder::default().with_decorations(!config.window.borderless);
+    }
 
     eframe::run_native(
         "Ferrite",

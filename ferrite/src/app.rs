@@ -484,43 +484,55 @@ impl eframe::App for FeriteApp {
             ctx.request_repaint();
         }
 
+        // Handle 'M' key to toggle menu visibility
+        if ctx.input(|i| i.key_pressed(egui::Key::M)) {
+            self.config.window.hide_menu = !self.config.window.hide_menu;
+            ctx.request_repaint();
+        }
+
         // Main UI layout
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Top menu bar
-            egui::menu::bar(ui, |ui| {
-                ui.menu_button("File", |ui| {
-                    if ui.button("Open...").clicked() {
-                        // TODO: Implement file dialog
-                        ui.close_menu();
-                    }
-                    if ui.button("Toggle Performance").clicked() {
-                        self.config.show_performance = !self.config.show_performance;
-                        ui.close_menu();
-                    }
-                });
+            // Only show menu bar if not hidden in config
+            if !self.config.window.hide_menu {
+                egui::menu::bar(ui, |ui| {
+                    ui.menu_button("File", |ui| {
+                        if ui.button("Open...").clicked() {
+                            // TODO: Implement file dialog
+                            ui.close_menu();
+                        }
+                        if ui.button("Toggle Performance").clicked() {
+                            self.config.show_performance = !self.config.show_performance;
+                            ui.close_menu();
+                        }
+                        if ui.button("Toggle Menu (M)").clicked() {
+                            self.config.window.hide_menu = !self.config.window.hide_menu;
+                            ui.close_menu();
+                        }
+                    });
 
-                // Add View menu for zoom controls
-                ui.menu_button("View", |ui| {
-                    if ui.button("Zoom In (Ctrl++)").clicked() {
-                        egui::CentralPanel::default().show(ctx, |ui| {
-                            self.handle_zoom(ui, 10.0);
-                        });
-                        ui.close_menu();
-                    }
-                    if ui.button("Zoom Out (Ctrl-)").clicked() {
-                        egui::CentralPanel::default().show(ctx, |ui| {
-                            self.handle_zoom(ui, -10.0);
-                        });
-                        ui.close_menu();
-                    }
-                    if ui.button("Reset Zoom (Ctrl+0)").clicked() {
-                        self.zoom_level = 1.0;
-                        self.drag_offset = Vec2::ZERO;
-                        ctx.request_repaint();
-                        ui.close_menu();
-                    }
+                    // Add View menu for zoom controls
+                    ui.menu_button("View", |ui| {
+                        if ui.button("Zoom In (Ctrl++)").clicked() {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                self.handle_zoom(ui, 10.0);
+                            });
+                            ui.close_menu();
+                        }
+                        if ui.button("Zoom Out (Ctrl-)").clicked() {
+                            egui::CentralPanel::default().show(ctx, |ui| {
+                                self.handle_zoom(ui, -10.0);
+                            });
+                            ui.close_menu();
+                        }
+                        if ui.button("Reset Zoom (Ctrl+0)").clicked() {
+                            self.zoom_level = 1.0;
+                            self.drag_offset = Vec2::ZERO;
+                            ctx.request_repaint();
+                            ui.close_menu();
+                        }
+                    });
                 });
-            });
+            }
 
             // Render the main image
             self.render_image(ui);
