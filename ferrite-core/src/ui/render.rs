@@ -1,4 +1,4 @@
-use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
+use eframe::egui::{self, ColorImage, Context, Pos2, Rect, TextureOptions, Ui};
 use egui::{Color32, Sense, Vec2};
 use ferrite_config::{Corner, FeriteConfig};
 
@@ -10,7 +10,7 @@ impl ImageRenderer {
     pub fn render(
         ui: &mut Ui,
         image_manager: &mut ImageManager,
-        zoom_handler: &mut ZoomHandler, // Changed to mutable reference
+        zoom_handler: &mut ZoomHandler,
         config: &FeriteConfig,
     ) {
         let panel_rect = ui.available_rect_before_wrap();
@@ -40,6 +40,9 @@ impl ImageRenderer {
 
             let original_size = texture.size_vec2();
             let scaled_size = original_size * zoom_handler.zoom_level();
+
+            // Handle zoom input - now we pass both ctx and ui
+            zoom_handler.handle_keyboard_input(ui.ctx(), ui);
 
             let image_rect =
                 Rect::from_center_size(panel_rect.center() + zoom_handler.offset(), scaled_size);

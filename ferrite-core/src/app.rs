@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use crate::{
     image::ImageManager,
     navigation::NavigationManager,
-    ui::{menu::MenuBar, render::ImageRenderer, zoom::ZoomHandler},
+    ui::{self, menu::MenuBar, render::ImageRenderer, zoom::ZoomHandler},
 };
 use ferrite_config::FeriteConfig;
 
@@ -58,7 +58,7 @@ impl FeriteApp {
 
 impl eframe::App for FeriteApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        // Handle file drops
+        // Handle file drops by collecting dropped file paths and processing them
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
             let files: Vec<_> = ctx
                 .input(|i| i.raw.dropped_files.clone())
@@ -68,34 +68,36 @@ impl eframe::App for FeriteApp {
             self.handle_files_dropped(ctx, files);
         }
 
-        // Handle keyboard events
+        // Handle navigation keyboard events for moving between images
         self.navigation
             .handle_keyboard_input(ctx, &mut self.image_manager);
-        self.zoom_handler.handle_keyboard_input(ctx);
 
-        // Toggle menu on 'M' key
+        // Toggle menu visibility on 'M' key press
         if ctx.input(|i| i.key_pressed(Key::M)) {
             self.menu_bar.toggle();
+            // Request a repaint to immediately reflect the menu visibility change
             ctx.request_repaint();
         }
 
-        // Main UI layout
+        // Set up the main UI panel that contains our image viewer
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Render menu bar if not hidden
+            // Render menu bar if it's not hidden
             if !self.menu_bar.is_hidden() {
                 self.menu_bar.render(ui, ctx, &mut self.config);
             }
 
-            // Render image with mutable zoom_handler
+            // Render the image along with zoom controls
+            // The ImageRenderer now handles both display and zoom interactions
+            // This includes keyboard and mouse wheel zoom operations
             ImageRenderer::render(
                 ui,
                 &mut self.image_manager,
-                &mut self.zoom_handler, // Changed to mutable reference
+                &mut self.zoom_handler,
                 &self.config,
             );
         });
 
-        // Performance window
+        // Show performance metrics window if enabled in config
         if self.config.show_performance {
             self.image_manager.show_performance_window(ctx);
         }

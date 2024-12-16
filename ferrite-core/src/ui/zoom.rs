@@ -1,78 +1,71 @@
-use eframe::egui::{self, Context, Key, Pos2, Rect, Vec2};
+use eframe::egui::{self, Context, Key, Rect, Ui, Vec2};
 
 pub struct ZoomHandler {
     zoom_level: f32,
-    offset: Vec2,
-    image_rect: Option<Rect>,
+    // Renamed from drag_offset to clarify its purpose
+    pan_offset: Vec2,
 }
 
 impl ZoomHandler {
     pub fn new(default_zoom: f32) -> Self {
         Self {
             zoom_level: default_zoom,
-            offset: Vec2::ZERO,
-            image_rect: None,
+            pan_offset: Vec2::ZERO,
         }
     }
 
-    pub fn handle_keyboard_input(&mut self, ctx: &Context) {
-        let cursor_pos = ctx.pointer_hover_pos();
-
-        // Handle keyboard zoom
+    pub fn handle_keyboard_input(&mut self, ctx: &Context, ui: &Ui) {
+        // Handle keyboard-based zoom
         if ctx.input(|i| i.key_pressed(Key::Equals) || i.key_pressed(Key::Plus)) {
-            self.keyboard_zoom(1.1);
+            self.handle_zoom(ui, 1.0); // Zoom in
         }
         if ctx.input(|i| i.key_pressed(Key::Minus)) {
-            self.keyboard_zoom(1.0 / 1.1);
+            self.handle_zoom(ui, -1.0); // Zoom out
         }
         if ctx.input(|i| i.key_pressed(Key::Num0)) {
+            // Reset zoom and position
             self.zoom_level = 1.0;
-            self.offset = Vec2::ZERO;
+            self.pan_offset = Vec2::ZERO;
+            ctx.request_repaint();
         }
 
         // Handle scroll wheel zoom
         let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
         if scroll_delta != 0.0 {
-            let zoom_factor = if scroll_delta > 0.0 { 1.1 } else { 1.0 / 1.1 };
-            if let Some(cursor) = cursor_pos {
-                if let Some(rect) = self.image_rect {
-                    if rect.contains(cursor) {
-                        self.cursor_zoom(cursor, zoom_factor);
-                        return;
-                    }
-                }
-            }
-            self.center_zoom(zoom_factor);
+            self.handle_zoom(ui, scroll_delta);
         }
     }
 
-    fn keyboard_zoom(&mut self, factor: f32) {
-        if let Some(rect) = self.image_rect {
-            let center = rect.center();
-            self.cursor_zoom(center.into(), factor);
+    fn handle_zoom(&mut self, ui: &Ui, scroll_delta: f32) {
+        // Get current mouse position relative to the screen
+        if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
+            let panel_rect = ui.available_rect_before_wrap();
+
+            // Calculate the center of the image including current pan
+            let image_center = panel_rect.center() + self.pan_offset;
+
+            // Calculate the mouse position relative to the image center before zoom
+            let mouse_from_center = mouse_pos - image_center;
+
+            // Store old zoom to calculate the zoom change ratio
+            let old_zoom = self.zoom_level;
+
+            // Calculate new zoom level with smoother steps
+            let zoom_factor = if scroll_delta > 0.0 { 1.1 } else { 0.9 };
+            self.zoom_level = (self.zoom_level * zoom_factor).clamp(0.1, 10.0);
+
+            // Calculate the scaling ratio between old and new zoom
+            let zoom_ratio = self.zoom_level / old_zoom;
+
+            // Calculate how much the position under the mouse should move
+            let scaled_mouse_offset = mouse_from_center * (zoom_ratio - 1.0);
+
+            // Update the pan offset to maintain the mouse position relative to the image
+            self.pan_offset -= scaled_mouse_offset;
+
+            // Request a repaint to ensure smooth visual updates
+            ui.ctx().request_repaint();
         }
-    }
-
-    fn cursor_zoom(&mut self, cursor: Pos2, factor: f32) {
-        let old_zoom = self.zoom_level;
-        self.zoom_level = (self.zoom_level * factor).clamp(0.1, 10.0);
-
-        let cursor_vec = Vec2::new(cursor.x, cursor.y);
-        let zoom_center = cursor_vec - self.offset;
-        self.offset = cursor_vec - (zoom_center * (self.zoom_level / old_zoom));
-    }
-
-    fn center_zoom(&mut self, factor: f32) {
-        if let Some(rect) = self.image_rect {
-            let center = rect.center();
-            self.cursor_zoom(center.into(), factor);
-        } else {
-            self.zoom_level = (self.zoom_level * factor).clamp(0.1, 10.0);
-        }
-    }
-
-    pub fn set_image_rect(&mut self, rect: Rect) {
-        self.image_rect = Some(rect);
     }
 
     pub fn zoom_level(&self) -> f32 {
@@ -84,10 +77,10 @@ impl ZoomHandler {
     }
 
     pub fn offset(&self) -> Vec2 {
-        self.offset
+        self.pan_offset
     }
 
     pub fn add_offset(&mut self, delta: Vec2) {
-        self.offset += delta;
+        self.pan_offset += delta;
     }
 }
