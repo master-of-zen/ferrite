@@ -3,6 +3,12 @@ name = "ferrite-core"
 version.workspace = true
 edition.workspace = true
 description = "Core functionality for Ferrite image viewer"
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/ferrite-core"
+readme = "README.md"
+keywords = ["ferrite"]
+categories = ["development-tools::debugging"]
 
 [dependencies]
 eframe.workspace = true
