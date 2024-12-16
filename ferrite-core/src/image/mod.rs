@@ -2,7 +2,6 @@ mod cache;
 mod data;
 
 use eframe::egui::{self, Context};
-use image::DynamicImage;
 use std::path::PathBuf;
 use tracing::info;
 
