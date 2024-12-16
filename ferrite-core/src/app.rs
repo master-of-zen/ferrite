@@ -58,7 +58,9 @@ impl FeriteApp {
 
 impl eframe::App for FeriteApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        // Handle file drops by collecting dropped file paths and processing them
+        let mut needs_redraw = false;
+
+        // Handle file drops
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
             let files: Vec<_> = ctx
                 .input(|i| i.raw.dropped_files.clone())
@@ -66,40 +68,44 @@ impl eframe::App for FeriteApp {
                 .filter_map(|f| f.path)
                 .collect();
             self.handle_files_dropped(ctx, files);
+            needs_redraw = true;
         }
 
-        // Handle navigation keyboard events for moving between images
+        // Handle navigation keyboard events
         self.navigation
             .handle_keyboard_input(ctx, &mut self.image_manager);
 
-        // Toggle menu visibility on 'M' key press
+        // Toggle menu visibility
         if ctx.input(|i| i.key_pressed(Key::M)) {
             self.menu_bar.toggle();
-            // Request a repaint to immediately reflect the menu visibility change
-            ctx.request_repaint();
+            needs_redraw = true;
         }
 
-        // Set up the main UI panel that contains our image viewer
+        // Set up the main UI panel
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Render menu bar if it's not hidden
+            // Render menu bar if not hidden
             if !self.menu_bar.is_hidden() {
                 self.menu_bar.render(ui, ctx, &mut self.config);
             }
 
-            // Render the image along with zoom controls
-            // The ImageRenderer now handles both display and zoom interactions
-            // This includes keyboard and mouse wheel zoom operations
-            ImageRenderer::render(
+            // Render the image and handle all interactions
+            needs_redraw |= ImageRenderer::render(
                 ui,
+                ctx,
                 &mut self.image_manager,
                 &mut self.zoom_handler,
                 &self.config,
             );
         });
 
-        // Show performance metrics window if enabled in config
+        // Show performance metrics window if enabled
         if self.config.show_performance {
             self.image_manager.show_performance_window(ctx);
+        }
+
+        // Request a repaint if any interaction required it
+        if needs_redraw {
+            ctx.request_repaint();
         }
     }
 }
