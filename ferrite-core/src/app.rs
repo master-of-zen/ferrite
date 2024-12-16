@@ -58,8 +58,6 @@ impl FeriteApp {
 
 impl eframe::App for FeriteApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        let mut needs_redraw = false;
-
         // Handle file drops
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
             let files: Vec<_> = ctx
@@ -68,7 +66,6 @@ impl eframe::App for FeriteApp {
                 .filter_map(|f| f.path)
                 .collect();
             self.handle_files_dropped(ctx, files);
-            needs_redraw = true;
         }
 
         // Handle navigation keyboard events
@@ -78,7 +75,6 @@ impl eframe::App for FeriteApp {
         // Toggle menu visibility
         if ctx.input(|i| i.key_pressed(Key::M)) {
             self.menu_bar.toggle();
-            needs_redraw = true;
         }
 
         // Set up the main UI panel
@@ -89,7 +85,7 @@ impl eframe::App for FeriteApp {
             }
 
             // Render the image and handle all interactions
-            needs_redraw |= ImageRenderer::render(
+            _ = ImageRenderer::render(
                 ui,
                 ctx,
                 &mut self.image_manager,
@@ -101,11 +97,6 @@ impl eframe::App for FeriteApp {
         // Show performance metrics window if enabled
         if self.config.show_performance {
             self.image_manager.show_performance_window(ctx);
-        }
-
-        // Request a repaint if any interaction required it
-        if needs_redraw {
-            ctx.request_repaint();
         }
     }
 }

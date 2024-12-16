@@ -14,8 +14,7 @@ impl ImageRenderer {
         image_manager: &mut ImageManager,
         zoom_handler: &mut ZoomHandler,
         config: &FeriteConfig,
-    ) -> bool {
-        let mut needs_redraw = false;
+    ) {
         let panel_rect = ui.available_rect_before_wrap();
 
         // Handle texture creation/retrieval separately before other UI operations
@@ -44,7 +43,7 @@ impl ImageRenderer {
             let scaled_size = original_size * zoom_handler.zoom_level();
 
             // Handle all input events and track if they require a redraw
-            needs_redraw |= Self::handle_input(ctx, ui, zoom_handler, panel_rect);
+            _ = Self::handle_input(ctx, ui, zoom_handler, panel_rect);
 
             // Calculate image position and handle dragging
             let (image_rect, response) =
@@ -53,7 +52,6 @@ impl ImageRenderer {
             // Update offset if dragged
             if response.dragged() {
                 zoom_handler.add_offset(response.drag_delta());
-                needs_redraw = true;
             }
 
             // Render the image
@@ -74,40 +72,28 @@ impl ImageRenderer {
                 );
             }
         }
-
-        needs_redraw
     }
 
     // Handle all input events in one place
-    fn handle_input(
-        ctx: &Context,
-        ui: &Ui,
-        zoom_handler: &mut ZoomHandler,
-        panel_rect: Rect,
-    ) -> bool {
-        let mut needs_redraw = false;
-
+    fn handle_input(ctx: &Context, ui: &Ui, zoom_handler: &mut ZoomHandler, panel_rect: Rect) {
         // Keyboard zoom controls
         if ctx.input(|i| i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)) {
-            needs_redraw |= Self::handle_zoom(ui, zoom_handler, 1.0);
+            _ = Self::handle_zoom(ui, zoom_handler, 1.0);
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Minus)) {
-            needs_redraw |= Self::handle_zoom(ui, zoom_handler, -1.0);
+            _ = Self::handle_zoom(ui, zoom_handler, -1.0);
         }
 
         // Reset zoom and position
         if ctx.input(|i| i.key_pressed(egui::Key::Num0)) {
             zoom_handler.reset();
-            needs_redraw = true;
         }
 
         // Scroll wheel zoom
         let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
         if scroll_delta != 0.0 {
-            needs_redraw |= Self::handle_zoom(ui, zoom_handler, scroll_delta);
+            _ = Self::handle_zoom(ui, zoom_handler, scroll_delta);
         }
-
-        needs_redraw
     }
 
     // Handle zoom operations and return whether a redraw is needed
