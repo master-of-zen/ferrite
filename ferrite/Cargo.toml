@@ -20,7 +20,7 @@ rayon.workspace = true
 anyhow.workspace = true
 tracing.workspace = true
 
-ferrite-core = { path = "../ferrite-core" }
+ferrite-core = { version = "^0.1.1", path = "../ferrite-core" }
 ferrite-config = { version = "^0.1.1", path = "../ferrite-config" }
 ferrite-cli = { version = "^0.1.1", path = "../ferrite-cli" }
 ferrite-logging = { version = "^0.1.1", path = "../ferrite-logging" }
