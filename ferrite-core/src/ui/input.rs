@@ -10,11 +10,15 @@ pub fn handle_input(
 ) {
     // Keyboard zoom controls
     if ctx.input(|i| {
-        i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)
+        i.key_pressed(egui::Key::Equals)
+            || i.key_pressed(egui::Key::Plus)
+            || i.key_pressed(egui::Key::W)
     }) {
         handle_zoom(ui, zoom_handler, 1.0, panel_rect);
     }
-    if ctx.input(|i| i.key_pressed(egui::Key::Minus)) {
+    if ctx.input(|i| {
+        i.key_pressed(egui::Key::Minus) || i.key_pressed(egui::Key::S)
+    }) {
         handle_zoom(ui, zoom_handler, -1.0, panel_rect);
     }
 
