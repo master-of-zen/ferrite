@@ -19,6 +19,7 @@ impl ImageRenderer {
     ) {
         let panel_rect = ui.available_rect_before_wrap();
 
+        // Handle keyboard input and general interactions
         input::handle_input(ctx, ui, zoom_handler, panel_rect);
 
         // Handle texture creation/retrieval
@@ -69,6 +70,17 @@ impl ImageRenderer {
                 zoom_handler.add_offset(response.drag_delta());
             }
 
+            // Handle zoom interactions
+            let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
+            if scroll_delta != 0.0 {
+                Self::handle_zoom(
+                    ui,
+                    zoom_handler,
+                    scroll_delta.into(),
+                    panel_rect,
+                );
+            }
+
             // Render the image
             ui.painter().image(
                 texture.id(),
@@ -84,6 +96,43 @@ impl ImageRenderer {
                 &config.indicator.corner,
             );
         }
+    }
+
+    /// Handles zoom operations with cursor-relative or center-based zooming
+    fn handle_zoom(
+        ui: &Ui,
+        zoom_handler: &mut ZoomHandler,
+        scroll_delta: f64,
+        panel_rect: Rect,
+    ) {
+        // Calculate the zoom factor based on scroll direction
+        let zoom_step = if scroll_delta > 0.0 { 1.1 } else { 0.9 };
+        let new_zoom = (zoom_handler.zoom_level() * zoom_step).clamp(0.1, 10.0);
+
+        // Get the current image center accounting for panning
+        let current_center = panel_rect.center() + zoom_handler.offset();
+
+        if let Some(cursor_pos) = ui.input(|i| i.pointer.hover_pos()) {
+            // Calculate the vector from cursor to current center
+            let cursor_to_center = cursor_pos - current_center;
+
+            // Calculate how this vector should scale with the new zoom
+            let scale_factor = new_zoom / zoom_handler.zoom_level();
+            let new_cursor_to_center = cursor_to_center * scale_factor as f32;
+
+            // Calculate needed offset correction to maintain cursor position
+            let offset_correction = cursor_to_center - new_cursor_to_center;
+
+            // Apply the zoom and offset changes
+            zoom_handler.set_zoom(new_zoom);
+            zoom_handler.add_offset(offset_correction);
+        } else {
+            // If no cursor present, just zoom from center
+            zoom_handler.set_zoom(new_zoom);
+        }
+
+        // Request a repaint for smooth updates
+        ui.ctx().request_repaint();
     }
 
     fn handle_image_positioning(
@@ -156,49 +205,6 @@ impl ImageRenderer {
         (final_rect, response)
     }
 
-    // Handle all input events in one place
-    fn handle_input(
-        ctx: &Context,
-        ui: &Ui,
-        zoom_handler: &mut ZoomHandler,
-        panel_rect: Rect,
-    ) {
-        // Keyboard zoom controls
-        if ctx.input(|i| {
-            i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)
-        }) {
-            Self::handle_zoom(ui, zoom_handler, 1.0);
-        }
-        if ctx.input(|i| i.key_pressed(egui::Key::Minus)) {
-            Self::handle_zoom(ui, zoom_handler, -1.0);
-        }
-
-        // Scroll wheel zoom
-        let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
-        if scroll_delta != 0.0 {
-            Self::handle_zoom(ui, zoom_handler, scroll_delta.into());
-        }
-
-        // Reset zoom and position
-        if ctx.input(|i| i.key_pressed(egui::Key::Num0)) {
-            zoom_handler.reset();
-        }
-    }
-
-    // Handle zoom operations and return whether a redraw is needed
-    fn handle_zoom(ui: &Ui, zoom_handler: &mut ZoomHandler, scroll_delta: f64) {
-        if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
-            // Calculate zoom factor - adjust for smoother zooming
-            let zoom_step = if scroll_delta > 0.0 { 1.1 } else { 0.9 };
-            let new_zoom =
-                (zoom_handler.zoom_level() * zoom_step).clamp(0.1, 10.0);
-
-            // Apply new zoom level
-            zoom_handler.set_zoom(new_zoom);
-        }
-    }
-
-    // Handle image positioning and dragging
     fn render_zoom_indicator(
         ui: &mut Ui,
         zoom_handler: &ZoomHandler,
