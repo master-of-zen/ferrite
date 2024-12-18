@@ -45,6 +45,7 @@ mod config;
 mod defaults;
 mod error;
 mod input;
+mod navigation;
 mod types;
 mod ui;
 mod window;

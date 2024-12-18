@@ -53,10 +53,15 @@ pub mod selection {
 }
 
 pub mod controls {
-    use super::*;
 
     pub const ZOOM_IN_KEYS: &[&str] = &["Equal", "Plus", "W"];
     pub const ZOOM_OUT_KEYS: &[&str] = &["Minus", "S"];
     pub const RESET_ZOOM_KEY: &str = "Num0";
     pub const TOGGLE_FIT_KEY: &str = "F";
+}
+
+pub mod navigation {
+
+    pub const DEFAULT_SORT_ORDER: &str = "name";
+    pub const DEFAULT_REVERSE_ORDER: bool = false;
 }
