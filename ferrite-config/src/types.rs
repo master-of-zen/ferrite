@@ -155,6 +155,7 @@ impl From<&str> for SerializableKey {
             "W" => Key::W,
             "S" => Key::S,
             "F" => Key::F,
+            "Q" => Key::Q,
             "Num0" => Key::Num0,
             _ => Key::Equals, // Default
         })

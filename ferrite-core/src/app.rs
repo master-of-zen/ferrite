@@ -74,6 +74,9 @@ impl FeriteApp {
 
 impl eframe::App for FeriteApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        if ctx.input(|i| i.key_pressed(Key::Q)) {
+            frame.close();
+        }
         // Handle file drops
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
             let files: Vec<_> = ctx

@@ -58,6 +58,7 @@ pub mod controls {
     pub const ZOOM_OUT_KEYS: &[&str] = &["Minus", "S"];
     pub const RESET_ZOOM_KEY: &str = "Num0";
     pub const TOGGLE_FIT_KEY: &str = "F";
+    pub const QUIT_KEY: &str = "Q";
 }
 
 pub mod navigation {

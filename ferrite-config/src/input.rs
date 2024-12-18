@@ -1,18 +1,16 @@
 use crate::{
     defaults::controls::*,
     error::{ConfigError, Result},
-    types::{Key, SerializableKey},
+    types::SerializableKey,
 };
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ControlsConfig {
     pub zoom_in_keys:   Vec<SerializableKey>,
     pub zoom_out_keys:  Vec<SerializableKey>,
     pub reset_zoom_key: SerializableKey,
     pub toggle_fit_key: SerializableKey,
+    pub quit_key:       SerializableKey,
 }
-
 impl Default for ControlsConfig {
     fn default() -> Self {
         Self {
@@ -20,6 +18,7 @@ impl Default for ControlsConfig {
             zoom_out_keys:  ZOOM_OUT_KEYS.iter().map(|&s| s.into()).collect(),
             reset_zoom_key: RESET_ZOOM_KEY.into(),
             toggle_fit_key: TOGGLE_FIT_KEY.into(),
+            quit_key:       QUIT_KEY.into(),
         }
     }
 }
