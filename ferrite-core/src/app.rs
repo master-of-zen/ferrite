@@ -74,8 +74,10 @@ impl FeriteApp {
 
 impl eframe::App for FeriteApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        // Handle quit action by sending a close event to the application
+        // context
         if ctx.input(|i| i.key_pressed(Key::Q)) {
-            frame.close();
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
         // Handle file drops
         if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
