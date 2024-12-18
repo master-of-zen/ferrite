@@ -1,7 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
 use ferrite_config::FerriteConfig;
-use std::path::PathBuf;
+use ferrite_logging::LogLevel;
+use std::{env, path::PathBuf, str::FromStr};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -24,6 +25,10 @@ pub struct Args {
 }
 
 impl Args {
+    pub fn parse() -> Self {
+        <Self as clap::Parser>::parse()
+    }
+
     pub fn handle_config(&self) -> Result<FerriteConfig> {
         if self.generate_config {
             let config_path = FerriteConfig::resolve_config_path()?;
@@ -75,5 +80,12 @@ impl Args {
         println!("Default path: {}", default_path.display());
 
         Ok(())
+    }
+
+    pub fn get_log_level(&self) -> LogLevel {
+        self.log_level
+            .as_deref()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(LogLevel::Info)
     }
 }

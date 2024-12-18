@@ -12,6 +12,10 @@ categories = ["development-tools::debugging"]
 
 [dependencies]
 tracing = { workspace = true, features = ["log"] }
-tracing-subscriber = { workspace = true, features = ["env-filter", "registry"] }
+tracing-subscriber = { workspace = true, features = [
+    "env-filter",
+    "registry",
+    "time",
+] }
 tracing-tracy.workspace = true
 tracy-client.workspace = true

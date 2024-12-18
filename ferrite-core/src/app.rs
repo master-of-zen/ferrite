@@ -4,12 +4,12 @@ use std::path::PathBuf;
 use crate::{
     image::ImageManager,
     navigation::NavigationManager,
-    ui::{self, menu::MenuBar, render::ImageRenderer, zoom::ZoomHandler},
+    ui::{menu::MenuBar, render::ImageRenderer, zoom::ZoomHandler},
 };
-use ferrite_config::FeriteConfig;
+use ferrite_config::FerriteConfig;
 
 pub struct FeriteApp {
-    config:        FeriteConfig,
+    config:        FerriteConfig,
     image_manager: ImageManager,
     navigation:    NavigationManager,
     zoom_handler:  ZoomHandler,
@@ -20,11 +20,11 @@ impl FeriteApp {
     pub fn new(
         cc: &eframe::CreationContext<'_>,
         initial_image: Option<PathBuf>,
-        config: FeriteConfig,
+        config: FerriteConfig,
     ) -> Self {
-        let image_manager = ImageManager::new(config.cache_size);
+        let image_manager = ImageManager::new();
         let navigation = NavigationManager::new();
-        let zoom_handler = ZoomHandler::new(config.default_zoom);
+        let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
         let menu_bar = MenuBar::new(config.window.hide_menu);
 
         let mut app = Self {
@@ -93,10 +93,5 @@ impl eframe::App for FeriteApp {
                 &self.config,
             );
         });
-
-        // Show performance metrics window if enabled
-        if self.config.show_performance {
-            self.image_manager.show_performance_window(ctx);
-        }
     }
 }

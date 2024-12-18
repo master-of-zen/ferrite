@@ -15,9 +15,9 @@ pub struct ImageManager {
 }
 
 impl ImageManager {
-    pub fn new(cache_size: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            cache:         ImageCache::new(cache_size),
+            cache:         ImageCache::new(5),
             current_image: None,
             current_path:  None,
         }

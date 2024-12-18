@@ -28,10 +28,6 @@ impl MenuBar {
     ) {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {
-                if ui.button("Toggle Performance").clicked() {
-                    config.show_performance = !config.show_performance;
-                    ui.close_menu();
-                }
                 if ui.button("Toggle Menu (M)").clicked() {
                     config.window.hide_menu = !config.window.hide_menu;
                     ui.close_menu();

@@ -5,11 +5,14 @@ use ferrite_core::FeriteApp;
 use ferrite_logging::{init, LogConfig};
 
 fn main() -> Result<(), Error> {
+    // Now Args::parse() will work correctly
     let args = Args::parse();
 
     // Initialize logging
     init(LogConfig {
-        level: args.get_log_level(), enable_tracy: true
+        level:        args.get_log_level(),
+        enable_tracy: true,
+        log_spans:    true,
     });
 
     // Handle configuration
@@ -21,7 +24,6 @@ fn main() -> Result<(), Error> {
         );
         std::process::exit(1);
     });
-    args.apply_to_config(&mut config);
 
     // Configure native window options based on config
     let mut native_options = eframe::NativeOptions::default();
@@ -30,17 +32,13 @@ fn main() -> Result<(), Error> {
     native_options.default_theme = eframe::Theme::Dark;
 
     // Set initial window size if configured
-    if let (Some(width), Some(height)) =
-        (config.window.width, config.window.height)
-    {
-        native_options.viewport = ViewportBuilder::default()
-            .with_inner_size([width as f64, height as f64])
-            .with_decorations(!config.window.borderless);
-    } else {
-        // If no size specified, just set decorations
-        native_options.viewport = ViewportBuilder::default()
-            .with_decorations(!config.window.borderless);
-    }
+
+    let width: f32 = 1920.;
+    let height: f32 = 1080.;
+
+    native_options.viewport = ViewportBuilder::default()
+        .with_inner_size([width, height])
+        .with_decorations(!config.window.borderless);
 
     eframe::run_native(
         "Ferrite",

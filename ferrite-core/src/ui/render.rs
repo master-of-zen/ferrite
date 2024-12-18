@@ -1,7 +1,7 @@
 use crate::ui::input;
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Color32, Context, Sense, Vec2};
-use ferrite_config::{Corner, FeriteConfig};
+use ferrite_config::{Corner, FerriteConfig};
 
 use crate::{image::ImageManager, ui::zoom::ZoomHandler};
 
@@ -14,7 +14,7 @@ impl ImageRenderer {
         ctx: &Context,
         image_manager: &mut ImageManager,
         zoom_handler: &mut ZoomHandler,
-        config: &FeriteConfig,
+        config: &FerriteConfig,
     ) {
         let panel_rect = ui.available_rect_before_wrap();
 
@@ -47,7 +47,7 @@ impl ImageRenderer {
 
         if let Some(texture) = texture_handle {
             let original_size = texture.size_vec2();
-            let scaled_size = original_size * zoom_handler.zoom_level().into();
+            let scaled_size = original_size; //* zoom_handler.zoom_percentage();
 
             // Handle all input events and track if they require a redraw
             Self::handle_input(ctx, ui, zoom_handler, panel_rect);
@@ -73,15 +73,12 @@ impl ImageRenderer {
                 Color32::WHITE,
             );
 
-            // Render zoom indicator if enabled
-            if config.zoom.show_zoom_level {
-                Self::render_zoom_indicator(
-                    ui,
-                    zoom_handler,
-                    panel_rect,
-                    &config.zoom.zoom_display_corner,
-                );
-            }
+            Self::render_zoom_indicator(
+                ui,
+                zoom_handler,
+                panel_rect,
+                &config.indicator.corner,
+            );
         }
     }
 
@@ -96,16 +93,16 @@ impl ImageRenderer {
         if ctx.input(|i| {
             i.key_pressed(egui::Key::Equals) || i.key_pressed(egui::Key::Plus)
         }) {
-            _ = Self::handle_zoom(ui, zoom_handler, 1.0);
+            Self::handle_zoom(ui, zoom_handler, 1.0);
         }
         if ctx.input(|i| i.key_pressed(egui::Key::Minus)) {
-            _ = Self::handle_zoom(ui, zoom_handler, -1.0);
+            Self::handle_zoom(ui, zoom_handler, -1.0);
         }
 
         // Scroll wheel zoom
         let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
         if scroll_delta != 0.0 {
-            _ = Self::handle_zoom(ui, zoom_handler, scroll_delta);
+            Self::handle_zoom(ui, zoom_handler, scroll_delta.into());
         }
 
         // Reset zoom and position

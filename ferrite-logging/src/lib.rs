@@ -1,11 +1,16 @@
 use std::str::FromStr;
-use tracing::{instrument, Level};
+use tracing::{info, instrument, Level};
 use tracing_subscriber::{
+    fmt::{self, format::FmtSpan},
     layer::SubscriberExt,
-    prelude::*,
-    registry::Registry,
     util::SubscriberInitExt,
+    Layer,
+    Registry,
 };
+
+// Export our new metrics module
+pub mod metrics;
+pub use metrics::PerformanceMetrics;
 
 #[derive(Debug, Clone, Copy)]
 pub enum LogLevel {
@@ -15,7 +20,6 @@ pub enum LogLevel {
     Warn,
     Error,
 }
-
 impl FromStr for LogLevel {
     type Err = String;
 
@@ -47,12 +51,16 @@ impl From<LogLevel> for Level {
 pub struct LogConfig {
     pub level:        LogLevel,
     pub enable_tracy: bool,
+    // Adding new configuration options for performance logging
+    pub log_spans:    bool,
 }
 
 impl Default for LogConfig {
     fn default() -> Self {
         Self {
-            level: LogLevel::Info, enable_tracy: false
+            level:        LogLevel::Info,
+            enable_tracy: false,
+            log_spans:    true,
         }
     }
 }
@@ -62,25 +70,36 @@ pub fn init(config: LogConfig) {
     let level = Level::from(config.level);
     let filter = tracing_subscriber::filter::LevelFilter::from_level(level);
 
-    let fmt_layer = tracing_subscriber::fmt::layer()
+    let fmt_layer = fmt::layer()
         .with_line_number(true)
         .with_thread_ids(true)
         .with_file(true)
+        .with_timer(fmt::time::UtcTime::rfc_3339())
+        .with_span_events(if config.log_spans {
+            FmtSpan::NEW | FmtSpan::ENTER | FmtSpan::EXIT
+        } else {
+            FmtSpan::NONE
+        })
         .with_filter(filter.clone());
 
     let registry = Registry::default().with(fmt_layer);
 
     if config.enable_tracy {
+        // Create the tracy layer with the correct configuration
         let tracy_layer = tracing_tracy::TracyLayer::new().with_filter(filter);
 
         registry
             .with(tracy_layer)
             .try_init()
-            .expect("Failed to initialize global logging");
+            .expect("Failed to initialize logging with tracy");
+
+        // After initialization, we can use tracy-client directly for frame
+        // marking
+        tracy_client::frame_mark();
     } else {
         registry
             .try_init()
-            .expect("Failed to initialize global logging");
+            .expect("Failed to initialize logging");
     }
 }
 
