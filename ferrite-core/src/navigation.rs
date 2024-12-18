@@ -1,3 +1,4 @@
+use egui::Vec2;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -87,6 +88,7 @@ impl NavigationManager {
         &mut self,
         ctx: &eframe::egui::Context,
         image_manager: &mut crate::image::ImageManager,
+        zoom_handler: &mut crate::ui::zoom::ZoomHandler,
     ) {
         let next_pressed = ctx.input(|i| {
             i.key_pressed(eframe::egui::Key::ArrowRight)
@@ -100,10 +102,14 @@ impl NavigationManager {
         if next_pressed {
             if let Some(next_path) = self.next_image() {
                 let _ = image_manager.load_image(next_path);
+                // Reset pan offset while maintaining fit mode
+                zoom_handler.reset_view_position();
             }
         } else if prev_pressed {
             if let Some(prev_path) = self.previous_image() {
                 let _ = image_manager.load_image(prev_path);
+                // Reset pan offset while maintaining fit mode
+                zoom_handler.reset_view_position();
             }
         }
     }

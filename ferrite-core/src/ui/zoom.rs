@@ -68,6 +68,10 @@ impl ZoomHandler {
         }
     }
 
+    pub fn reset_view_position(&mut self) {
+        self.pan_offset = Vec2::ZERO;
+    }
+
     // Existing methods remain the same
     pub fn zoom_level(&self) -> f64 {
         self.zoom_level
