@@ -99,11 +99,11 @@ impl NavigationManager {
 
         if next_pressed {
             if let Some(next_path) = self.next_image() {
-                image_manager.load_image(next_path);
+                let _ = image_manager.load_image(next_path);
             }
         } else if prev_pressed {
             if let Some(prev_path) = self.previous_image() {
-                image_manager.load_image(prev_path);
+                let _ = image_manager.load_image(prev_path);
             }
         }
     }
