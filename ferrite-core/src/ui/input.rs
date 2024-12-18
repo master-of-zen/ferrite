@@ -14,18 +14,18 @@ pub fn handle_input(
             || i.key_pressed(egui::Key::Plus)
             || i.key_pressed(egui::Key::W)
     }) {
-        handle_zoom(ui, zoom_handler, 1.0, panel_rect);
+        handle_zoom(ui, zoom_handler, 1.0);
     }
     if ctx.input(|i| {
         i.key_pressed(egui::Key::Minus) || i.key_pressed(egui::Key::S)
     }) {
-        handle_zoom(ui, zoom_handler, -1.0, panel_rect);
+        handle_zoom(ui, zoom_handler, -1.0);
     }
 
     // Scroll wheel zoom
     let scroll_delta = ctx.input(|i| i.raw_scroll_delta.y);
     if scroll_delta != 0.0 {
-        handle_zoom(ui, zoom_handler, scroll_delta.into(), panel_rect);
+        handle_zoom(ui, zoom_handler, scroll_delta.into());
     }
 
     // Reset zoom and position
@@ -34,12 +34,7 @@ pub fn handle_input(
     }
 }
 
-fn handle_zoom(
-    ui: &Ui,
-    zoom_handler: &mut ZoomHandler,
-    scroll_delta: f64,
-    image_rect: Rect,
-) {
+fn handle_zoom(ui: &Ui, zoom_handler: &mut ZoomHandler, scroll_delta: f64) {
     // Only handle zoom if we have a cursor position
     if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
         // Calculate the current center of the image
