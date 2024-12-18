@@ -85,6 +85,10 @@ impl ZoomHandler {
         self.pan_offset
     }
 
+    pub fn set_offset(&mut self, offset: Vec2) {
+        self.pan_offset = offset;
+    }
+
     pub fn add_offset(&mut self, delta: Vec2) {
         self.pan_offset += delta;
         // When panning, switch to custom mode
