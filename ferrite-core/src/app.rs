@@ -25,7 +25,11 @@ impl FeriteApp {
         // Initialize our core components with their default states
         let image_manager = ImageManager::new();
         let navigation = NavigationManager::new();
-        let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
+        let zoom_handler = ZoomHandler::new(
+            config.zoom.default_zoom, // Initial zoom level from config
+            config.zoom.min_zoom,     // Minimum allowed zoom
+            config.zoom.max_zoom,     // Maximum allowed zoom
+        );
         let menu_bar = MenuBar::new(config.window.hide_menu);
 
         let mut app = Self {
@@ -63,7 +67,7 @@ impl FeriteApp {
                     extension.to_str().map(|s| s.to_lowercase()),
                     Some(ext) if ["jpg", "jpeg", "png", "gif", "bmp"].contains(&ext.as_str())
                 ) {
-                    self.image_manager.load_image(path.clone());
+                    let _ = self.image_manager.load_image(path.clone());
                 }
             }
         }

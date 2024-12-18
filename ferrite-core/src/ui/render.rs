@@ -5,10 +5,11 @@ use ferrite_config::{Corner, FerriteConfig};
 
 use crate::{image::ImageManager, ui::zoom::ZoomHandler};
 
+use super::zoom::FitMode;
+
 pub struct ImageRenderer;
 
 impl ImageRenderer {
-    // Main render function that now handles all interactions and redraws
     pub fn render(
         ui: &mut Ui,
         ctx: &Context,
@@ -18,68 +19,138 @@ impl ImageRenderer {
     ) {
         let panel_rect = ui.available_rect_before_wrap();
 
-        input::handle_input(ctx, ui, zoom_handler, panel_rect);
-        // Handle texture creation/retrieval separately before other UI
-        // operations
-        let texture_handle =
-            if let Some(image_data) = image_manager.current_image() {
-                if image_data.texture.is_none() {
-                    let size = [
-                        image_data.original.width() as usize,
-                        image_data.original.height() as usize,
-                    ];
-                    let image = image_data.original.to_rgba8();
+        // Handle keyboard inputs first
+        Self::handle_input(ctx, ui, zoom_handler, panel_rect);
 
-                    let texture = ctx.load_texture(
-                        "current-image",
-                        ColorImage::from_rgba_unmultiplied(
-                            size,
-                            image.as_flat_samples().as_slice(),
-                        ),
-                        TextureOptions::LINEAR,
-                    );
-                    image_data.texture = Some(texture);
-                }
-                image_data.texture.as_ref()
-            } else {
-                None
-            };
-
-        if let Some(texture) = texture_handle {
-            let original_size = texture.size_vec2();
-            let scaled_size = original_size; //* zoom_handler.zoom_percentage();
-
-            // Handle all input events and track if they require a redraw
-            Self::handle_input(ctx, ui, zoom_handler, panel_rect);
-
-            // Calculate image position and handle dragging
-            let (image_rect, response) = Self::handle_image_positioning(
-                ui,
-                panel_rect,
-                scaled_size,
-                zoom_handler,
-            );
-
-            // Update offset if dragged
-            if response.dragged() {
-                zoom_handler.add_offset(response.drag_delta());
+        if let Some(image_data) = image_manager.current_image() {
+            // Handle texture creation/update
+            if image_data.texture.is_none() {
+                let size = [
+                    image_data.original.width() as usize,
+                    image_data.original.height() as usize,
+                ];
+                let image = image_data.original.to_rgba8();
+                let texture = ctx.load_texture(
+                    "current-image",
+                    ColorImage::from_rgba_unmultiplied(
+                        size,
+                        image.as_flat_samples().as_slice(),
+                    ),
+                    TextureOptions::LINEAR,
+                );
+                image_data.texture = Some(texture);
             }
 
-            // Render the image
-            ui.painter().image(
-                texture.id(),
-                image_rect,
-                Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
-                Color32::WHITE,
-            );
+            if let Some(texture) = &image_data.texture {
+                let original_size = texture.size_vec2();
 
-            Self::render_zoom_indicator(
-                ui,
-                zoom_handler,
-                panel_rect,
-                &config.indicator.corner,
-            );
+                // Calculate zoom based on fit mode and window size
+                let effective_zoom = zoom_handler
+                    .calculate_fit_zoom(original_size, panel_rect.size());
+
+                // Apply zoom to get final size
+                let scaled_size = original_size * effective_zoom as f32;
+
+                // Handle image positioning and dragging
+                let (image_rect, response) = Self::handle_image_positioning(
+                    ui,
+                    panel_rect,
+                    scaled_size,
+                    zoom_handler,
+                );
+
+                // Update pan offset if dragged
+                if response.dragged() {
+                    zoom_handler.add_offset(response.drag_delta());
+                }
+
+                // Render the image
+                ui.painter().image(
+                    texture.id(),
+                    image_rect,
+                    Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                    Color32::WHITE,
+                );
+
+                // Render zoom indicator with fit mode info
+                Self::render_zoom_indicator(
+                    ui,
+                    zoom_handler,
+                    panel_rect,
+                    &config.indicator.corner,
+                );
+            }
         }
+    }
+
+    fn handle_image_positioning(
+        ui: &mut Ui,
+        panel_rect: Rect,
+        scaled_size: Vec2,
+        zoom_handler: &ZoomHandler,
+    ) -> (Rect, egui::Response) {
+        // Calculate the center of the panel as our reference point
+        let panel_center = panel_rect.center();
+
+        // Apply the current pan offset from the zoom handler to our center
+        // position
+        let image_center = panel_center + zoom_handler.offset();
+
+        // Create the initial image rectangle centered at our calculated
+        // position
+        let image_rect = Rect::from_center_size(image_center, scaled_size);
+
+        // If we're in a fit mode, we might want to constrain the dragging
+        let constrain_dragging = zoom_handler.get_fit_mode() != FitMode::Custom;
+
+        // Create the interactive area for the image
+        let response = ui.allocate_rect(image_rect, Sense::drag());
+
+        // If we're constraining the drag and the image is being dragged
+        let final_rect = if constrain_dragging && response.dragged() {
+            // Get the drag delta from the response
+            let drag_delta = response.drag_delta();
+
+            // Calculate the proposed new position
+            let mut new_rect = image_rect.translate(drag_delta);
+
+            // Minimum pixels of image that must remain visible
+            let min_visible = 50.0;
+
+            // Constrain horizontally
+            if new_rect.max.x < panel_rect.min.x + min_visible {
+                new_rect = new_rect.translate(Vec2::new(
+                    panel_rect.min.x + min_visible - new_rect.max.x,
+                    0.0,
+                ));
+            }
+            if new_rect.min.x > panel_rect.max.x - min_visible {
+                new_rect = new_rect.translate(Vec2::new(
+                    panel_rect.max.x - min_visible - new_rect.min.x,
+                    0.0,
+                ));
+            }
+
+            // Constrain vertically
+            if new_rect.max.y < panel_rect.min.y + min_visible {
+                new_rect = new_rect.translate(Vec2::new(
+                    0.0,
+                    panel_rect.min.y + min_visible - new_rect.max.y,
+                ));
+            }
+            if new_rect.min.y > panel_rect.max.y - min_visible {
+                new_rect = new_rect.translate(Vec2::new(
+                    0.0,
+                    panel_rect.max.y - min_visible - new_rect.min.y,
+                ));
+            }
+
+            new_rect
+        } else {
+            image_rect
+        };
+
+        (final_rect, response)
     }
 
     // Handle all input events in one place
@@ -125,30 +196,22 @@ impl ImageRenderer {
     }
 
     // Handle image positioning and dragging
-    fn handle_image_positioning(
-        ui: &mut Ui,
-        panel_rect: Rect,
-        scaled_size: Vec2,
-        zoom_handler: &ZoomHandler,
-    ) -> (Rect, egui::Response) {
-        let image_rect = Rect::from_center_size(
-            panel_rect.center() + zoom_handler.offset(),
-            scaled_size,
-        );
-        let response = ui.allocate_rect(image_rect, Sense::drag());
-        (image_rect, response)
-    }
-
-    // Render zoom indicator overlay
     fn render_zoom_indicator(
         ui: &mut Ui,
         zoom_handler: &ZoomHandler,
         panel_rect: Rect,
         corner: &Corner,
     ) {
-        let zoom_text = format!("{:.0}%", zoom_handler.zoom_percentage());
-        let text_size = Vec2::new(60.0, 20.0);
+        let mode_text = match zoom_handler.get_fit_mode() {
+            FitMode::OneToOne => "1:1",
+            FitMode::FitLonger => "Fit",
+            FitMode::FitShorter => "Fill",
+            FitMode::Custom => {
+                &format!("{:.0}%", zoom_handler.zoom_percentage())
+            },
+        };
 
+        let text_size = Vec2::new(60.0, 20.0);
         let corner_pos = match corner {
             Corner::TopLeft => panel_rect.min + Vec2::new(5.0, 5.0),
             Corner::TopRight => {
@@ -163,6 +226,6 @@ impl ImageRenderer {
         };
 
         let text_rect = Rect::from_min_size(corner_pos, text_size);
-        ui.put(text_rect, egui::Label::new(zoom_text));
+        ui.put(text_rect, egui::Label::new(mode_text));
     }
 }

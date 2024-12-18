@@ -36,6 +36,24 @@ impl Default for ZoomSteps {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum FitMode {
+    /// Display image at actual size (100% zoom)
+    OneToOne,
+    /// Fit image to window, scaling by the longer dimension
+    FitLonger,
+    /// Fit image to window, scaling by the shorter dimension
+    FitShorter,
+    /// Use custom zoom level
+    Custom,
+}
+
+impl Default for FitMode {
+    fn default() -> Self {
+        FitMode::FitLonger
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ZoomConfig {
     pub min_zoom:              f64,
@@ -49,6 +67,7 @@ pub struct ZoomConfig {
     pub transition_duration:   f64,
     pub fit_to_window:         bool,
     pub maintain_aspect_ratio: bool,
+    pub default_fit_mode:      FitMode,
 }
 
 impl Default for ZoomConfig {
@@ -65,6 +84,7 @@ impl Default for ZoomConfig {
             transition_duration:   TRANSITION_DURATION,
             fit_to_window:         FIT_TO_WINDOW,
             maintain_aspect_ratio: MAINTAIN_ASPECT_RATIO,
+            default_fit_mode:      FitMode::default(),
         }
     }
 }

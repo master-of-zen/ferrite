@@ -8,7 +8,6 @@ pub mod window {
     pub const HIDE_MENU: bool = false;
 }
 
-// Zoom defaults
 pub mod zoom {
     pub const MIN_ZOOM: f64 = 0.1;
     pub const MAX_ZOOM: f64 = 10.0;
@@ -22,6 +21,8 @@ pub mod zoom {
     pub const TRANSITION_DURATION: f64 = 0.2;
     pub const FIT_TO_WINDOW: bool = true;
     pub const MAINTAIN_ASPECT_RATIO: bool = true;
+    // Add default fit mode - we'll use FitLonger as it's most commonly expected
+    pub const DEFAULT_FIT_MODE: &str = "FitLonger";
 }
 
 // UI defaults
