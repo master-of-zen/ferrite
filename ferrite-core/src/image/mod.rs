@@ -16,6 +16,9 @@ use image::ImageError;
 use std::io;
 use thiserror::Error;
 
+mod formats;
+pub use formats::SupportedFormats;
+
 #[derive(Error, Debug)]
 pub enum ImageLoadError {
     #[error("Failed to access image file: {0}")]

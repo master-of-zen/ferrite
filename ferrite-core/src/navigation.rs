@@ -4,6 +4,8 @@ use std::{
 };
 use tracing::{info, warn};
 
+use crate::image::SupportedFormats;
+
 pub struct NavigationManager {
     directory_images: Vec<PathBuf>,
     current_index:    usize,
@@ -32,13 +34,9 @@ impl NavigationManager {
                 let entry = entry.ok()?;
                 let path = entry.path();
                 if path.is_file() {
-                    if let Some(extension) = path.extension() {
-                        if matches!(
-                            extension.to_str().map(|s| s.to_lowercase()),
-                            Some(ext) if ["jpg", "jpeg", "png", "gif", "bmp"].contains(&ext.as_str())
-                        ) {
-                            return Some(path);
-                        }
+                    // Use our new SupportedFormats check
+                    if SupportedFormats::is_supported(path.extension()) {
+                        return Some(path);
                     }
                 }
                 None
