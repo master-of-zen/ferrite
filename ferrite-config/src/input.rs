@@ -1,9 +1,12 @@
+use serde::Serialize;
+
 use crate::{
     defaults::controls::*,
     error::{ConfigError, Result},
     types::SerializableKey,
 };
 
+#[derive(Debug, Clone, Serialize)]
 pub struct ControlsConfig {
     pub zoom_in_keys:   Vec<SerializableKey>,
     pub zoom_out_keys:  Vec<SerializableKey>,
