@@ -44,7 +44,6 @@ impl ImageManager {
         let metrics = PerformanceMetrics::new("image_loading", true);
 
         let result = info_span!("image_loading_process").in_scope(|| {
-            // Try to get absolute path
             let absolute_path = fs::canonicalize(&path).map_err(|e| {
                 warn!("Failed to resolve path: {}", e);
                 ImageLoadError::IoError(e)
@@ -77,11 +76,17 @@ impl ImageManager {
             }
         });
 
-        // Record performance metrics regardless of the result
         let duration = metrics.finish();
         info!("Image loading completed in {} ms", duration.as_millis());
 
         result
+    }
+
+    // Add method to get current image dimensions
+    pub fn get_current_dimensions(&self) -> Option<(u32, u32)> {
+        self.current_image
+            .as_ref()
+            .map(|img| img.dimensions())
     }
 
     #[instrument(skip(self, ctx))]

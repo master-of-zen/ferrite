@@ -19,67 +19,70 @@ impl ImageRenderer {
     ) {
         let panel_rect = ui.available_rect_before_wrap();
 
-        // Handle keyboard inputs first
-        Self::handle_input(ctx, ui, zoom_handler, panel_rect);
+        input::handle_input(ctx, ui, zoom_handler, panel_rect);
 
-        if let Some(image_data) = image_manager.current_image() {
-            // Handle texture creation/update
-            if image_data.texture.is_none() {
-                let size = [
-                    image_data.original.width() as usize,
-                    image_data.original.height() as usize,
-                ];
-                let image = image_data.original.to_rgba8();
-                let texture = ctx.load_texture(
-                    "current-image",
-                    ColorImage::from_rgba_unmultiplied(
-                        size,
-                        image.as_flat_samples().as_slice(),
-                    ),
-                    TextureOptions::LINEAR,
-                );
-                image_data.texture = Some(texture);
-            }
+        // Handle texture creation/retrieval
+        let texture_handle =
+            if let Some(image_data) = image_manager.current_image() {
+                if image_data.texture.is_none() {
+                    let size = [
+                        image_data.original.width() as usize,
+                        image_data.original.height() as usize,
+                    ];
+                    let image = image_data.original.to_rgba8();
 
-            if let Some(texture) = &image_data.texture {
-                let original_size = texture.size_vec2();
+                    let texture = ctx.load_texture(
+                        "current-image",
+                        ColorImage::from_rgba_unmultiplied(
+                            size,
+                            image.as_flat_samples().as_slice(),
+                        ),
+                        TextureOptions::LINEAR,
+                    );
 
-                // Calculate zoom based on fit mode and window size
-                let effective_zoom = zoom_handler
-                    .calculate_fit_zoom(original_size, panel_rect.size());
+                    // Update zoom for new image
+                    let image_size = Vec2::new(size[0] as f32, size[1] as f32);
+                    zoom_handler
+                        .update_for_new_image(image_size, panel_rect.size());
 
-                // Apply zoom to get final size
-                let scaled_size = original_size * effective_zoom as f32;
-
-                // Handle image positioning and dragging
-                let (image_rect, response) = Self::handle_image_positioning(
-                    ui,
-                    panel_rect,
-                    scaled_size,
-                    zoom_handler,
-                );
-
-                // Update pan offset if dragged
-                if response.dragged() {
-                    zoom_handler.add_offset(response.drag_delta());
+                    image_data.texture = Some(texture);
                 }
+                image_data.texture.as_ref()
+            } else {
+                None
+            };
 
-                // Render the image
-                ui.painter().image(
-                    texture.id(),
-                    image_rect,
-                    Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
-                    Color32::WHITE,
-                );
+        if let Some(texture) = texture_handle {
+            let original_size = texture.size_vec2();
+            let scaled_size = original_size * zoom_handler.zoom_level() as f32;
 
-                // Render zoom indicator with fit mode info
-                Self::render_zoom_indicator(
-                    ui,
-                    zoom_handler,
-                    panel_rect,
-                    &config.indicator.corner,
-                );
+            // Handle image positioning and dragging
+            let (image_rect, response) = Self::handle_image_positioning(
+                ui,
+                panel_rect,
+                scaled_size,
+                zoom_handler,
+            );
+
+            // Update offset if dragged
+            if response.dragged() {
+                zoom_handler.add_offset(response.drag_delta());
             }
+
+            // Render the image
+            ui.painter().image(
+                texture.id(),
+                image_rect,
+                Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                Color32::WHITE,
+            );
+
+            Self::render_zoom_indicator(
+                ui,
+                zoom_handler,
+                panel_rect,
+                &config.indicator.corner,
+            );
         }
     }
 

@@ -17,19 +17,32 @@ pub struct ZoomHandler {
 }
 
 impl ZoomHandler {
-    pub fn new(default_zoom: f64, min_zoom: f64, max_zoom: f64) -> Self {
-        // Ensure default zoom is within bounds
-        let bounded_default = default_zoom.clamp(min_zoom, max_zoom);
-
+    pub fn new(default_zoom: f64) -> Self {
         Self {
-            zoom_level: bounded_default,
+            zoom_level: default_zoom,
             pan_offset: Vec2::ZERO,
-            fit_mode: FitMode::FitLonger,
-            min_zoom,
-            max_zoom,
+            fit_mode:   FitMode::FitLonger, // Default to FitLonger mode
+            min_zoom:   0.1,
+            max_zoom:   10.0,
         }
     }
 
+    /// Recalculates zoom level based on current fit mode and image dimensions
+    pub fn update_for_new_image(
+        &mut self,
+        image_size: Vec2,
+        window_size: Vec2,
+    ) {
+        // Only recalculate if not in Custom mode
+        if self.fit_mode != FitMode::Custom {
+            self.zoom_level = self
+                .calculate_fit_zoom(image_size, window_size)
+                .into();
+            self.pan_offset = Vec2::ZERO; // Reset pan offset for new image
+        }
+    }
+
+    /// Not correct, need to be redone
     pub fn calculate_fit_zoom(
         &self,
         image_size: Vec2,
@@ -38,23 +51,24 @@ impl ZoomHandler {
         match self.fit_mode {
             FitMode::OneToOne => 1.0,
             FitMode::FitLonger => {
-                let scale_x = window_size.x / image_size.x;
-                let scale_y = window_size.y / image_size.y;
-                scale_x.min(scale_y).into()
+                let scale_x = (window_size.x / image_size.x) as f64;
+                let scale_y = (window_size.y / image_size.y) as f64;
+                scale_x
+                    .min(scale_y)
+                    .clamp(self.min_zoom, self.max_zoom)
             },
             FitMode::FitShorter => {
-                let scale_x = window_size.x / image_size.x;
-                let scale_y = window_size.y / image_size.y;
-                scale_x.max(scale_y).into()
+                let scale_x = (window_size.x / image_size.x) as f64;
+                let scale_y = (window_size.y / image_size.y) as f64;
+                scale_x
+                    .max(scale_y)
+                    .clamp(self.min_zoom, self.max_zoom)
             },
             FitMode::Custom => self.zoom_level,
         }
     }
 
-    pub fn set_fit_mode(&mut self, mode: FitMode) {
-        self.fit_mode = mode;
-    }
-
+    // Existing methods remain the same
     pub fn zoom_level(&self) -> f64 {
         self.zoom_level
     }
@@ -69,14 +83,18 @@ impl ZoomHandler {
 
     pub fn add_offset(&mut self, delta: Vec2) {
         self.pan_offset += delta;
-        // When panning, switch to custom mode as we're no longer in a fit mode
+        // When panning, switch to custom mode
         self.fit_mode = FitMode::Custom;
     }
 
     pub fn set_zoom(&mut self, new_zoom: f64) {
         self.zoom_level = new_zoom.clamp(self.min_zoom, self.max_zoom);
-        self.fit_mode = FitMode::Custom; // Switching to custom mode when
-                                         // explicitly setting zoom
+        // Setting zoom explicitly switches to custom mode
+        self.fit_mode = FitMode::Custom;
+    }
+
+    pub fn set_fit_mode(&mut self, mode: FitMode) {
+        self.fit_mode = mode;
     }
 
     pub fn reset(&mut self) {
