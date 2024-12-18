@@ -2,7 +2,7 @@ use eframe::egui::{self, Context, Key};
 use std::path::PathBuf;
 
 use crate::{
-    image::ImageManager,
+    image::{ImageLoadError, ImageManager},
     navigation::NavigationManager,
     ui::{menu::MenuBar, render::ImageRenderer, zoom::ZoomHandler},
 };
@@ -22,6 +22,7 @@ impl FeriteApp {
         initial_image: Option<PathBuf>,
         config: FerriteConfig,
     ) -> Self {
+        // Initialize our core components with their default states
         let image_manager = ImageManager::new();
         let navigation = NavigationManager::new();
         let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
@@ -36,7 +37,20 @@ impl FeriteApp {
         };
 
         if let Some(path) = initial_image {
-            app.image_manager.load_image(path);
+            // First try to load the directory containing the image
+            if let Some(()) = app.navigation.load_current_directory(&path) {
+                tracing::info!("Successfully loaded directory for navigation");
+            } else {
+                tracing::warn!(
+                    "Failed to load directory. Navigation between images will \
+                     not be available"
+                );
+            }
+
+            // Then attempt to load the initial image
+            if !app.image_manager.load_image(path).is_ok() {
+                tracing::warn!("Failed to load initial image");
+            }
         }
 
         app

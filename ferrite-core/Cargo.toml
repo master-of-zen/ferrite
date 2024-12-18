@@ -18,3 +18,4 @@ rayon.workspace = true
 tracing.workspace = true
 ferrite-config = { version = "^0.1.1", path = "../ferrite-config" }
 ferrite-logging = { version = "^0.1.1", path = "../ferrite-logging" }
+thiserror = "1"
