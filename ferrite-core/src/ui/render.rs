@@ -22,6 +22,20 @@ impl ImageRenderer {
         // Handle keyboard input and general interactions
         input::handle_input(ctx, ui, zoom_handler, panel_rect);
 
+        let current_image_size =
+            if let Some(image_data) = image_manager.current_image() {
+                let (width, height) = image_data.dimensions();
+                Some(Vec2::new(width as f32, height as f32))
+            } else {
+                None
+            };
+
+        // If we have an image, update zoom based on window size
+        if let Some(image_size) = current_image_size {
+            zoom_handler
+                .update_for_window_resize(image_size, panel_rect.size());
+        }
+
         // Handle texture creation/retrieval
         let texture_handle =
             if let Some(image_data) = image_manager.current_image() {
