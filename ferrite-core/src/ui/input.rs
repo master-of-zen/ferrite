@@ -1,5 +1,5 @@
 use crate::ui::zoom::ZoomHandler;
-use eframe::egui::{self, Context, Rect, Ui};
+use eframe::egui::{self, Context, Key, Rect, Ui};
 use egui::{Pos2, Vec2};
 
 pub fn handle_input(
@@ -8,6 +8,13 @@ pub fn handle_input(
     zoom_handler: &mut ZoomHandler,
     panel_rect: Rect,
 ) {
+    // Handle F key press for resetting to configured fit mode
+    if ctx.input(|i| i.key_pressed(Key::F)) {
+        // This will reset to the configured default fit mode while maintaining
+        // the default mode setting
+        zoom_handler.reset_to_default_fit_mode();
+    }
+
     // Keyboard zoom controls
     if ctx.input(|i| {
         i.key_pressed(egui::Key::Equals)
