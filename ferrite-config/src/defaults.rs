@@ -4,8 +4,8 @@ use crate::types::{ColorRGBA, Corner, Key, MouseButton, Vector2D};
 pub mod window {
     pub const MIN_WIDTH: u32 = 200;
     pub const MIN_HEIGHT: u32 = 200;
-    pub const BORDERLESS: bool = false;
-    pub const HIDE_MENU: bool = false;
+    pub const BORDERLESS: bool = true;
+    pub const HIDE_MENU: bool = true;
 }
 
 pub mod zoom {
@@ -30,7 +30,7 @@ pub mod zoom {
 pub mod indicator {
     use super::*;
 
-    pub const FONT_SIZE: f64 = 14.0;
+    pub const FONT_SIZE: f64 = 22.0;
     pub const FONT_FAMILY: &str = "system-ui";
     // Replace ColorRGBA constants with tuples
     pub const BACKGROUND_COLOR: (u8, u8, u8, u8) = (0, 0, 0, 128);

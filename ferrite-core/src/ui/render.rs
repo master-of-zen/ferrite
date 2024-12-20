@@ -45,7 +45,6 @@ impl ImageRenderer {
                     let image_size = Vec2::new(size[0] as f32, size[1] as f32);
                     zoom_handler
                         .update_for_new_image(image_size, panel_rect.size());
-
                     image_data.texture = Some(texture);
                 }
                 image_data.texture.as_ref()
