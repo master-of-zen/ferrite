@@ -1,0 +1,32 @@
+[package]
+name = "ferrite-cache"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Simple asynchronous image caching system"
+license = "MIT"
+
+[features]
+# Define default features - in this case we don't enable ferrite-logging by default
+default = []
+
+# Define our optional ferrite-logging integration
+ferrite-metrics = ["dep:ferrite-logging"]
+
+[dependencies]
+# Core dependencies that are always needed
+tokio = { version = "1.0", features = [
+    "rt-multi-thread",
+    "fs",
+    "sync",
+    "macros",
+] }
+image = "0.24"
+thiserror = "1.0"
+tracing = "0.1"
+
+# Optional dependency - only included when ferrite-metrics feature is enabled
+ferrite-logging = { path = "../ferrite-logging", optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"

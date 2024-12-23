@@ -5,6 +5,7 @@ members = [
     "ferrite-config",
     "ferrite-cli",
     "ferrite-logging",
+    "ferrite-cache",
 ]
 resolver = "2"
 
