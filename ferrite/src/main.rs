@@ -14,7 +14,7 @@ fn main() -> Result<(), Error> {
         log_spans:    true,
     });
 
-    let mut config = args.handle_config().unwrap_or_else(|e| {
+    let config = args.handle_config().unwrap_or_else(|e| {
         eprintln!(
             "Configuration error: {}. Run with --generate-config to create \
              one.",

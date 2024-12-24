@@ -1,7 +1,7 @@
 use eframe::egui::{self, Context};
 use ferrite_logging::metrics::PerformanceMetrics;
-use std::{fs, path::PathBuf, time::Instant};
-use tracing::{info, info_span, instrument, warn, Instrument};
+use std::{fs, path::PathBuf};
+use tracing::{info, info_span, instrument, warn};
 
 mod data;
 

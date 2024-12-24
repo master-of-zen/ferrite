@@ -1,9 +1,8 @@
-use egui::Vec2;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
-use tracing::{info, warn};
+use tracing::info;
 
 use crate::image::SupportedFormats;
 

@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use tracing::{info, instrument, Level};
+use tracing::{instrument, Level};
 use tracing_subscriber::{
     fmt::{self, format::FmtSpan},
     layer::SubscriberExt,

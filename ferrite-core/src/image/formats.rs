@@ -41,7 +41,7 @@ impl SupportedFormats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ffi::OsString;
+    
 
     #[test]
     fn test_supported_extensions() {

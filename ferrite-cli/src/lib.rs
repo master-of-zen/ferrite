@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 use ferrite_config::FerriteConfig;
 use ferrite_logging::LogLevel;
-use std::{env, path::PathBuf, str::FromStr};
+use std::{env, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[command(

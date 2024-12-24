@@ -1,7 +1,4 @@
-use crate::{
-    defaults::navigation::*,
-    error::{ConfigError, Result},
-};
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

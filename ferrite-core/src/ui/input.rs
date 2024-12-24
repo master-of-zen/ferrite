@@ -1,6 +1,5 @@
 use crate::ui::zoom::ZoomHandler;
 use eframe::egui::{self, Context, Key, Rect, Ui};
-use egui::{Pos2, Vec2};
 
 pub fn handle_input(
     ctx: &Context,

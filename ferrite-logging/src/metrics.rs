@@ -1,5 +1,5 @@
 use std::time::{Duration, Instant};
-use tracing::{info, info_span, Instrument};
+use tracing::{info, info_span};
 
 /// PerformanceMetrics provides utilities for measuring and logging execution
 /// times of operations. It creates spans that can be visualized in tracy and

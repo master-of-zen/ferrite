@@ -1,7 +1,7 @@
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf};
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 use crate::{
     error::{ConfigError, Result},

@@ -1,4 +1,4 @@
 pub mod handler;
 pub mod message;
 
-pub use message::{AsyncChannels, ImageRequest, ImageResponse};
+pub use message::AsyncChannels;

@@ -1,4 +1,4 @@
-use crate::types::{ColorRGBA, Corner, Key, MouseButton, Vector2D};
+use crate::types::{Corner, MouseButton};
 
 // Window defaults
 pub mod window {

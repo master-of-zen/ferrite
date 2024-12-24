@@ -4,7 +4,7 @@ use crate::{
     CacheResult,
     ImageLoadError,
 };
-use image::{GenericImageView, ImageFormat};
+use image::GenericImageView;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 use tracing::{debug, info, warn};
