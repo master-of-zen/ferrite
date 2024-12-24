@@ -25,8 +25,6 @@ pub mod zoom {
     pub const DEFAULT_FIT_MODE: &str = "FitLonger";
 }
 
-// UI defaults
-// defaults.rs
 pub mod indicator {
     use super::*;
 

@@ -31,8 +31,6 @@ impl Default for NavigationConfig {
 
 impl NavigationConfig {
     pub fn validate(&self) -> Result<()> {
-        // Currently no validation needed, but keeping the method for
-        // consistency and future extensions
         Ok(())
     }
 }
