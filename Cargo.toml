@@ -34,3 +34,4 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-tracy = "0.10"
 tracy-client = "0.16"
+tokio = { version = "1", features = ["full"] }

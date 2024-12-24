@@ -16,6 +16,9 @@ egui.workspace = true
 image.workspace = true
 rayon.workspace = true
 tracing.workspace = true
+tokio.workspace = true
+
 ferrite-config = { version = "^0.1.1", path = "../ferrite-config" }
 ferrite-logging = { version = "^0.1.1", path = "../ferrite-logging" }
+ferrite-cache = { version = "^0.1.0", path = "../ferrite-cache" }
 thiserror = "1"

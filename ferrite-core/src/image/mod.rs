@@ -12,7 +12,7 @@ pub struct ImageManager {
     current_path:  Option<PathBuf>,
 }
 
-use image::ImageError;
+use image::{DynamicImage, ImageError};
 use std::io;
 use thiserror::Error;
 
@@ -38,6 +38,16 @@ impl ImageManager {
         Self {
             current_image: None, current_path: None
         }
+    }
+
+    pub fn set_image(&mut self, image: DynamicImage) {
+        info!("Setting new image");
+        self.current_image = Some(ImageData::new(image));
+    }
+
+    pub fn set_path(&mut self, path: PathBuf) {
+        info!("Setting new image path: {}", path.display());
+        self.current_path = Some(path);
     }
 
     pub fn load_image(&mut self, path: PathBuf) -> Result<(), ImageLoadError> {
