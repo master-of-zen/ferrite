@@ -2,7 +2,7 @@
 name = "ferrite-cache"
 version.workspace = true
 edition.workspace = true
-escription = "Caching functionality for Ferrite image viewer"
+description = "Caching functionality for Ferrite image viewer"
 license.workspace = true
 repository.workspace = true
 documentation = "https://docs.rs/ferrite-cache"
