@@ -1,14 +1,14 @@
 [package]
 name = "ferrite-cache"
-version = "0.1.0"
-edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
-description = "Simple asynchronous image caching system"
-license = "MIT"
+version.workspace = true
+edition.workspace = true
+escription = "Caching functionality for Ferrite image viewer"
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/ferrite-cache"
 
 [features]
-# Define default features - in this case we don't enable ferrite-logging by default
-default = []
+
 
 # Define our optional ferrite-logging integration
 ferrite-metrics = ["dep:ferrite-logging"]
