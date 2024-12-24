@@ -6,6 +6,9 @@ escription = "Caching functionality for Ferrite image viewer"
 license.workspace = true
 repository.workspace = true
 documentation = "https://docs.rs/ferrite-cache"
+readme = "README.md"
+keywords = ["ferrite"]
+categories = ["development-tools::debugging"]
 
 [features]
 
