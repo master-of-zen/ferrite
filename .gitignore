@@ -25,3 +25,5 @@ Cargo.lock
 /target
 *.jpeg
 test/
+publish-all.sh
+publish-dry-run.sh
