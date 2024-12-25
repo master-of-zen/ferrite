@@ -3,7 +3,7 @@ use ferrite_cache::{CacheConfig, CacheManager};
 use once_cell::sync::OnceCell;
 use std::{path::PathBuf, sync::Arc, time::Instant};
 use tokio;
-use tracing::{error, info};
+use tracing::error;
 
 static CACHE_MANAGER: OnceCell<Arc<CacheManager>> = OnceCell::new();
 
