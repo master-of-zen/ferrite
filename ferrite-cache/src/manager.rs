@@ -1,17 +1,17 @@
 use std::{path::PathBuf, sync::Arc, thread};
 
 use crate::{
-    types::{CacheConfig, CacheHandle, CacheRequest, CacheState, ImageData},
+    types::{CacheConfig, CacheHandle, CacheRequest, CacheState},
     CacheError,
     CacheResult,
     ImageLoadError,
 };
-use image::GenericImageView;
+use image::{DynamicImage, GenericImageView};
 use tokio::{
     runtime::Runtime,
     sync::{mpsc, oneshot, RwLock},
 };
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 pub struct CacheManager {
     config:         CacheConfig,
     state:          Arc<RwLock<CacheState>>,
@@ -108,22 +108,13 @@ impl CacheManager {
                 }
             })?;
 
-            // Get the image dimensions by decoding the header only
-            let dimensions =
-                image::io::Reader::new(std::io::Cursor::new(&image_data))
-                    .with_guessed_format()
-                    .map_err(|e| CacheError::ImageLoad {
+            let decoded_image =
+                image::load_from_memory(&image_data).map_err(|e| {
+                    CacheError::ImageLoad {
                         path:   path.clone(),
                         source: ImageLoadError::Format(e.to_string()),
-                    })?
-                    .into_dimensions()
-                    .map_err(|e| CacheError::ImageLoad {
-                        path:   path.clone(),
-                        source: ImageLoadError::Format(e.to_string()),
-                    })?;
-
-            let image_data = ImageData::new(image_data, dimensions);
-
+                    }
+                })?;
             // Update cache state
             let mut state = state.write().await;
 
@@ -146,7 +137,7 @@ impl CacheManager {
             state.lru_list.push(path.clone());
 
             // Store the image data
-            state.entries.insert(path.clone(), image_data);
+            state.entries.insert(path.clone(), decoded_image);
 
             debug!(
                 path = ?path,
@@ -161,7 +152,7 @@ impl CacheManager {
     async fn get_image_internal(
         &self,
         path: PathBuf,
-    ) -> CacheResult<Arc<ImageData>> {
+    ) -> CacheResult<Arc<DynamicImage>> {
         let start_time = std::time::Instant::now();
         debug!(path = ?path, "Image requested from cache");
 
@@ -181,7 +172,7 @@ impl CacheManager {
     pub async fn cache_image(
         &self,
         path: PathBuf,
-    ) -> CacheResult<Arc<ImageData>> {
+    ) -> CacheResult<Arc<DynamicImage>> {
         let file_size = tokio::fs::metadata(&path)
             .await
             .map_err(|e| CacheError::ImageLoad {
@@ -204,28 +195,11 @@ impl CacheManager {
             }
         })?;
 
-        // Get the image dimensions by decoding the header only
-        let dimensions =
-            image::io::Reader::new(std::io::Cursor::new(&image_data))
-                .with_guessed_format()
-                .map_err(|e| CacheError::ImageLoad {
-                    path:   path.clone(),
-                    source: ImageLoadError::Format(e.to_string()),
-                })?
-                .into_dimensions()
-                .map_err(|e| CacheError::ImageLoad {
-                    path:   path.clone(),
-                    source: ImageLoadError::Format(e.to_string()),
-                })?;
+        let image_data = image::load_from_memory(&image_data).unwrap();
 
-        let image_data = ImageData::new(image_data, dimensions);
-
-        // Update cache state
         let mut state = self.state.write().await;
 
-        // Check if we need to evict images to make space
         if state.entries.len() >= self.config.max_image_count {
-            // Get the least recently used image path
             if let Some(oldest_path) = state.lru_list.first().cloned() {
                 info!(
                     path = ?oldest_path,
@@ -264,7 +238,7 @@ impl CacheManager {
     pub async fn get_image(
         &self,
         path: PathBuf,
-    ) -> CacheResult<Arc<ImageData>> {
+    ) -> CacheResult<Arc<DynamicImage>> {
         let start_time = std::time::Instant::now();
         debug!(path = ?path, "Image requested from cache");
 
@@ -281,23 +255,16 @@ impl CacheManager {
         Ok(image)
     }
 
-    async fn lookup_image(&self, path: &PathBuf) -> Option<Arc<ImageData>> {
+    // Shit code
+    async fn lookup_image(&self, path: &PathBuf) -> Option<Arc<DynamicImage>> {
         let mut state = self.state.write().await;
 
         if let Some(image) = state.entries.get(path) {
             debug!(path = ?path, "Found image in cache");
-            let mut image_data = image.clone();
-            image_data.touch();
-            let copy_start = std::time::Instant::now();
-            let _copied_data = image_data.simulate_copy();
-            let copy_duration = copy_start.elapsed();
-            debug!(path = ?path, duration = ?copy_duration, "Data copy completed");
-            state
-                .entries
-                .insert(path.clone(), image_data.clone());
-            self.update_lru(path, &mut state).await;
-            return Some(Arc::new(image_data));
+            return Some(Arc::new(image.clone()));
         }
+        self.update_lru(path, &mut state).await;
+
         debug!(path = ?path, "Image not found in cache");
         None
     }
@@ -305,90 +272,54 @@ impl CacheManager {
     async fn load_and_cache(
         &self,
         path: PathBuf,
-    ) -> CacheResult<Arc<ImageData>> {
+    ) -> CacheResult<Arc<DynamicImage>> {
         let load_start = std::time::Instant::now();
-        let path_clone = path.clone();
 
-        let file_size = path_clone
-            .metadata()
-            .map(|m| m.len())
-            .unwrap_or(0);
-        debug!(path = ?path, size = file_size, "Loading image from filesystem");
-
-        let rn = self.runtime();
-        let image_data = rn.spawn(async move {
-            tokio::fs::read(&path_clone).await
-        }).await.map_err(|e| {
-            warn!(path = ?path, error = ?e, "Failed to spawn image loading task");
+        // Read file data
+        let file_data = tokio::fs::read(&path).await.map_err(|e| {
             CacheError::ImageLoad {
-                path: path.clone(),
-                source: ImageLoadError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)),
-            }
-        })?.map_err(|e| {
-            warn!(path = ?path, error = ?e, "Failed to read image file");
-            CacheError::ImageLoad {
-                path: path.clone(),
+                path:   path.clone(),
                 source: ImageLoadError::Io(e),
             }
         })?;
 
-        let load_duration = load_start.elapsed();
-        debug!(path = ?path, duration = ?load_duration, "File load completed");
+        // Decode image immediately
+        let decoded_image =
+            image::load_from_memory(&file_data).map_err(|e| {
+                CacheError::ImageLoad {
+                    path:   path.clone(),
+                    source: ImageLoadError::Format(e.to_string()),
+                }
+            })?;
 
-        let decode_start = std::time::Instant::now();
-        let image = image::load_from_memory(&image_data).map_err(|e| {
-            warn!(path = ?path, error = ?e, "Failed to parse image data");
-            CacheError::ImageLoad {
-                path:   path.clone(),
-                source: ImageLoadError::Format(e.to_string()),
-            }
-        })?;
+        let dimensions = decoded_image.dimensions();
 
-        let decode_duration = decode_start.elapsed();
-        let dimensions = image.dimensions();
-        let memory_size = image.as_bytes().len();
-
-        debug!(
-            path = ?path,
-            duration = ?decode_duration,
-            width = dimensions.0,
-            height = dimensions.1,
-            memory = memory_size,
-            "Image decoded"
-        );
-
-        let image_data = ImageData::new(image_data, dimensions);
+        // Update cache state
         let mut state = self.state.write().await;
 
+        // Handle cache eviction if needed
         if state.entries.len() >= self.config.max_image_count {
-            if let Some(oldest) = state.lru_list.first().cloned() {
-                info!(path = ?oldest, "Evicting least recently used image");
-                state.entries.remove(&oldest);
+            if let Some(oldest_path) = state.lru_list.first().cloned() {
+                info!(path = ?oldest_path, "Evicting least recently used image");
+                state.entries.remove(&oldest_path);
                 state.lru_list.remove(0);
             }
         }
 
         debug!(
             path = ?path,
-            cache_size = state.entries.len(),
-            "Adding image to cache"
+            width = dimensions.0,
+            height = dimensions.1,
+            load_duration = ?load_start.elapsed(),
+            "Image loaded and decoded"
         );
 
-        state
-            .entries
-            .insert(path.clone(), image_data.clone());
+        // Store the decoded image
+        let image_data = Arc::new(decoded_image.clone());
+        state.entries.insert(path.clone(), decoded_image);
         state.lru_list.push(path);
 
-        Ok(Arc::new(image_data))
-    }
-
-    pub async fn get_total_memory_usage(&self) -> CacheResult<usize> {
-        let state = self.state.read().await;
-        Ok(state
-            .entries
-            .values()
-            .map(|img| img.data().len())
-            .sum())
+        Ok(image_data)
     }
 
     async fn update_lru(&self, path: &PathBuf, state: &mut CacheState) {

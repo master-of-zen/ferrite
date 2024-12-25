@@ -48,10 +48,7 @@ impl FeriteApp {
                     app.cache_manager.get_image(path.clone())
                 {
                     // Set the image in the image manager
-                    app.image_manager.set_image(
-                        image::load_from_memory(image_data.data().as_ref())
-                            .expect("Failed to decode cached image"),
-                    );
+                    app.image_manager.set_image(image_data);
                     app.image_manager.set_path(path);
                     tracing::info!("Successfully loaded initial image");
                 } else {

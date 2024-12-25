@@ -1,10 +1,10 @@
 use eframe::egui::{self, Context};
-use ferrite_cache::CacheHandle;
+use ferrite_cache::{CacheHandle, CacheResult};
 use ferrite_logging::metrics::PerformanceMetrics;
-use image::{DynamicImage, ImageError};
+use image::{DynamicImage, GenericImageView, ImageError};
 use std::{io, path::PathBuf, sync::Arc};
 use thiserror::Error;
-use tracing::{info, info_span, instrument, warn};
+use tracing::{info, info_span, instrument, warn}
 
 mod data;
 mod formats;
@@ -13,7 +13,7 @@ use data::ImageData;
 pub use formats::SupportedFormats;
 
 pub struct ImageManager {
-    current_image: Option<ImageData>,
+    current_image: Option<&ImageData>,
     current_path:  Option<PathBuf>,
     cache_manager: Arc<CacheHandle>,
 }
@@ -32,7 +32,7 @@ impl ImageManager {
     // Keep set_image for direct image updates
     pub fn set_image(&mut self, image: DynamicImage) {
         info!("Setting new image directly");
-        self.current_image = Some(ImageData::new(image));
+        self.current_image = Some(image);
     }
 
     pub fn set_path(&mut self, path: PathBuf) {
@@ -45,34 +45,17 @@ impl ImageManager {
 
         let result = info_span!("image_loading_process").in_scope(|| {
             // First try to get the image from cache
-            match self.cache_manager.get_image(path.clone()) {
-                Ok(cached_image) => {
-                    // Convert the cached image data into our internal format
-                    let image =
-                        image::load_from_memory(cached_image.data().as_ref())
-                            .map_err(ImageLoadError::ImageError)?;
-
-                    // Use the existing set_image method to update the current
-                    // image
-                    self.set_image(image);
-                    self.set_path(path);
-
-                    let dimensions = self
-                        .get_current_dimensions()
-                        .expect("Image dimensions should be available");
-                    info!(
+            let get_image:CacheResult<Arc<DynamicImage>> = self.cache_manager.get_image(path.clone());
+            
+            let wtf = get_image.unwrap();
+            let dimensions = wtf.dimensions();
+            self.set_image(wtf);
+            info!(
                         "Successfully loaded image from cache: \
                          dimensions={}x{}",
                         dimensions.0, dimensions.1
                     );
-
-                    Ok(())
-                },
-                Err(e) => {
-                    warn!("Failed to load image from cache: {}", e);
-                    Err(ImageLoadError::CacheError(e))
-                },
-            }
+            Ok(())
         });
 
         let duration = metrics.finish();

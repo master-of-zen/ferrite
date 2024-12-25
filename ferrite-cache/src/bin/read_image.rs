@@ -47,8 +47,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match cache_handle.get_image(args.image.clone()) {
         Ok(image_data) => {
             let first_load = start_time.elapsed();
-            let dims = image_data.dimensions();
-            let memory_size = image_data.data().len();
 
             // Test cache hit with multiple iterations
             let mut cache_hits = Vec::new();
@@ -63,13 +61,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let max_cache_hit = cache_hits.iter().max().unwrap();
 
             println!("\n📊 Image Details:");
-            println!("   Dimensions: {}x{}", dims.0, dims.1);
-            println!("   Raw file size: {} bytes", file_size);
-            println!("   Memory size: {} bytes", memory_size);
-            println!(
-                "   Compression ratio: {:.2}x",
-                memory_size as f64 / file_size as f64
-            );
 
             println!("\n⏱️ Timing Details:");
             println!("   First load: {:.2?}", first_load);
@@ -84,11 +75,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if args.detailed {
                 println!("\n🔍 Additional Metrics:");
-                println!(
-                    "   Memory overhead: {} bytes ({:.1}%)",
-                    memory_size as i64 - file_size as i64,
-                    (memory_size as f64 / file_size as f64 - 1.0) * 100.0
-                );
                 println!(
                     "   Total execution time: {:.2?}",
                     total_start.elapsed()
