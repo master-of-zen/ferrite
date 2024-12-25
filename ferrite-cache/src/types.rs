@@ -42,6 +42,11 @@ impl ImageData {
             "Updated image access time"
         );
     }
+
+    pub fn simulate_copy(&self) -> Vec<u8> {
+        // Simulate copying the full decoded image data
+        self.data.to_vec()
+    }
 }
 
 pub struct CacheConfig {

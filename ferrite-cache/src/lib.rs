@@ -33,16 +33,3 @@ pub enum ImageLoadError {
 
 pub type CacheResult<T> = Result<T, CacheError>;
 pub type LoadResult<T> = Result<T, ImageLoadError>;
-
-#[cfg(feature = "ferrite-metrics")]
-pub mod metrics {
-    use ferrite_logging::metrics::PerformanceMetrics;
-}
-
-#[cfg(not(feature = "ferrite-metrics"))]
-pub mod metrics {}
-
-#[cfg(test)]
-mod tests {
-    
-}
