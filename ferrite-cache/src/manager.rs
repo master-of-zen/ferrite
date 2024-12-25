@@ -33,19 +33,18 @@ impl CacheManager {
         path: PathBuf,
     ) -> CacheResult<Arc<ImageData>> {
         let start_time = std::time::Instant::now();
-        println!("🔍 Attempting to get image: {:?}", path);
+        debug!(path = ?path, "Image requested from cache");
 
         if let Some(image) = self.lookup_image(&path).await {
             let duration = start_time.elapsed();
-            println!("✅ Cache hit for: {:?}", path);
-            println!("⏱️ Total time (cache hit): {:?}", duration);
+            debug!(path = ?path, duration = ?duration, "Cache hit");
             return Ok(image);
         }
 
-        println!("Cache miss, loading from disk");
-        let image = self.load_and_cache(path).await?;
+        debug!(path = ?path, "Cache miss, loading from disk");
+        let image = self.load_and_cache(path.clone()).await?;
         let duration = start_time.elapsed();
-        println!("⏱️ Total time (cache miss): {:?}", duration);
+        debug!(path = ?path, duration = ?duration, "Total cache miss time");
         Ok(image)
     }
 
@@ -59,7 +58,7 @@ impl CacheManager {
             let copy_start = std::time::Instant::now();
             let _copied_data = image_data.simulate_copy();
             let copy_duration = copy_start.elapsed();
-            println!("⏱️ Data copy time: {:?}", copy_duration);
+            debug!(path = ?path, duration = ?copy_duration, "Data copy completed");
             state
                 .entries
                 .insert(path.clone(), image_data.clone());
@@ -74,69 +73,54 @@ impl CacheManager {
         &self,
         path: PathBuf,
     ) -> CacheResult<Arc<ImageData>> {
-        debug!(path = ?path, "Loading image from filesystem");
-
+        let load_start = std::time::Instant::now();
         let path_clone = path.clone();
-        println!("📥 Loading image from disk: {:?}", path);
-        println!(
-            "   Raw file size: {} bytes",
-            path_clone
-                .metadata()
-                .map(|m| m.len())
-                .unwrap_or(0)
-        );
-        let image_data = self
-            .runtime
-            .spawn(async move { tokio::fs::read(&path_clone).await })
-            .await
-            .map_err(|e| {
-                warn!(
-                    path = ?path,
-                    error = ?e,
-                    "Failed to spawn image loading task"
-                );
-                CacheError::ImageLoad {
-                    path:   path.clone(),
-                    source: ImageLoadError::Io(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        e,
-                    )),
-                }
-            })?
-            .map_err(|e| {
-                warn!(
-                    path = ?path,
-                    error = ?e,
-                    "Failed to read image file"
-                );
-                CacheError::ImageLoad {
-                    path:   path.clone(),
-                    source: ImageLoadError::Io(e),
-                }
-            })?;
 
+        let file_size = path_clone
+            .metadata()
+            .map(|m| m.len())
+            .unwrap_or(0);
+        debug!(path = ?path, size = file_size, "Loading image from filesystem");
+
+        let image_data = self.runtime.spawn(async move {
+            tokio::fs::read(&path_clone).await
+        }).await.map_err(|e| {
+            warn!(path = ?path, error = ?e, "Failed to spawn image loading task");
+            CacheError::ImageLoad {
+                path: path.clone(),
+                source: ImageLoadError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)),
+            }
+        })?.map_err(|e| {
+            warn!(path = ?path, error = ?e, "Failed to read image file");
+            CacheError::ImageLoad {
+                path: path.clone(),
+                source: ImageLoadError::Io(e),
+            }
+        })?;
+
+        let load_duration = load_start.elapsed();
+        debug!(path = ?path, duration = ?load_duration, "File load completed");
+
+        let decode_start = std::time::Instant::now();
         let image = image::load_from_memory(&image_data).map_err(|e| {
-            warn!(
-                path = ?path,
-                error = ?e,
-                "Failed to parse image data"
-            );
+            warn!(path = ?path, error = ?e, "Failed to parse image data");
             CacheError::ImageLoad {
                 path:   path.clone(),
                 source: ImageLoadError::Format(e.to_string()),
             }
         })?;
 
+        let decode_duration = decode_start.elapsed();
         let dimensions = image.dimensions();
         let memory_size = image.as_bytes().len();
-        println!("📊 Image decoded:");
-        println!("   Dimensions: {}x{}", dimensions.0, dimensions.1);
-        println!("   Memory size: {} bytes", memory_size);
-        info!(
+
+        debug!(
             path = ?path,
+            duration = ?decode_duration,
             width = dimensions.0,
             height = dimensions.1,
-            "Successfully loaded image"
+            memory = memory_size,
+            "Image decoded"
         );
 
         let image_data = ImageData::new(image_data, dimensions);
@@ -144,10 +128,7 @@ impl CacheManager {
 
         if state.entries.len() >= self.config.max_image_count {
             if let Some(oldest) = state.lru_list.first().cloned() {
-                info!(
-                    path = ?oldest,
-                    "Evicting least recently used image"
-                );
+                info!(path = ?oldest, "Evicting least recently used image");
                 state.entries.remove(&oldest);
                 state.lru_list.remove(0);
             }
