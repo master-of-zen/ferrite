@@ -29,8 +29,7 @@ impl FeriteApp {
     ) -> Self {
         let runtime = Arc::new(runtime);
         let cache_config = CacheConfig::default();
-        let cache_manager =
-            Arc::new(CacheManager::new(cache_config, runtime.clone()));
+        let cache_manager = Arc::new(CacheManager::new(cache_config));
 
         let image_manager = ImageManager::new();
         let navigation = NavigationManager::new();

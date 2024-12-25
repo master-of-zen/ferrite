@@ -6,26 +6,55 @@ use crate::{
 };
 use image::GenericImageView;
 use std::{path::PathBuf, sync::Arc};
-use tokio::{runtime::Runtime, sync::RwLock};
+use tokio::{
+    runtime::Runtime,
+    sync::{oneshot, RwLock},
+};
 use tracing::{debug, info, warn};
 
 pub struct CacheManager {
-    config:  CacheConfig,
-    state:   Arc<RwLock<CacheState>>,
-    runtime: Arc<Runtime>,
+    config:         CacheConfig,
+    state:          Arc<RwLock<CacheState>>,
+    runtime_handle: Arc<Runtime>,
+    _shutdown_tx:   oneshot::Sender<()>,
 }
 
 impl CacheManager {
-    pub fn new(config: CacheConfig, runtime: Arc<Runtime>) -> Self {
-        info!(
-            max_images = config.max_image_count,
-            "Initializing cache manager"
+    pub fn new(config: CacheConfig) -> Self {
+        let (shutdown_tx, shutdown_rx) = oneshot::channel();
+        let state = Arc::new(RwLock::new(CacheState::new()));
+        let state_clone = state.clone();
+
+        // Spawn the background thread
+        let runtime = Arc::new(
+            tokio::runtime::Builder::new_multi_thread()
+                .worker_threads(config.thread_count)
+                .enable_all()
+                .build()
+                .expect("Failed to create Tokio runtime"),
         );
+
+        let runtime_clone = runtime.clone();
+        std::thread::spawn(move || {
+            runtime_clone.block_on(async {
+                tokio::select! {
+                    _ = shutdown_rx => {
+                        tracing::info!("Cache manager shutting down");
+                    }
+                }
+            });
+        });
+
         Self {
             config,
-            state: Arc::new(RwLock::new(CacheState::new())),
-            runtime,
+            state,
+            runtime_handle: runtime,
+            _shutdown_tx: shutdown_tx,
         }
+    }
+
+    pub fn runtime(&self) -> Arc<Runtime> {
+        self.runtime_handle.clone()
     }
 
     pub async fn get_image(
@@ -82,7 +111,8 @@ impl CacheManager {
             .unwrap_or(0);
         debug!(path = ?path, size = file_size, "Loading image from filesystem");
 
-        let image_data = self.runtime.spawn(async move {
+        let rn = self.runtime();
+        let image_data = rn.spawn(async move {
             tokio::fs::read(&path_clone).await
         }).await.map_err(|e| {
             warn!(path = ?path, error = ?e, "Failed to spawn image loading task");

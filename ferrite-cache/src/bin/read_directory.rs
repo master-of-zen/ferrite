@@ -43,12 +43,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "🏗️ Initializing cache manager with max {} images",
             args.max_images
         );
-        Arc::new(CacheManager::new(
-            CacheConfig {
-                max_image_count: args.max_images
-            },
-            runtime_arc.clone(),
-        ))
+        Arc::new(CacheManager::new(CacheConfig {
+            max_image_count: args.max_images,
+            thread_count:    4,
+        }))
     });
 
     println!("▶️ Starting async execution");

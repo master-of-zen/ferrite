@@ -49,16 +49,16 @@ impl ImageData {
     }
 }
 
+#[derive(Clone)]
 pub struct CacheConfig {
     pub max_image_count: usize,
+    pub thread_count:    usize,
 }
 
 impl Default for CacheConfig {
     fn default() -> Self {
-        info!(max_image_count = 100, "Creating default cache configuration");
-
         Self {
-            max_image_count: 100
+            max_image_count: 100, thread_count: 4
         }
     }
 }
