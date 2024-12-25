@@ -12,7 +12,6 @@ use tokio::{
     sync::{mpsc, oneshot, RwLock},
 };
 use tracing::{debug, info, warn};
-
 pub struct CacheManager {
     config:         CacheConfig,
     state:          Arc<RwLock<CacheState>>,
@@ -22,16 +21,12 @@ pub struct CacheManager {
 
 impl CacheManager {
     pub fn new(config: CacheConfig) -> CacheHandle {
-        // Create channels for communication
         let (request_tx, mut request_rx) = mpsc::unbounded_channel();
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
 
-        // Initialize the shared state
         let state = Arc::new(RwLock::new(CacheState::new()));
 
-        // Create the runtime in a separate thread
         thread::spawn(move || {
-            // Initialize the runtime
             let runtime = Arc::new(
                 tokio::runtime::Builder::new_multi_thread()
                     .worker_threads(config.thread_count)
@@ -40,37 +35,37 @@ impl CacheManager {
                     .expect("Failed to create Tokio runtime"),
             );
 
-            // Create the cache manager instance
-            let manager = Self {
+            let manager = Arc::new(Self {
                 config,
                 state: state.clone(),
                 runtime_handle: runtime.clone(),
                 _shutdown_tx: shutdown_tx,
-            };
+            });
 
             runtime.block_on(async {
-                // Create a future that never completes unless shutdown is requested
                 let shutdown_future = shutdown_rx;
                 tokio::pin!(shutdown_future);
 
                 loop {
                     tokio::select! {
-                        // Handle shutdown signal using the pinned future
                         _ = &mut shutdown_future => {
                             debug!("Received shutdown signal");
                             break;
                         }
-                        // Process incoming requests
                         Some(request) = request_rx.recv() => {
+                            let manager = manager.clone();
                             match request {
                                 CacheRequest::GetImage { path, response_tx } => {
-                                    let result = manager.get_image_internal(path).await;
-                                    // Ignore send errors - the receiver may have dropped
-                                    let _ = response_tx.send(result);
+                                    runtime.spawn(async move {
+                                        let result = manager.get_image_internal(path).await;
+                                        let _ = response_tx.send(result);
+                                    });
                                 }
                                 CacheRequest::CacheImage { path, response_tx } => {
-                                    let result = manager.load_and_cache(path).await;
-                                    let _ = response_tx.send(result);
+                                    runtime.spawn(async move {
+                                        let result = manager.load_and_cache(path).await;
+                                        let _ = response_tx.send(result);
+                                    });
                                 }
                             }
                         }
@@ -81,7 +76,6 @@ impl CacheManager {
             });
         });
 
-        // Return the handle for communicating with the cache manager
         CacheHandle::new(request_tx)
     }
 
