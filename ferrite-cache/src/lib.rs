@@ -5,8 +5,7 @@ mod manager;
 mod types;
 
 pub use manager::CacheManager;
-pub use types::{CacheConfig, ImageData};
-
+pub use types::{CacheConfig, CacheHandle, ImageData};
 #[derive(Error, Debug)]
 pub enum CacheError {
     #[error("Failed to load image from {path}: {source}")]

@@ -1,14 +1,15 @@
+use std::{path::PathBuf, sync::Arc, thread};
+
 use crate::{
-    types::{CacheConfig, CacheState, ImageData},
+    types::{CacheConfig, CacheHandle, CacheRequest, CacheState, ImageData},
     CacheError,
     CacheResult,
     ImageLoadError,
 };
 use image::GenericImageView;
-use std::{path::PathBuf, sync::Arc};
 use tokio::{
     runtime::Runtime,
-    sync::{oneshot, RwLock},
+    sync::{mpsc, oneshot, RwLock},
 };
 use tracing::{debug, info, warn};
 
@@ -20,37 +21,89 @@ pub struct CacheManager {
 }
 
 impl CacheManager {
-    pub fn new(config: CacheConfig) -> Self {
+    pub fn new(config: CacheConfig) -> CacheHandle {
+        // Create channels for communication
+        let (request_tx, mut request_rx) = mpsc::unbounded_channel();
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
+
+        // Initialize the shared state
         let state = Arc::new(RwLock::new(CacheState::new()));
-        let state_clone = state.clone();
 
-        // Spawn the background thread
-        let runtime = Arc::new(
-            tokio::runtime::Builder::new_multi_thread()
-                .worker_threads(config.thread_count)
-                .enable_all()
-                .build()
-                .expect("Failed to create Tokio runtime"),
-        );
+        // Create the runtime in a separate thread
+        thread::spawn(move || {
+            // Initialize the runtime
+            let runtime = Arc::new(
+                tokio::runtime::Builder::new_multi_thread()
+                    .worker_threads(config.thread_count)
+                    .enable_all()
+                    .build()
+                    .expect("Failed to create Tokio runtime"),
+            );
 
-        let runtime_clone = runtime.clone();
-        std::thread::spawn(move || {
-            runtime_clone.block_on(async {
-                tokio::select! {
-                    _ = shutdown_rx => {
-                        tracing::info!("Cache manager shutting down");
+            // Create the cache manager instance
+            let manager = Self {
+                config,
+                state: state.clone(),
+                runtime_handle: runtime.clone(),
+                _shutdown_tx: shutdown_tx,
+            };
+
+            runtime.block_on(async {
+                // Create a future that never completes unless shutdown is requested
+                let shutdown_future = shutdown_rx;
+                tokio::pin!(shutdown_future);
+
+                loop {
+                    tokio::select! {
+                        // Handle shutdown signal using the pinned future
+                        _ = &mut shutdown_future => {
+                            debug!("Received shutdown signal");
+                            break;
+                        }
+                        // Process incoming requests
+                        Some(request) = request_rx.recv() => {
+                            match request {
+                                CacheRequest::GetImage { path, response_tx } => {
+                                    let result = manager.get_image_internal(path).await;
+                                    // Ignore send errors - the receiver may have dropped
+                                    let _ = response_tx.send(result);
+                                }
+                                CacheRequest::CacheImage { path, response_tx } => {
+                                    let result = manager.load_and_cache(path).await;
+                                    let _ = response_tx.send(result);
+                                }
+                            }
+                        }
+                        else => break,
                     }
                 }
+                debug!("Cache manager event loop terminated");
             });
         });
 
-        Self {
-            config,
-            state,
-            runtime_handle: runtime,
-            _shutdown_tx: shutdown_tx,
+        // Return the handle for communicating with the cache manager
+        CacheHandle::new(request_tx)
+    }
+
+    // Internal method to handle image retrieval
+    async fn get_image_internal(
+        &self,
+        path: PathBuf,
+    ) -> CacheResult<Arc<ImageData>> {
+        let start_time = std::time::Instant::now();
+        debug!(path = ?path, "Image requested from cache");
+
+        if let Some(image) = self.lookup_image(&path).await {
+            let duration = start_time.elapsed();
+            debug!(path = ?path, duration = ?duration, "Cache hit");
+            return Ok(image);
         }
+
+        debug!(path = ?path, "Cache miss, loading from disk");
+        let image = self.load_and_cache(path.clone()).await?;
+        let duration = start_time.elapsed();
+        debug!(path = ?path, duration = ?duration, "Total cache miss time");
+        Ok(image)
     }
 
     pub fn runtime(&self) -> Arc<Runtime> {
