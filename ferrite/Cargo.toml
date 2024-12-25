@@ -25,6 +25,7 @@ ferrite-core = { version = "^0.1.1", path = "../ferrite-core" }
 ferrite-config = { version = "^0.1.1", path = "../ferrite-config" }
 ferrite-cli = { version = "^0.1.1", path = "../ferrite-cli" }
 ferrite-logging = { version = "^0.1.1", path = "../ferrite-logging" }
+ferrite-cache = { version = "^0.1.1", path = "../ferrite-cache" }
 
 [dev-dependencies]
 criterion = "0.5"

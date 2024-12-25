@@ -100,6 +100,85 @@ impl CacheManager {
         Ok(image)
     }
 
+    pub async fn cache_image(
+        &self,
+        path: PathBuf,
+    ) -> CacheResult<Arc<ImageData>> {
+        let file_size = tokio::fs::metadata(&path)
+            .await
+            .map_err(|e| CacheError::ImageLoad {
+                path:   path.clone(),
+                source: ImageLoadError::Io(e),
+            })?
+            .len();
+
+        debug!(
+            path = ?path,
+            size = file_size,
+            "Loading image from filesystem"
+        );
+
+        // Read the file contents using tokio's async file IO
+        let image_data = tokio::fs::read(&path).await.map_err(|e| {
+            CacheError::ImageLoad {
+                path:   path.clone(),
+                source: ImageLoadError::Io(e),
+            }
+        })?;
+
+        // Get the image dimensions by decoding the header only
+        let dimensions =
+            image::io::Reader::new(std::io::Cursor::new(&image_data))
+                .with_guessed_format()
+                .map_err(|e| CacheError::ImageLoad {
+                    path:   path.clone(),
+                    source: ImageLoadError::Format(e.to_string()),
+                })?
+                .into_dimensions()
+                .map_err(|e| CacheError::ImageLoad {
+                    path:   path.clone(),
+                    source: ImageLoadError::Format(e.to_string()),
+                })?;
+
+        let image_data = ImageData::new(image_data, dimensions);
+
+        // Update cache state
+        let mut state = self.state.write().await;
+
+        // Check if we need to evict images to make space
+        if state.entries.len() >= self.config.max_image_count {
+            // Get the least recently used image path
+            if let Some(oldest_path) = state.lru_list.first().cloned() {
+                info!(
+                    path = ?oldest_path,
+                    "Evicting least recently used image"
+                );
+                state.entries.remove(&oldest_path);
+                state.lru_list.remove(0);
+            }
+        }
+
+        // Update LRU list - remove if exists and add to end
+        if let Some(pos) = state.lru_list.iter().position(|p| p == &path) {
+            state.lru_list.remove(pos);
+        }
+        state.lru_list.push(path.clone());
+
+        // Store the image data
+        let image_data = Arc::new(image_data);
+        state
+            .entries
+            .insert(path.clone(), (*image_data).clone());
+
+        debug!(
+            path = ?path,
+            cache_size = state.entries.len(),
+            "Image cached successfully"
+        );
+
+        Ok(image_data)
+    }
+
     pub fn runtime(&self) -> Arc<Runtime> {
         self.runtime_handle.clone()
     }

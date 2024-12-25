@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use eframe::Error;
 use egui::ViewportBuilder;
+use ferrite_cache::{CacheConfig, CacheManager};
 use ferrite_cli::Args;
 use ferrite_core::FeriteApp;
 use ferrite_logging::{init, LogConfig};
@@ -23,6 +26,17 @@ fn main() -> Result<(), Error> {
         std::process::exit(1);
     });
 
+    // Create cache manager early
+    let cache_config = CacheConfig::default();
+    let cache_manager = Arc::new(CacheManager::new(cache_config));
+
+    // Pre-cache initial image if provided
+    if let Some(ref image_path) = args.image_path {
+        if let Err(e) = cache_manager.get_image(image_path.clone()) {
+            eprintln!("Warning: Failed to pre-cache image: {}", e);
+        }
+    }
+
     let mut native_options = eframe::NativeOptions::default();
     native_options.default_theme = eframe::Theme::Dark;
 
@@ -33,14 +47,16 @@ fn main() -> Result<(), Error> {
         .with_inner_size([width, height])
         .with_decorations(!config.window.borderless);
 
-    let runtime = Runtime::new().expect("Failed to create Tokio runtime");
-
     eframe::run_native(
         "Ferrite",
         native_options,
         Box::new(move |cc| {
-            let app =
-                Box::new(FeriteApp::new(cc, args.image_path, config, runtime));
+            let app = Box::new(FeriteApp::new(
+                cc,
+                args.image_path,
+                config,
+                cache_manager,
+            ));
             app
         }),
     )
