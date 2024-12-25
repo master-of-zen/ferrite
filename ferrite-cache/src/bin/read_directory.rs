@@ -195,7 +195,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if args.verbose {
                 println!("✓ Cached: {:?} ({:.2?})", path, duration);
-            }c
+            }
 
             // Test retrieval
             let start = Instant::now();
