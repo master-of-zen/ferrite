@@ -191,13 +191,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             stats.cache_times.push(cache_time);
 
             image_stats.cache_time = cache_time;
-            image_stats.dimensions = image_data.dimensions();
-            image_stats.memory_size = image_data.data().len();
             stats.total_memory_size += image_stats.memory_size;
 
             if args.verbose {
                 println!("✓ Cached: {:?} ({:.2?})", path, duration);
-            }
+            }c
 
             // Test retrieval
             let start = Instant::now();

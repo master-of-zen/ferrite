@@ -62,11 +62,11 @@ impl CacheManager {
                                     });
                                 }
                                 CacheRequest::CacheImage { path, response_tx } => {
-                                    runtime.spawn(async move {
-                                        let result = manager.load_and_cache(path).await;
-                                        let _ = response_tx.send(result);
-                                    });
-                                }
+        let manager = Arc::clone(&manager);
+        runtime.spawn(async move {
+            manager.handle_cache_request(path, response_tx).await;
+        });
+    }
                             }
                         }
                         else => break,
@@ -79,7 +79,85 @@ impl CacheManager {
         CacheHandle::new(request_tx)
     }
 
-    // Internal method to handle image retrieval
+    async fn handle_cache_request(
+        &self,
+        path: PathBuf,
+        response_tx: oneshot::Sender<CacheResult<()>>,
+    ) {
+        // Clone what we need before spawning
+        let state = Arc::clone(&self.state);
+        let config = self.config.clone();
+        let runtime = self.runtime();
+
+        runtime.spawn(async move {
+            let file_size = tokio::fs::metadata(&path).await.map_err(|e| {
+                CacheError::ImageLoad {
+                    path:   path.clone(),
+                    source: ImageLoadError::Io(e),
+                }
+            })?;
+
+            // Respond immediately with acknowledgment
+            let _ = response_tx.send(Ok(()));
+
+            // Continue loading in background
+            let image_data = tokio::fs::read(&path).await.map_err(|e| {
+                CacheError::ImageLoad {
+                    path:   path.clone(),
+                    source: ImageLoadError::Io(e),
+                }
+            })?;
+
+            // Get the image dimensions by decoding the header only
+            let dimensions =
+                image::io::Reader::new(std::io::Cursor::new(&image_data))
+                    .with_guessed_format()
+                    .map_err(|e| CacheError::ImageLoad {
+                        path:   path.clone(),
+                        source: ImageLoadError::Format(e.to_string()),
+                    })?
+                    .into_dimensions()
+                    .map_err(|e| CacheError::ImageLoad {
+                        path:   path.clone(),
+                        source: ImageLoadError::Format(e.to_string()),
+                    })?;
+
+            let image_data = ImageData::new(image_data, dimensions);
+
+            // Update cache state
+            let mut state = state.write().await;
+
+            // Check if we need to evict images to make space
+            if state.entries.len() >= config.max_image_count {
+                if let Some(oldest_path) = state.lru_list.first().cloned() {
+                    info!(
+                        path = ?oldest_path,
+                        "Evicting least recently used image"
+                    );
+                    state.entries.remove(&oldest_path);
+                    state.lru_list.remove(0);
+                }
+            }
+
+            // Update LRU list
+            if let Some(pos) = state.lru_list.iter().position(|p| p == &path) {
+                state.lru_list.remove(pos);
+            }
+            state.lru_list.push(path.clone());
+
+            // Store the image data
+            state.entries.insert(path.clone(), image_data);
+
+            debug!(
+                path = ?path,
+                cache_size = state.entries.len(),
+                "Image cached successfully"
+            );
+
+            Ok::<(), CacheError>(())
+        });
+    }
+
     async fn get_image_internal(
         &self,
         path: PathBuf,

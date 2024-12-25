@@ -4,20 +4,16 @@ use tracing::{debug, info};
 use crate::CacheResult;
 use tokio::sync::oneshot;
 
-// Define all possible cache operations as an enum
 #[derive(Debug)]
 pub enum CacheRequest {
-    // Request to cache and get an image
     CacheImage {
         path:        PathBuf,
-        response_tx: oneshot::Sender<CacheResult<Arc<ImageData>>>,
+        response_tx: oneshot::Sender<CacheResult<()>>, // Changed return type
     },
-    // Request to get an already cached image
     GetImage {
         path:        PathBuf,
         response_tx: oneshot::Sender<CacheResult<Arc<ImageData>>>,
     },
-    // Additional message types can be added here as needed
 }
 
 // Structure to handle communication with the cache manager
@@ -59,8 +55,7 @@ impl CacheHandle {
         })?
     }
 
-    // Method to explicitly request caching an image
-    pub fn cache_image(&self, path: PathBuf) -> CacheResult<Arc<ImageData>> {
+    pub fn cache_image(&self, path: PathBuf) -> CacheResult<()> {
         let (response_tx, response_rx) = oneshot::channel();
 
         self.request_tx
@@ -74,6 +69,7 @@ impl CacheHandle {
                 )
             })?;
 
+        // Just wait for acknowledgment
         response_rx.blocking_recv().map_err(|_| {
             crate::CacheError::Config(
                 "Cache manager stopped responding".to_string(),
