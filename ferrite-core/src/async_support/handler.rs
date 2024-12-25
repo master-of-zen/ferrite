@@ -15,13 +15,12 @@ pub struct AsyncHandler {
 }
 
 impl AsyncHandler {
-    pub fn new(runtime: Runtime) -> Self {
-        let runtime = Arc::new(runtime);
-        let config = CacheConfig::default();
-        let cache_manager = Arc::new(CacheManager::new(config));
-
+    pub fn new(
+        runtime: Arc<Runtime>,
+        cache_manager: Arc<CacheManager>,
+    ) -> Self {
         Self {
-            runtime,
+            runtime: runtime.clone(),
             cache_manager,
         }
     }
@@ -41,8 +40,9 @@ impl AsyncHandler {
                         ImageRequest::Load(path) => {
                             match cache_manager.get_image(path.clone()).await {
                                 Ok(image_data) => {
-                                    let bytes = image_data.data();
-                                    match image::load_from_memory(&bytes) {
+                                    match image::load_from_memory(
+                                        &image_data.data(),
+                                    ) {
                                         Ok(img) => {
                                             let _ = response_tx
                                                 .send(ImageResponse::Loaded(
@@ -50,10 +50,10 @@ impl AsyncHandler {
                                                 ))
                                                 .await;
                                         },
-                                        Err(err) => {
-                                            warn!(
+                                        Err(e) => {
+                                            tracing::warn!(
                                                 "Failed to decode image: {:?}",
-                                                err
+                                                e
                                             );
                                             let _ = response_tx
                                                 .send(ImageResponse::Error(
@@ -63,11 +63,8 @@ impl AsyncHandler {
                                         },
                                     }
                                 },
-                                Err(err) => {
-                                    warn!(
-                                        "Failed to load image from cache: {:?}",
-                                        err
-                                    );
+                                Err(e) => {
+                                    tracing::warn!("Cache error: {:?}", e);
                                     let _ = response_tx
                                         .send(ImageResponse::Error(path))
                                         .await;
@@ -75,7 +72,7 @@ impl AsyncHandler {
                             }
                         },
                         ImageRequest::Clear => {
-                            info!("Clearing image cache");
+                            tracing::info!("Clearing image cache");
                         },
                     }
                 }

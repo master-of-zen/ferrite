@@ -1,5 +1,6 @@
 use eframe::egui::{self, Context, Key};
-use std::path::PathBuf;
+use ferrite_cache::{CacheConfig, CacheManager};
+use std::{path::PathBuf, sync::Arc};
 use tokio::runtime::Runtime;
 
 use crate::{
@@ -17,8 +18,8 @@ pub struct FeriteApp {
     zoom_handler:   ZoomHandler,
     menu_bar:       MenuBar,
     async_channels: AsyncChannels,
+    cache_manager:  Arc<CacheManager>,
 }
-
 impl FeriteApp {
     pub fn new(
         cc: &eframe::CreationContext<'_>,
@@ -26,13 +27,18 @@ impl FeriteApp {
         config: FerriteConfig,
         runtime: Runtime,
     ) -> Self {
+        let runtime = Arc::new(runtime);
+        let cache_config = CacheConfig::default();
+        let cache_manager =
+            Arc::new(CacheManager::new(cache_config, runtime.clone()));
+
         let image_manager = ImageManager::new();
         let navigation = NavigationManager::new();
         let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
         let menu_bar = MenuBar::new(config.window.hide_menu);
 
         let (async_channels, request_rx, response_tx) = AsyncChannels::new(32);
-        let async_handler = AsyncHandler::new(runtime);
+        let async_handler = AsyncHandler::new(runtime, cache_manager.clone());
         async_handler.spawn_handler(request_rx, response_tx);
 
         let mut app = Self {
@@ -42,6 +48,7 @@ impl FeriteApp {
             zoom_handler,
             menu_bar,
             async_channels,
+            cache_manager,
         };
 
         if let Some(path) = initial_image {
