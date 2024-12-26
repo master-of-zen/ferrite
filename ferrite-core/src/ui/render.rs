@@ -215,8 +215,6 @@ impl ImageRenderer {
         (final_rect, response)
     }
 
-    // In src/ui/render.rs
-
     fn render_zoom_indicator(
         ui: &mut Ui,
         zoom_handler: &ZoomHandler,
@@ -227,41 +225,42 @@ impl ImageRenderer {
             return;
         }
 
-        // Always show the percentage, regardless of fit mode
         let percentage_text = format!("{:.0}%", zoom_handler.zoom_percentage());
-
-        // Get the screen rect for positioning
         let screen_rect = ui.ctx().screen_rect();
 
-        // Convert padding from Vector2D to Vec2
+        // Convert config padding to egui Vec2
         let padding =
             Vec2::new(config.padding.x() as f32, config.padding.y() as f32);
 
-        // Calculate container size based on font size
+        // Calculate text size with some buffer for percentage characters
         let font_size = config.font_size as f32;
-        let text_rect_size = Vec2::new(
-            font_size * 2.5,  // Width for percentage text
-            font_size + 16.0, // Height plus padding
+        let char_width = font_size * 0.6; // Approximate width per character
+        let text_width = char_width * percentage_text.len() as f32;
+
+        // Add margin for the frame
+        let frame_margin = 8.0; // Inner margin of the frame
+        let box_size = Vec2::new(
+            text_width + frame_margin * 2.0,
+            font_size + frame_margin * 2.0,
         );
 
-        // Calculate position based on corner configuration
         let corner_pos = match config.corner {
-            Corner::TopLeft => screen_rect.min + padding,
-            Corner::TopRight => {
-                screen_rect.right_top()
-                    + Vec2::new(-text_rect_size.x - padding.x, padding.y)
-            },
-            Corner::BottomLeft => {
-                screen_rect.left_bottom()
-                    + Vec2::new(padding.x, -text_rect_size.y - padding.y)
-            },
-            Corner::BottomRight => {
-                screen_rect.right_bottom()
-                    + Vec2::new(
-                        -text_rect_size.x - padding.x,
-                        -text_rect_size.y - padding.y,
-                    )
-            },
+            Corner::TopLeft => Pos2::new(
+                screen_rect.min.x + padding.x,
+                screen_rect.min.y + padding.y,
+            ),
+            Corner::TopRight => Pos2::new(
+                screen_rect.max.x - box_size.x - padding.x,
+                screen_rect.min.y + padding.y,
+            ),
+            Corner::BottomLeft => Pos2::new(
+                screen_rect.min.x + padding.x,
+                screen_rect.max.y - box_size.y - padding.y,
+            ),
+            Corner::BottomRight => Pos2::new(
+                screen_rect.max.x - box_size.x - padding.x,
+                screen_rect.max.y - box_size.y - padding.y,
+            ),
         };
 
         // Create a floating area for the indicator
@@ -280,7 +279,6 @@ impl ImageRenderer {
                     .rounding(4.0)
                     .inner_margin(4.0)
                     .show(ui, |ui| {
-                        // Create the percentage text with custom styling
                         let rich_text = RichText::new(percentage_text)
                             .color(Color32::from_rgba_unmultiplied(
                                 config.text_color.r,

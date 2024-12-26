@@ -21,16 +21,14 @@ pub mod zoom {
     pub const TRANSITION_DURATION: f64 = 0.2;
     pub const FIT_TO_WINDOW: bool = true;
     pub const MAINTAIN_ASPECT_RATIO: bool = true;
-    // Add default fit mode - we'll use FitLonger as it's most commonly expected
     pub const DEFAULT_FIT_MODE: &str = "FitLonger";
 }
 
 pub mod indicator {
     use super::*;
 
-    pub const FONT_SIZE: f64 = 22.0;
+    pub const FONT_SIZE: f64 = 40.0;
     pub const FONT_FAMILY: &str = "system-ui";
-    // Replace ColorRGBA constants with tuples
     pub const BACKGROUND_COLOR: (u8, u8, u8, u8) = (0, 0, 0, 128);
     pub const TEXT_COLOR: (u8, u8, u8, u8) = (255, 255, 255, 255);
     pub const PADDING_X: f64 = 5.0;
