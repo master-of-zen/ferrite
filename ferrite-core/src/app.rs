@@ -48,7 +48,7 @@ impl FeriteApp {
                     app.cache_manager.get_image(path.clone())
                 {
                     // Set the image in the image manager
-                    app.image_manager.set_image(image_data);
+                    app.image_manager.current_image = Some(image_data);
                     app.image_manager.set_path(path);
                     tracing::info!("Successfully loaded initial image");
                 } else {

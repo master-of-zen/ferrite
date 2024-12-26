@@ -33,7 +33,6 @@ tokio = { version = "1.0", features = [
 ] }
 once_cell = "1.8"
 
-# Optional dependency - only included when ferrite-metrics feature is enabled
 ferrite-logging = { version = "^0.1.1", path = "../ferrite-logging", optional = true }
 
 [dev-dependencies]

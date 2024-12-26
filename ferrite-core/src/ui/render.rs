@@ -2,6 +2,7 @@ use crate::ui::input;
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Color32, Context, Sense, Vec2};
 use ferrite_config::{Corner, FerriteConfig};
+use image::GenericImageView;
 
 use crate::{image::ImageManager, ui::zoom::ZoomHandler};
 
@@ -23,7 +24,7 @@ impl ImageRenderer {
         input::handle_input(ctx, ui, zoom_handler, panel_rect);
 
         let current_image_size =
-            if let Some(image_data) = image_manager.current_image() {
+            if let Some(image_data) = image_manager.current_image.as_mut() {
                 let (width, height) = image_data.dimensions();
                 Some(Vec2::new(width as f32, height as f32))
             } else {
@@ -37,34 +38,33 @@ impl ImageRenderer {
         }
 
         // Handle texture creation/retrieval
-        let texture_handle =
-            if let Some(image_data) = image_manager.current_image() {
-                if image_data.texture.is_none() {
-                    let size = [
-                        image_data.original.width() as usize,
-                        image_data.original.height() as usize,
-                    ];
-                    let image = image_data.original.to_rgba8();
+        let texture_handle = if let Some(image_data) =
+            image_manager.current_image.as_mut()
+        {
+            if image_manager.texture.is_none() {
+                let size =
+                    [image_data.width() as usize, image_data.height() as usize];
+                let image = image_data.to_rgba8();
 
-                    let texture = ctx.load_texture(
-                        "current-image",
-                        ColorImage::from_rgba_unmultiplied(
-                            size,
-                            image.as_flat_samples().as_slice(),
-                        ),
-                        TextureOptions::LINEAR,
-                    );
+                let texture = ctx.load_texture(
+                    "current-image",
+                    ColorImage::from_rgba_unmultiplied(
+                        size,
+                        image.as_flat_samples().as_slice(),
+                    ),
+                    TextureOptions::LINEAR,
+                );
 
-                    // Update zoom for new image
-                    let image_size = Vec2::new(size[0] as f32, size[1] as f32);
-                    zoom_handler
-                        .update_for_new_image(image_size, panel_rect.size());
-                    image_data.texture = Some(texture);
-                }
-                image_data.texture.as_ref()
-            } else {
-                None
-            };
+                // Update zoom for new image
+                let image_size = Vec2::new(size[0] as f32, size[1] as f32);
+                zoom_handler
+                    .update_for_new_image(image_size, panel_rect.size());
+                image_manager.texture = Some(texture);
+            }
+            image_manager.texture.as_ref()
+        } else {
+            None
+        };
 
         if let Some(texture) = texture_handle {
             let original_size = texture.size_vec2();
