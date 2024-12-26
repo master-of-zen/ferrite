@@ -1,7 +1,10 @@
 use crate::ui::input;
-use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
-use egui::{Color32, Context, Sense, Vec2};
-use ferrite_config::{Corner, FerriteConfig};
+use eframe::{
+    egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui},
+    Frame,
+};
+use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
+use ferrite_config::{Corner, FerriteConfig, IndicatorConfig};
 use image::GenericImageView;
 
 use crate::{image::ImageManager, ui::zoom::ZoomHandler};
@@ -94,19 +97,13 @@ impl ImageRenderer {
                 );
             }
 
+            Self::render_zoom_indicator(ui, zoom_handler, &config.indicator);
             // Render the image
             ui.painter().image(
                 texture.id(),
                 image_rect,
                 Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
                 Color32::WHITE,
-            );
-
-            Self::render_zoom_indicator(
-                ui,
-                zoom_handler,
-                panel_rect,
-                &config.indicator.corner,
             );
         }
     }
@@ -218,36 +215,84 @@ impl ImageRenderer {
         (final_rect, response)
     }
 
+    // In src/ui/render.rs
+
     fn render_zoom_indicator(
         ui: &mut Ui,
         zoom_handler: &ZoomHandler,
-        panel_rect: Rect,
-        corner: &Corner,
+        config: &IndicatorConfig,
     ) {
-        let mode_text = match zoom_handler.get_fit_mode() {
-            FitMode::OneToOne => "1:1",
-            FitMode::FitLonger => "Fit",
-            FitMode::FitShorter => "Fill",
-            FitMode::Custom => {
-                &format!("{:.0}%", zoom_handler.zoom_percentage())
-            },
-        };
+        // Only render if indicator should be shown
+        if !config.show_percentage {
+            return;
+        }
 
-        let text_size = Vec2::new(60.0, 20.0);
-        let corner_pos = match corner {
-            Corner::TopLeft => panel_rect.min + Vec2::new(5.0, 5.0),
+        // Always show the percentage, regardless of fit mode
+        let percentage_text = format!("{:.0}%", zoom_handler.zoom_percentage());
+
+        // Get the screen rect for positioning
+        let screen_rect = ui.ctx().screen_rect();
+
+        // Convert padding from Vector2D to Vec2
+        let padding =
+            Vec2::new(config.padding.x() as f32, config.padding.y() as f32);
+
+        // Calculate container size based on font size
+        let font_size = config.font_size as f32;
+        let text_rect_size = Vec2::new(
+            font_size * 2.5,  // Width for percentage text
+            font_size + 16.0, // Height plus padding
+        );
+
+        // Calculate position based on corner configuration
+        let corner_pos = match config.corner {
+            Corner::TopLeft => screen_rect.min + padding,
             Corner::TopRight => {
-                panel_rect.max - Vec2::new(text_size.x + 5.0, -5.0)
+                screen_rect.right_top()
+                    + Vec2::new(-text_rect_size.x - padding.x, padding.y)
             },
             Corner::BottomLeft => {
-                panel_rect.max - Vec2::new(-5.0, text_size.y + 5.0)
+                screen_rect.left_bottom()
+                    + Vec2::new(padding.x, -text_rect_size.y - padding.y)
             },
             Corner::BottomRight => {
-                panel_rect.max - Vec2::new(text_size.x + 5.0, text_size.y + 5.0)
+                screen_rect.right_bottom()
+                    + Vec2::new(
+                        -text_rect_size.x - padding.x,
+                        -text_rect_size.y - padding.y,
+                    )
             },
         };
 
-        let text_rect = Rect::from_min_size(corner_pos, text_size);
-        ui.put(text_rect, egui::Label::new(mode_text));
+        // Create a floating area for the indicator
+        Area::new("zoom_indicator")
+            .order(Order::Foreground)
+            .fixed_pos(corner_pos)
+            .show(ui.ctx(), |ui| {
+                // Create a frame with background
+                egui::Frame::none()
+                    .fill(Color32::from_rgba_unmultiplied(
+                        config.background_color.r,
+                        config.background_color.g,
+                        config.background_color.b,
+                        config.background_color.a,
+                    ))
+                    .rounding(4.0)
+                    .inner_margin(4.0)
+                    .show(ui, |ui| {
+                        // Create the percentage text with custom styling
+                        let rich_text = RichText::new(percentage_text)
+                            .color(Color32::from_rgba_unmultiplied(
+                                config.text_color.r,
+                                config.text_color.g,
+                                config.text_color.b,
+                                config.text_color.a,
+                            ))
+                            .size(font_size)
+                            .family(FontFamily::Proportional);
+
+                        ui.label(rich_text);
+                    });
+            });
     }
 }

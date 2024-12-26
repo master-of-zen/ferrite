@@ -52,7 +52,7 @@ pub mod selection {
 
 pub mod controls {
 
-    pub const ZOOM_IN_KEYS: &[&str] = &["Equal", "Plus", "W"];
+    pub const ZOOM_IN_KEYS: &[&str] = &["Equals", "Plus", "W"];
     pub const ZOOM_OUT_KEYS: &[&str] = &["Minus", "S"];
     pub const RESET_ZOOM_KEY: &str = "Num0";
     pub const TOGGLE_FIT_KEY: &str = "F";
