@@ -26,7 +26,6 @@ ferrite [IMAGE_PATH]
 - `-` / `S`: Zoom out
 - `0`: Reset zoom
 - `F`: Toggle fit mode
-- `M`: Toggle menu visibility
 
 ### 🖱️Mouse Controls
 - `Right Click + Drag`: Selection box
