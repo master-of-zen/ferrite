@@ -56,7 +56,7 @@ impl CacheHandle {
     }
 
     pub fn cache_image(&self, path: PathBuf) -> CacheResult<()> {
-        let (response_tx, response_rx) = oneshot::channel();
+        let (response_tx, _response_rx) = oneshot::channel();
 
         self.request_tx
             .send(CacheRequest::CacheImage {
@@ -69,12 +69,7 @@ impl CacheHandle {
                 )
             })?;
 
-        // Just wait for acknowledgment
-        response_rx.blocking_recv().map_err(|_| {
-            crate::CacheError::Config(
-                "Cache manager stopped responding".to_string(),
-            )
-        })?
+        Ok(())
     }
 }
 

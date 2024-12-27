@@ -7,7 +7,6 @@ use tracing::{info, info_span, instrument, warn};
 
 use crate::error::{ImageError, Result};
 
-/// Manages image loading, caching and texture handling
 pub struct ImageManager {
     pub current_image: Option<Arc<DynamicImage>>,
     pub texture:       Option<egui::TextureHandle>,
@@ -36,7 +35,6 @@ impl ImageManager {
         let metrics = PerformanceMetrics::new("image_loading", true);
 
         let result = info_span!("image_loading_process").in_scope(|| {
-            // First try to get the image from cache
             let get_image: CacheResult<Arc<DynamicImage>> =
                 self.cache_manager.get_image(path.clone());
 
@@ -44,10 +42,8 @@ impl ImageManager {
                 let dimensions = image_data.dimensions();
                 info!("Setting new image and clearing texture");
 
-                // Clear the existing texture to force a refresh
                 self.texture = None;
 
-                // Update the current image
                 self.current_image = Some(image_data);
                 self.current_path = Some(path);
 

@@ -25,11 +25,9 @@ fn main() -> Result<(), Error> {
         std::process::exit(1);
     });
 
-    // Create cache manager early
     let cache_config = CacheConfig::default();
     let cache_manager = Arc::new(CacheManager::new(cache_config));
 
-    // Pre-cache initial image if provided
     if let Some(ref image_path) = args.image_path {
         if let Err(e) = cache_manager.get_image(image_path.clone()) {
             eprintln!("Warning: Failed to pre-cache image: {}", e);

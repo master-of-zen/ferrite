@@ -18,7 +18,7 @@ pub struct FeriteApp {
 }
 impl FeriteApp {
     pub fn new(
-        cc: &eframe::CreationContext<'_>,
+        _cc: &eframe::CreationContext<'_>,
         initial_image: Option<PathBuf>,
         config: FerriteConfig,
         cache_manager: Arc<CacheHandle>,

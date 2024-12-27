@@ -8,11 +8,12 @@ WIP Image viewer in Rust
 
 * Features as options later.
 
-# Roadmap
-
-- [x] Default zoom
-- [X] Default panning
-- [ ] Opening next and previous image
-- [ ] Keyboard shortcuts for actions
-- [ ] Window helper for all shortcuts
-- [ ] Shortcut for 
+# TODO
+* Move all path handling to the navigation
+* Create ferrite-havigation for the navigation handling
+* Image manager moved to ferrite-imaga
+* Implement help window
+* Implement name window
+* Implement dimensions window
+* Cache config
+* Move all ui stuff to the UI crate
