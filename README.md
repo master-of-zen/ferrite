@@ -1,19 +1,60 @@
 # Ferrite
-WIP Image viewer in Rust
 
-# Vision
-* No nonsense, I just want to open image, zooom in-out and go next or previous
+IT VIEW IMAGES FAST
 
-* Keyboard first. No menu crawling. Press H, you got complete guide for all functions and what key does what.
+## Features
 
-* Features as options later.
+- 🚀Blazingly-high-performance image loading with async caching
+- ⚙️Highly Configurable
+- 🎯Straight to the point
+## ⚡Quick Start
 
-# TODO
-* Move all path handling to the navigation
-* Create ferrite-havigation for the navigation handling
-* Image manager moved to ferrite-imaga
-* Implement help window
-* Implement name window
-* Implement dimensions window
-* Cache config
-* Move all ui stuff to the UI crate
+```bash
+cargo install ferrite
+ferrite [IMAGE_PATH]
+```
++ look up for your system how to make launch ferrite as default image viewer
+## Keybindings
+
+### Navigation
+- `Left Arrow` / `A`: Previous image
+- `Right Arrow` / `D`: Next image
+- `Q`: Quit
+
+### 🔍View Controls
+- `+` / `=` / `W`: Zoom in
+- `-` / `S`: Zoom out
+- `0`: Reset zoom
+- `F`: Toggle fit mode
+- `M`: Toggle menu visibility
+
+### 🖱️Mouse Controls
+- `Right Click + Drag`: Selection box
+- `Scroll`: Zoom in/out
+- `Left Click + Drag`: Pan image
+
+## ⚙️Configuration
+
+Ferrite uses TOML for configuration. Generate a default config:
+
+```bash
+ferrite --generate-config
+```
+
+The config file location is determined by:
+1. `FERRITE_CONF` environment variable
+2. Default XDG config path (`~/.config/ferrite/config.toml`)
+
+Fields in config are self descriptive.
+
+## 🏃PERFORMANCE
+
+* PARALLEL image loading
+* SMART caching system
+* ADAPTIVE memory usage
+* ASYNC I/O everywhere
+* GPU POWER via egui
+
+## License
+
+GPL-3.0-or-later
