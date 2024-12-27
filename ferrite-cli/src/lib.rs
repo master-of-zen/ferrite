@@ -2,7 +2,6 @@ use clap::Parser;
 use ferrite_config::FerriteConfig;
 use ferrite_logging::LogLevel;
 use std::{env, path::PathBuf};
-
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -47,6 +46,13 @@ impl Args {
         <Self as clap::Parser>::parse()
     }
 
+    pub fn get_log_level(&self) -> Result<LogLevel> {
+        match &self.log_level {
+            Some(level) => level.parse().map_err(|e| CliError::LogLevel(e)),
+            None => Ok(LogLevel::Info),
+        }
+    }
+
     pub fn handle_config(&self) -> Result<FerriteConfig> {
         if self.generate_config {
             let config_path = FerriteConfig::resolve_config_path()?;
@@ -75,7 +81,6 @@ impl Args {
             std::process::exit(0);
         }
 
-        // Load configuration with environment awareness
         Ok(FerriteConfig::load()?)
     }
 
@@ -97,13 +102,5 @@ impl Args {
         println!("Default path: {}", default_path.display());
 
         Ok(())
-    }
-
-    pub fn print_config_info(&self) -> Result<()> {
-        let config_path = FerriteConfig::resolve_config_path()?;
-        self.log_level
-            .as_deref()
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(LogLevel::Info)
     }
 }

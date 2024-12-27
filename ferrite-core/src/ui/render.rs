@@ -236,7 +236,7 @@ impl ImageRenderer {
         let text_width = char_width * percentage_text.len() as f32;
 
         // Add margin for the frame
-        let frame_margin = 8.0; // Inner margin of the frame
+        let frame_margin = 8.0;
         let box_size = Vec2::new(
             text_width + frame_margin * 2.0,
             font_size + frame_margin * 2.0,

@@ -19,6 +19,7 @@ authors = ["master_of_zen master_of_zen@protonmail.com"]
 documentation = "https://docs.rs/ferrite"
 
 [workspace.dependencies]
+thiserror = "1"
 clap = { version = "4.4", features = ["derive"] }
 config = { version = "0.14.1", features = ["toml"] }
 directories = "5.0"
