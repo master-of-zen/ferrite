@@ -7,7 +7,7 @@ use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
 use ferrite_config::{Corner, FerriteConfig, IndicatorConfig};
 use image::GenericImageView;
 
-use crate::{image::ImageManager, ui::zoom::ZoomHandler};
+use crate::ui::zoom::ZoomHandler;
 
 use super::zoom::FitMode;
 

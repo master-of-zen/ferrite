@@ -13,5 +13,5 @@ categories = ["command-line-interface"]
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
-ferrite-config = { version = "^0.1.0", path = "../ferrite-config" }
-ferrite-logging = { version = "^0.1.0", path = "../ferrite-logging" }
+ferrite-config = { path = "../ferrite-config" }
+ferrite-logging = { path = "../ferrite-logging" }
