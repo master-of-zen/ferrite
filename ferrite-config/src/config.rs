@@ -6,9 +6,9 @@ use tracing::{debug, info};
 use crate::{
     error::{ConfigError, Result},
     input::ControlsConfig,
-    ui::IndicatorConfig,
     window::WindowConfig,
     zoom::ZoomConfig,
+    IndicatorConfig,
     CONFIG_VERSION,
 };
 

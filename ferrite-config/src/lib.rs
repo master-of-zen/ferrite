@@ -28,8 +28,8 @@ pub use config::FerriteConfig;
 pub use error::{ConfigError, Result};
 
 // Re-export configuration component types
+pub use indicator::IndicatorConfig;
 pub use input::ControlsConfig;
-pub use ui::IndicatorConfig;
 pub use window::WindowConfig;
 pub use zoom::ZoomConfig;
 
@@ -44,9 +44,9 @@ pub const CONFIG_VERSION: &str = "0.1";
 mod config;
 mod defaults;
 mod error;
+mod indicator;
 mod input;
 mod navigation;
 mod types;
-mod ui;
 mod window;
 mod zoom;
