@@ -29,7 +29,7 @@ pub use error::{ConfigError, Result};
 
 // Re-export configuration component types
 pub use input::ControlsConfig;
-pub use ui::{IndicatorConfig, SelectionConfig};
+pub use ui::IndicatorConfig;
 pub use window::WindowConfig;
 pub use zoom::ZoomConfig;
 

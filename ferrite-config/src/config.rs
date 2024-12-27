@@ -6,7 +6,7 @@ use tracing::{debug, info};
 use crate::{
     error::{ConfigError, Result},
     input::ControlsConfig,
-    ui::{IndicatorConfig, SelectionConfig},
+    ui::IndicatorConfig,
     window::WindowConfig,
     zoom::ZoomConfig,
     CONFIG_VERSION,
@@ -19,7 +19,6 @@ pub struct FerriteConfig {
     pub zoom:      ZoomConfig,
     pub controls:  ControlsConfig,
     pub indicator: IndicatorConfig,
-    pub selection: SelectionConfig,
 }
 
 impl Default for FerriteConfig {
@@ -31,7 +30,6 @@ impl Default for FerriteConfig {
             zoom:      ZoomConfig::default(),
             controls:  ControlsConfig::default(),
             indicator: IndicatorConfig::default(),
-            selection: SelectionConfig::default(),
         }
     }
 }
@@ -127,7 +125,6 @@ impl FerriteConfig {
         self.zoom.validate()?;
         self.controls.validate()?;
         self.indicator.validate()?;
-        self.selection.validate()?;
         Ok(())
     }
 

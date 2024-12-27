@@ -23,7 +23,6 @@ impl ZoomHandler {
         Self {
             zoom_level:          default_zoom,
             pan_offset:          Vec2::ZERO,
-            // Start with FitLonger as the default mode unless overridden
             fit_mode:            FitMode::FitLonger,
             default_fit_mode:    FitMode::FitLonger,
             manual_zoom_applied: false,
