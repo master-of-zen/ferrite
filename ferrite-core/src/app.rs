@@ -3,7 +3,6 @@ use ferrite_cache::CacheHandle;
 use std::{path::PathBuf, sync::Arc};
 
 use crate::{
-    image::ImageManager,
     navigation::NavigationManager,
     ui::{menu::MenuBar, render::ImageRenderer, zoom::ZoomHandler},
 };

@@ -1,7 +1,7 @@
 use clap::Parser;
-use ferrite_cache::{CacheConfig, CacheHandle, CacheManager};
+use ferrite_cache::{CacheConfig, CacheManager};
 use std::{collections::HashMap, path::PathBuf, time::Instant};
-use tracing::{error, info};
+use tracing::error;
 
 #[derive(Parser, Debug)]
 struct Args {
