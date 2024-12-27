@@ -1,6 +1,6 @@
 # Ferrite
 
-IT VIEW IMAGES FAST
+IT VIEWS IMAGES FAST
 
 ## Features
 
