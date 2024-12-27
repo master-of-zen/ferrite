@@ -11,7 +11,7 @@ use ferrite_config::FerriteConfig;
 
 pub struct FeriteApp {
     config:        FerriteConfig,
-    image_manager: ImageManager,
+    image_manager: ferrite_image::ImageManager,
     navigation:    NavigationManager,
     zoom_handler:  ZoomHandler,
     menu_bar:      MenuBar,
@@ -24,7 +24,8 @@ impl FeriteApp {
         config: FerriteConfig,
         cache_manager: Arc<CacheHandle>,
     ) -> Self {
-        let image_manager = ImageManager::new(cache_manager.clone());
+        let image_manager =
+            ferrite_image::ImageManager::new(cache_manager.clone());
         let navigation = NavigationManager::new();
         let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
         let menu_bar = MenuBar::new(config.window.hide_menu);

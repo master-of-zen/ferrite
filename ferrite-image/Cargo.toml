@@ -1,23 +1,22 @@
 [package]
-name = "ferrite-core"
+name = "ferrite-image"
 version.workspace = true
 edition.workspace = true
-description = "Core functionality for Ferrite image viewer"
 license.workspace = true
 repository.workspace = true
-documentation = "https://docs.rs/ferrite-core"
-readme = "README.md"
-keywords = ["ferrite"]
-categories = ["development-tools::debugging"]
+authors.workspace = true
+documentation.workspace = true
 
 [dependencies]
 ferrite-cache = { path = "../ferrite-cache" }
 ferrite-config = { path = "../ferrite-config" }
-ferrite-image = { path = "../ferrite-image" }
 ferrite-logging = { path = "../ferrite-logging" }
 
 eframe = { workspace = true }
 egui = { workspace = true }
 image = { workspace = true }
 tracing = { workspace = true }
-thiserror = "1"
+thiserror = "1.0"
+
+[dev-dependencies]
+criterion = "0.5"
