@@ -1,16 +1,18 @@
 [package]
 name = "ferrite-image"
+description = "Image functionality for Ferrite image viewer"
+documentation = "https://docs.rs/ferrite-image"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-documentation.workspace = true
+
 
 [dependencies]
-ferrite-cache = { path = "../ferrite-cache" }
-ferrite-config = { path = "../ferrite-config" }
-ferrite-logging = { path = "../ferrite-logging" }
+ferrite-cache = { path = "../ferrite-cache", version = "^0.1.1" }
+ferrite-config = { path = "../ferrite-config", version = "^0.1.1" }
+ferrite-logging = { path = "../ferrite-logging", version = "^0.1.1" }
 
 eframe = { workspace = true }
 egui = { workspace = true }
