@@ -5,7 +5,6 @@ pub mod window {
     pub const MIN_WIDTH: u32 = 200;
     pub const MIN_HEIGHT: u32 = 200;
     pub const BORDERLESS: bool = true;
-    pub const HIDE_MENU: bool = true;
 }
 
 pub mod zoom {

@@ -5,7 +5,7 @@ pub fn handle_input(
     ctx: &Context,
     ui: &Ui,
     zoom_handler: &mut ZoomHandler,
-    panel_rect: Rect,
+    _panel_rect: Rect,
 ) {
     if ctx.input(|i| i.key_pressed(Key::F)) {
         zoom_handler.reset_to_default_fit_mode();

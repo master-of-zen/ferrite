@@ -35,13 +35,12 @@ impl WindowDimensions {
 pub struct WindowConfig {
     pub dimensions: Option<WindowDimensions>,
     pub borderless: bool,
-    pub hide_menu:  bool,
 }
 
 impl Default for WindowConfig {
     fn default() -> Self {
         Self {
-            dimensions: None, borderless: BORDERLESS, hide_menu: HIDE_MENU
+            dimensions: None, borderless: BORDERLESS
         }
     }
 }
