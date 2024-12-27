@@ -17,7 +17,6 @@ futures.workspace = true
 image.workspace = true
 lru.workspace = true
 rayon.workspace = true
-anyhow.workspace = true
 tracing.workspace = true
 tokio.workspace = true
 
