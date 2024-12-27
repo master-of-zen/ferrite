@@ -11,14 +11,13 @@ keywords = ["ferrite"]
 categories = ["development-tools::debugging"]
 
 [dependencies]
-eframe.workspace = true
-egui.workspace = true
-image.workspace = true
-rayon.workspace = true
-tracing.workspace = true
-tokio.workspace = true
+ferrite-cache = { path = "../ferrite-cache" }
+ferrite-config = { path = "../ferrite-config" }
+ferrite-image = { path = "../ferrite-image" }
+ferrite-logging = { path = "../ferrite-logging" }
 
-ferrite-config = { version = "^0.1.1", path = "../ferrite-config" }
-ferrite-logging = { version = "^0.1.1", path = "../ferrite-logging" }
-ferrite-cache = { version = "^0.1.0", path = "../ferrite-cache" }
+eframe = { workspace = true }
+egui = { workspace = true }
+image = { workspace = true }
+tracing = { workspace = true }
 thiserror = "1"

@@ -4,7 +4,8 @@ use std::{
 };
 use tracing::info;
 
-use crate::image::SupportedFormats;
+use crate::ui::zoom::ZoomHandler;
+use ferrite_image::{ImageManager, SupportedFormats};
 
 pub struct NavigationManager {
     directory_images: Vec<PathBuf>,
@@ -33,11 +34,10 @@ impl NavigationManager {
             .filter_map(|entry| {
                 let entry = entry.ok()?;
                 let path = entry.path();
-                if path.is_file() {
-                    // Use our new SupportedFormats check
-                    if SupportedFormats::is_supported(path.extension()) {
-                        return Some(path);
-                    }
+                if path.is_file()
+                    && SupportedFormats::is_supported(path.extension())
+                {
+                    return Some(path);
                 }
                 None
             })
@@ -86,8 +86,8 @@ impl NavigationManager {
     pub fn handle_keyboard_input(
         &mut self,
         ctx: &eframe::egui::Context,
-        image_manager: &mut crate::image::ImageManager,
-        zoom_handler: &mut crate::ui::zoom::ZoomHandler,
+        image_manager: &mut ImageManager,
+        zoom_handler: &mut ZoomHandler,
     ) {
         let next_pressed = ctx.input(|i| {
             i.key_pressed(eframe::egui::Key::ArrowRight)
@@ -101,13 +101,11 @@ impl NavigationManager {
         if next_pressed {
             if let Some(next_path) = self.next_image() {
                 let _ = image_manager.load_image(next_path);
-                // Reset pan offset while maintaining fit mode
                 zoom_handler.reset_view_position();
             }
         } else if prev_pressed {
             if let Some(prev_path) = self.previous_image() {
                 let _ = image_manager.load_image(prev_path);
-                // Reset pan offset while maintaining fit mode
                 zoom_handler.reset_view_position();
             }
         }

@@ -17,7 +17,7 @@ impl ImageRenderer {
     pub fn render(
         ui: &mut Ui,
         ctx: &Context,
-        image_manager: &mut ImageManager,
+        image_manager: &mut ferrite_image::ImageManager,
         zoom_handler: &mut ZoomHandler,
         config: &FerriteConfig,
     ) {
@@ -98,6 +98,7 @@ impl ImageRenderer {
             }
 
             Self::render_zoom_indicator(ui, zoom_handler, &config.indicator);
+
             // Render the image
             ui.painter().image(
                 texture.id(),
