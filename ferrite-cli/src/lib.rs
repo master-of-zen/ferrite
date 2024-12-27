@@ -1,8 +1,25 @@
-use anyhow::Result;
 use clap::Parser;
 use ferrite_config::FerriteConfig;
 use ferrite_logging::LogLevel;
 use std::{env, path::PathBuf};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum CliError {
+    #[error("Configuration error: {0}")]
+    Config(#[from] ferrite_config::ConfigError),
+
+    #[error("Invalid log level: {0}")]
+    LogLevel(String),
+
+    #[error("Invalid path: {path}")]
+    InvalidPath { path: PathBuf },
+
+    #[error("Failed to generate config: {0}")]
+    ConfigGeneration(String),
+}
+
+pub type Result<T> = std::result::Result<T, CliError>;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -27,6 +44,13 @@ pub struct Args {
 impl Args {
     pub fn parse() -> Self {
         <Self as clap::Parser>::parse()
+    }
+
+    pub fn get_log_level(&self) -> Result<LogLevel> {
+        match &self.log_level {
+            Some(level) => level.parse().map_err(|e| CliError::LogLevel(e)),
+            None => Ok(LogLevel::Info),
+        }
     }
 
     pub fn handle_config(&self) -> Result<FerriteConfig> {
@@ -57,11 +81,9 @@ impl Args {
             std::process::exit(0);
         }
 
-        // Load configuration with environment awareness
         Ok(FerriteConfig::load()?)
     }
 
-    /// Prints information about the current configuration path resolution
     pub fn print_config_info(&self) -> Result<()> {
         let config_path = FerriteConfig::resolve_config_path()?;
 
@@ -80,12 +102,5 @@ impl Args {
         println!("Default path: {}", default_path.display());
 
         Ok(())
-    }
-
-    pub fn get_log_level(&self) -> LogLevel {
-        self.log_level
-            .as_deref()
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(LogLevel::Info)
     }
 }

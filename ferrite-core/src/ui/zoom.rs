@@ -12,8 +12,8 @@ pub struct ZoomHandler {
     zoom_level:          f64,
     pan_offset:          Vec2,
     fit_mode:            FitMode,
-    default_fit_mode:    FitMode, // Store the configured default
-    manual_zoom_applied: bool,    // Track if user has manually zoomed
+    default_fit_mode:    FitMode,
+    manual_zoom_applied: bool,
     min_zoom:            f64,
     max_zoom:            f64,
 }
@@ -23,7 +23,6 @@ impl ZoomHandler {
         Self {
             zoom_level:          default_zoom,
             pan_offset:          Vec2::ZERO,
-            // Start with FitLonger as the default mode unless overridden
             fit_mode:            FitMode::FitLonger,
             default_fit_mode:    FitMode::FitLonger,
             manual_zoom_applied: false,
@@ -112,18 +111,12 @@ impl ZoomHandler {
         self.pan_offset = Vec2::ZERO;
     }
 
-    // Reset to the configured fit mode while maintaining the default mode
-    // setting
     pub fn reset_to_default_fit_mode(&mut self) {
-        // Reset manual zoom flag since we're going back to fit mode
         self.manual_zoom_applied = false;
-        // Set current fit mode back to the default
         self.fit_mode = self.default_fit_mode;
-        // Pan offset should be reset when changing fit modes
         self.pan_offset = Vec2::ZERO;
     }
 
-    // Getters
     pub fn zoom_level(&self) -> f64 {
         self.zoom_level
     }
@@ -138,9 +131,5 @@ impl ZoomHandler {
 
     pub fn get_fit_mode(&self) -> FitMode {
         self.fit_mode
-    }
-
-    pub fn is_manual_zoom(&self) -> bool {
-        self.manual_zoom_applied
     }
 }

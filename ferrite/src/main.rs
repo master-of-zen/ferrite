@@ -3,15 +3,17 @@ use std::sync::Arc;
 use eframe::Error;
 use egui::ViewportBuilder;
 use ferrite_cache::{CacheConfig, CacheManager};
-use ferrite_cli::Args;
+use ferrite_cli::{Args, CliError};
 use ferrite_core::FeriteApp;
 use ferrite_logging::{init, LogConfig};
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
 
+    // just for now unwrap
+    // TODO: HANDLE THIS CORRECTLY
     init(LogConfig {
-        level:        args.get_log_level(),
+        level:        args.get_log_level().unwrap(),
         enable_tracy: true,
         log_spans:    true,
     });
@@ -25,11 +27,9 @@ fn main() -> Result<(), Error> {
         std::process::exit(1);
     });
 
-    // Create cache manager early
     let cache_config = CacheConfig::default();
     let cache_manager = Arc::new(CacheManager::new(cache_config));
 
-    // Pre-cache initial image if provided
     if let Some(ref image_path) = args.image_path {
         if let Err(e) = cache_manager.get_image(image_path.clone()) {
             eprintln!("Warning: Failed to pre-cache image: {}", e);

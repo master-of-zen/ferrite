@@ -4,7 +4,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use crate::{
     navigation::NavigationManager,
-    ui::{menu::MenuBar, render::ImageRenderer, zoom::ZoomHandler},
+    ui::{render::ImageRenderer, zoom::ZoomHandler},
 };
 use ferrite_config::FerriteConfig;
 
@@ -13,12 +13,11 @@ pub struct FeriteApp {
     image_manager: ferrite_image::ImageManager,
     navigation:    NavigationManager,
     zoom_handler:  ZoomHandler,
-    menu_bar:      MenuBar,
     cache_manager: Arc<CacheHandle>,
 }
 impl FeriteApp {
     pub fn new(
-        cc: &eframe::CreationContext<'_>,
+        _cc: &eframe::CreationContext<'_>,
         initial_image: Option<PathBuf>,
         config: FerriteConfig,
         cache_manager: Arc<CacheHandle>,
@@ -27,14 +26,12 @@ impl FeriteApp {
             ferrite_image::ImageManager::new(cache_manager.clone());
         let navigation = NavigationManager::new();
         let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
-        let menu_bar = MenuBar::new(config.window.hide_menu);
 
         let mut app = Self {
             config,
             image_manager,
             navigation,
             zoom_handler,
-            menu_bar,
             cache_manager,
         };
 
@@ -73,15 +70,7 @@ impl eframe::App for FeriteApp {
             &mut self.zoom_handler,
         );
 
-        if ctx.input(|i| i.key_pressed(Key::M)) {
-            self.menu_bar.toggle();
-        }
-
         egui::CentralPanel::default().show(ctx, |ui| {
-            if !self.menu_bar.is_hidden() {
-                self.menu_bar.render(ui, ctx, &mut self.config);
-            }
-
             ImageRenderer::render(
                 ui,
                 ctx,

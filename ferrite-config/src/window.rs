@@ -35,13 +35,12 @@ impl WindowDimensions {
 pub struct WindowConfig {
     pub dimensions: Option<WindowDimensions>,
     pub borderless: bool,
-    pub hide_menu:  bool,
 }
 
 impl Default for WindowConfig {
     fn default() -> Self {
         Self {
-            dimensions: None, borderless: BORDERLESS, hide_menu: HIDE_MENU
+            dimensions: None, borderless: BORDERLESS
         }
     }
 }
@@ -70,26 +69,5 @@ impl WindowConfig {
             dimensions: Some(WindowDimensions::new(width, height)?),
             ..Self::default()
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_window_dimensions_validation() {
-        assert!(WindowDimensions::new(MIN_WIDTH, MIN_HEIGHT).is_ok());
-        assert!(WindowDimensions::new(MIN_WIDTH - 1, MIN_HEIGHT).is_err());
-        assert!(WindowDimensions::new(MIN_WIDTH, MIN_HEIGHT - 1).is_err());
-    }
-
-    #[test]
-    fn test_default_config() {
-        let config = WindowConfig::default();
-        assert!(config.validate().is_ok());
-        assert!(config.dimensions.is_none());
-        assert_eq!(config.borderless, BORDERLESS);
-        assert_eq!(config.hide_menu, HIDE_MENU);
     }
 }

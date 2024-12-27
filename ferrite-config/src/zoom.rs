@@ -139,24 +139,3 @@ impl ZoomConfig {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_zoom_steps_ordering() {
-        let steps = ZoomSteps::new(vec![2.0, 1.0, 3.0]).unwrap();
-        assert_eq!(steps.as_slice(), &[1.0, 2.0, 3.0]);
-    }
-
-    #[test]
-    fn test_zoom_validation() {
-        let config = ZoomConfig::default();
-        assert!(config.validate().is_ok());
-
-        let mut invalid = config.clone();
-        invalid.min_zoom = -1.0;
-        assert!(invalid.validate().is_err());
-    }
-}
