@@ -1,8 +1,5 @@
 use crate::ui::input;
-use eframe::{
-    egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui},
-    Frame,
-};
+use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
 use ferrite_config::{Corner, FerriteConfig, IndicatorConfig};
 use image::GenericImageView;

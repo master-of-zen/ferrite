@@ -6,7 +6,6 @@ use ferrite_cache::{CacheConfig, CacheManager};
 use ferrite_cli::Args;
 use ferrite_core::FeriteApp;
 use ferrite_logging::{init, LogConfig};
-use tokio::runtime::Runtime;
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();

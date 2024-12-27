@@ -8,7 +8,6 @@ use tracing::{info, info_span, instrument, warn};
 
 mod formats;
 
-pub use formats::SupportedFormats;
 
 pub struct ImageManager {
     pub current_image: Option<Arc<DynamicImage>>,

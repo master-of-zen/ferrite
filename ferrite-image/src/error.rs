@@ -1,4 +1,4 @@
-use std::{io, path::PathBuf};
+use std::io;
 use thiserror::Error;
 
 /// Represents all possible errors that can occur during image operations

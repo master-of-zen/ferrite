@@ -1,5 +1,5 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc, time::Instant};
-use tracing::{debug, info};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use tracing::debug;
 
 use crate::CacheResult;
 use tokio::sync::oneshot;
