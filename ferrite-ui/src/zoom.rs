@@ -36,13 +36,8 @@ impl ZoomHandler {
         image_size: Vec2,
         window_size: Vec2,
     ) {
-        // Reset manual zoom flag when switching images
         self.manual_zoom_applied = false;
-
-        // Reset to default fit mode
         self.fit_mode = self.default_fit_mode;
-
-        // Calculate and apply the appropriate zoom level
         let new_zoom = self.calculate_fit_zoom(image_size, window_size);
         self.zoom_level = new_zoom;
         self.pan_offset = Vec2::ZERO;
@@ -53,7 +48,6 @@ impl ZoomHandler {
         image_size: Vec2,
         window_size: Vec2,
     ) {
-        // Only adjust zoom if manual zoom hasn't been applied
         if !self.manual_zoom_applied {
             self.zoom_level = self.calculate_fit_zoom(image_size, window_size);
         }
