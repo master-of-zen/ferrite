@@ -1,7 +1,7 @@
 use crate::{
     defaults::indicator::*,
     error::{ConfigError, Result},
-    types::{ColorRGBA, Corner, Vector2D},
+    types::{ColorRGBA, Position, Vector2D},
 };
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +12,7 @@ pub struct IndicatorConfig {
     pub background_color: ColorRGBA,
     pub text_color:       ColorRGBA,
     pub padding:          Vector2D,
-    pub corner:           Corner,
+    pub position:         Position,
     pub show_percentage:  bool,
 }
 impl Default for IndicatorConfig {
@@ -34,7 +34,7 @@ impl Default for IndicatorConfig {
             ),
             padding:          Vector2D::new(PADDING_X, PADDING_Y)
                 .expect("Default padding must be valid"),
-            corner:           CORNER,
+            position:         POSITION,
             show_percentage:  SHOW_PERCENTAGE,
         }
     }

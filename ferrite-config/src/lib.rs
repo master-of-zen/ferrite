@@ -35,7 +35,7 @@ pub use window::WindowConfig;
 pub use zoom::ZoomConfig;
 
 // Re-export common types used in configuration
-pub use types::{Color32, ColorRGBA, Corner, Key, MouseButton, Vector2D};
+pub use types::{Color32, ColorRGBA, Position, Key, MouseButton, Vector2D};
 
 // Version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

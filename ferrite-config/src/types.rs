@@ -89,21 +89,24 @@ impl Vector2D {
     }
 }
 
-/// Represents the corner of a window or display area
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Corner {
+pub enum Position {
+    Top,
+    Bottom,
+    Left,
+    Right,
     TopLeft,
     TopRight,
     BottomLeft,
     BottomRight,
+    Center,
 }
 
-impl Default for Corner {
+impl Default for Position {
     fn default() -> Self {
-        Corner::TopRight
+        Position::TopRight
     }
 }
-
 /// Represents a mouse button
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MouseButton {

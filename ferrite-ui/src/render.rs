@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::{input, FitMode, ZoomHandler};
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
-use ferrite_config::{Corner, FerriteConfig, IndicatorConfig};
+use ferrite_config::{FerriteConfig, IndicatorConfig, Position};
 use image::GenericImageView;
 
 pub struct ImageRenderer;
@@ -196,28 +196,48 @@ impl ImageRenderer {
             font_size + frame_margin * 2.0,
         );
 
-        let corner_pos = match config.corner {
-            Corner::TopLeft => Pos2::new(
+        let pos = match config.position {
+            Position::TopLeft => Pos2::new(
                 screen_rect.min.x + padding.x,
                 screen_rect.min.y + padding.y,
             ),
-            Corner::TopRight => Pos2::new(
+            Position::TopRight => Pos2::new(
                 screen_rect.max.x - box_size.x - padding.x,
                 screen_rect.min.y + padding.y,
             ),
-            Corner::BottomLeft => Pos2::new(
+            Position::BottomLeft => Pos2::new(
                 screen_rect.min.x + padding.x,
                 screen_rect.max.y - box_size.y - padding.y,
             ),
-            Corner::BottomRight => Pos2::new(
+            Position::BottomRight => Pos2::new(
                 screen_rect.max.x - box_size.x - padding.x,
                 screen_rect.max.y - box_size.y - padding.y,
+            ),
+            Position::Top => Pos2::new(
+                screen_rect.center().x - box_size.x / 2.0,
+                screen_rect.min.y + padding.y,
+            ),
+            Position::Bottom => Pos2::new(
+                screen_rect.center().x - box_size.x / 2.0,
+                screen_rect.max.y - box_size.y - padding.y,
+            ),
+            Position::Left => Pos2::new(
+                screen_rect.min.x + padding.x,
+                screen_rect.center().y - box_size.y / 2.0,
+            ),
+            Position::Right => Pos2::new(
+                screen_rect.max.x - box_size.x - padding.x,
+                screen_rect.center().y - box_size.y / 2.0,
+            ),
+            Position::Center => Pos2::new(
+                screen_rect.center().x - box_size.x / 2.0,
+                screen_rect.center().y - box_size.y / 2.0,
             ),
         };
 
         Area::new("zoom_indicator")
             .order(Order::Foreground)
-            .fixed_pos(corner_pos)
+            .fixed_pos(pos)
             .show(ui.ctx(), |ui| {
                 egui::Frame::none()
                     .fill(Color32::from_rgba_unmultiplied(
@@ -268,14 +288,14 @@ impl ImageRenderer {
             );
 
             // Position in top left
-            let corner_pos = Pos2::new(
+            let Position_pos = Pos2::new(
                 screen_rect.min.x + padding.x,
                 screen_rect.min.y + padding.y,
             );
 
             Area::new("filename_indicator")
                 .order(Order::Foreground)
-                .fixed_pos(corner_pos)
+                .fixed_pos(Position_pos)
                 .show(ui.ctx(), |ui| {
                     egui::Frame::none()
                         .fill(Color32::from_rgba_unmultiplied(
