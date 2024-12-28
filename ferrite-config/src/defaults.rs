@@ -2,8 +2,8 @@ use crate::types::{Corner, MouseButton};
 
 // Window defaults
 pub mod window {
-    pub const MIN_WIDTH: u32 = 200;
-    pub const MIN_HEIGHT: u32 = 200;
+    pub const MIN_WIDTH: u32 = 640;
+    pub const MIN_HEIGHT: u32 = 480;
     pub const BORDERLESS: bool = true;
 }
 
@@ -48,7 +48,7 @@ pub mod selection {
 }
 
 pub mod help_menu {
-    pub const FONT_SIZE: f64 = 16.0;
+    pub const FONT_SIZE: f64 = 24.0;
     pub const FONT_FAMILY: &str = "system-ui";
     pub const BACKGROUND_COLOR: (u8, u8, u8, u8) = (0, 0, 0, 128);
     pub const TEXT_COLOR: (u8, u8, u8, u8) = (255, 255, 255, 255);
