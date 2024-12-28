@@ -21,7 +21,7 @@ authors = ["master_of_zen master_of_zen@protonmail.com"]
 documentation = "https://docs.rs/ferrite"
 
 [workspace.dependencies]
-egui = "0.29"
+egui = "0.30"
 futures = "0.3"
 image = "0.25"
 lru = "0.12"

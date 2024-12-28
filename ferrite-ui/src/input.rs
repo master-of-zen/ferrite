@@ -1,6 +1,8 @@
+// /ferrite-ui/src/input.rs
 use crate::ZoomHandler;
 use eframe::egui::{self, Context, Key, Rect, Ui};
 
+#[inline]
 pub fn handle_input(
     ctx: &Context,
     ui: &Ui,
@@ -34,6 +36,7 @@ pub fn handle_input(
     }
 }
 
+#[inline]
 fn handle_zoom(ui: &Ui, zoom_handler: &mut ZoomHandler, scroll_delta: f64) {
     if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
         let panel_rect = ui.available_rect_before_wrap();

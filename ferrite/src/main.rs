@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use eframe::Error;
-use egui::ViewportBuilder;
+use eframe::{egui::ViewportBuilder, Error};
 use ferrite_cache::{CacheConfig, CacheManager};
 use ferrite_cli::Args;
 use ferrite_core::FeriteApp;

@@ -36,17 +36,6 @@ pub mod indicator {
     pub const SHOW_PERCENTAGE: bool = true;
 }
 
-pub mod selection {
-    use super::*;
-
-    pub const ENABLED: bool = true;
-    pub const SHOW_BOX: bool = true;
-    pub const TRIGGER_BUTTON: MouseButton = MouseButton::Right;
-    pub const ZOOM_TO_LONGER_SIDE: bool = true;
-    pub const BOX_COLOR: (u8, u8, u8, u8) = (255, 255, 255, 128);
-    pub const BOX_THICKNESS: f64 = 1.0;
-}
-
 pub mod help_menu {
     pub const FONT_SIZE: f64 = 24.0;
     pub const FONT_FAMILY: &str = "system-ui";
