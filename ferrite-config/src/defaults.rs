@@ -47,6 +47,15 @@ pub mod selection {
     pub const BOX_THICKNESS: f64 = 1.0;
 }
 
+pub mod help_menu {
+    pub const FONT_SIZE: f64 = 16.0;
+    pub const FONT_FAMILY: &str = "system-ui";
+    pub const BACKGROUND_COLOR: (u8, u8, u8, u8) = (0, 0, 0, 128);
+    pub const TEXT_COLOR: (u8, u8, u8, u8) = (255, 255, 255, 255);
+    pub const PADDING_X: f64 = 10.0;
+    pub const PADDING_Y: f64 = 10.0;
+}
+
 pub mod controls {
 
     pub const ZOOM_IN_KEYS: &[&str] = &["Equals", "Plus", "W"];
@@ -54,6 +63,7 @@ pub mod controls {
     pub const RESET_ZOOM_KEY: &str = "Num0";
     pub const TOGGLE_FIT_KEY: &str = "F";
     pub const QUIT_KEY: &str = "Q";
+    pub const HELP_KEY: &str = "H";
 }
 
 pub mod navigation {

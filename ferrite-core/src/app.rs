@@ -2,7 +2,7 @@ use eframe::egui::{self, Context, Key};
 use ferrite_cache::CacheHandle;
 use std::{path::PathBuf, sync::Arc};
 
-use ferrite_ui::{ImageRenderer, ZoomHandler};
+use ferrite_ui::{HelpMenu, ImageRenderer, ZoomHandler};
 
 use crate::navigation::NavigationManager;
 use ferrite_config::FerriteConfig;
@@ -13,6 +13,7 @@ pub struct FeriteApp {
     navigation:    NavigationManager,
     zoom_handler:  ZoomHandler,
     cache_manager: Arc<CacheHandle>,
+    help_menu:     HelpMenu,
 }
 impl FeriteApp {
     pub fn new(
@@ -24,7 +25,8 @@ impl FeriteApp {
         let image_manager =
             ferrite_image::ImageManager::new(cache_manager.clone());
         let navigation = NavigationManager::new();
-        let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
+        let zoom_handler = ZoomHandler::new(config.zoom.default_zoom.clone());
+        let help = config.controls.clone();
 
         let mut app = Self {
             config,
@@ -32,6 +34,7 @@ impl FeriteApp {
             navigation,
             zoom_handler,
             cache_manager,
+            help_menu: HelpMenu::new(),
         };
 
         if let Some(path) = initial_image {
@@ -59,6 +62,10 @@ impl FeriteApp {
 
 impl eframe::App for FeriteApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        if ctx.input(|i| i.key_pressed(Key::H)) {
+            self.help_menu.toggle();
+        }
+
         if ctx.input(|i| i.key_pressed(Key::Q)) {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
@@ -77,6 +84,7 @@ impl eframe::App for FeriteApp {
                 &mut self.zoom_handler,
                 &self.config,
             );
+            self.help_menu.render(ui, &self.config.help_menu);
         });
     }
 }
