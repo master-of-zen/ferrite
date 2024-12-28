@@ -7,10 +7,10 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ferrite-config = { path = "../ferrite-config" }
-ferrite-image = { path = "../ferrite-image" }
-ferrite-cache = { path = "../ferrite-cache" }
-ferrite-logging = { path = "../ferrite-logging" }
+ferrite-config = { path = "../ferrite-config", version = "0.1.15" }
+ferrite-image = { path = "../ferrite-image", version = "0.1.15" }
+ferrite-cache = { path = "../ferrite-cache", version = "0.1.15" }
+ferrite-logging = { path = "../ferrite-logging", version = "0.1.15" }
 eframe.workspace = true
 egui.workspace = true
 image.workspace = true
