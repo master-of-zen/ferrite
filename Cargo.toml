@@ -13,7 +13,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.1.14"
+version = "0.1.15"
 edition = "2021"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/master-of-zen/ferrite"
@@ -21,20 +21,20 @@ authors = ["master_of_zen master_of_zen@protonmail.com"]
 documentation = "https://docs.rs/ferrite"
 
 [workspace.dependencies]
-thiserror = "1"
-clap = { version = "4.4", features = ["derive"] }
-config = { version = "0.14.1", features = ["toml"] }
-directories = "5.0"
-eframe = "0.26.0"
-egui = "0.26.0"
+egui = "0.30"
 futures = "0.3"
-image = "0.24.8"
+image = "0.25"
 lru = "0.12"
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-tracy = "0.10"
-tracy-client = "0.16"
+tracing-tracy = "0.11"
+tracy-client = "0.18"
 tokio = { version = "1", features = ["full"] }
+thiserror = "2"
+clap = { version = "4.4", features = ["derive"] }
+config = { version = "0.15", features = ["toml"] }
+directories = "5.0"
+eframe = "0.26.0"

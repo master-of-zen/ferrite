@@ -1,17 +1,14 @@
 [package]
-name = "ferrite-ui"
+name = "ferrite-navigation"
 version.workspace = true
 edition.workspace = true
-description = "UI components for Ferrite image viewer"
+description = "Navigation and path handling for Ferrite image viewer"
 license.workspace = true
 repository.workspace = true
 
 [dependencies]
 ferrite-config = { path = "../ferrite-config", version = "0.1.15" }
 ferrite-image = { path = "../ferrite-image", version = "0.1.15" }
-ferrite-cache = { path = "../ferrite-cache", version = "0.1.15" }
-ferrite-logging = { path = "../ferrite-logging", version = "0.1.15" }
-eframe.workspace = true
-egui.workspace = true
-image.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
+serde.workspace = true

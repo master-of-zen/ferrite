@@ -86,7 +86,8 @@ pub fn init(config: LogConfig) {
 
     if config.enable_tracy {
         // Create the tracy layer with the correct configuration
-        let tracy_layer = tracing_tracy::TracyLayer::new().with_filter(filter);
+        let tracy_layer =
+            tracing_tracy::TracyLayer::default().with_filter(filter);
 
         registry
             .with(tracy_layer)
