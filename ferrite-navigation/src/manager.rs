@@ -1,5 +1,5 @@
 use crate::error::{NavigationError, Result};
-use ferrite_image::{ImageManager, SupportedFormats};
+use ferrite_image::SupportedFormats;
 use std::{
     fs,
     path::{Path, PathBuf},
