@@ -21,11 +21,18 @@ impl HelpMenu {
             return;
         }
 
+        let base_font_size = config.font_size as f32;
+        let heading_size = base_font_size * 1.2;
+        let row_height = base_font_size * 1.5;
+        let spacing = row_height * 0.5;
+        let column_width = base_font_size * 10.0;
+        let total_width = column_width * 3.0 + spacing * 2.0;
+
         let screen_rect = ui.ctx().screen_rect();
         egui::Area::new("help_menu")
             .fixed_pos(egui::pos2(
-                screen_rect.center().x - 120.0,
-                screen_rect.center().y - 80.0,
+                screen_rect.center().x - total_width * 0.5,
+                screen_rect.center().y - (heading_size + row_height * 4.0),
             ))
             .show(ui.ctx(), |ui| {
                 Frame::none()
@@ -35,42 +42,92 @@ impl HelpMenu {
                         config.background_color.b,
                         config.background_color.a,
                     ))
-                    .rounding(Rounding::same(8.0))
-                    .inner_margin(10.0)
+                    .rounding(Rounding::same(row_height * 0.5))
+                    .inner_margin(spacing)
                     .show(ui, |ui| {
-                        ui.set_max_width(240.0);
-                        ui.vertical_centered(|ui| {
-                            ui.heading(
-                                egui::RichText::new("Navigation")
-                                    .color(Color32::from_rgba_unmultiplied(
-                                        config.text_color.r,
-                                        config.text_color.g,
-                                        config.text_color.b,
-                                        config.text_color.a,
-                                    ))
-                                    .size(18.0),
-                            );
-                            ui.add_space(8.0);
-                            let text_color = Color32::from_rgba_unmultiplied(
-                                config.text_color.r,
-                                config.text_color.g,
-                                config.text_color.b,
-                                config.text_color.a,
-                            );
-                            ui.label(
-                                egui::RichText::new("← or A: Previous image")
-                                    .color(text_color),
-                            );
-                            ui.label(
-                                egui::RichText::new("→ or D: Next image")
-                                    .color(text_color),
-                            );
-                            ui.label(
-                                egui::RichText::new("Q: Quit")
-                                    .color(text_color),
-                            );
+                        ui.set_max_width(total_width);
+
+                        ui.columns(3, |columns| {
+                            for col in columns.iter_mut() {
+                                col.set_max_width(column_width);
+                            }
+
+                            columns[0].vertical(|ui| {
+                                render_section(
+                                    ui,
+                                    "Navigation",
+                                    &[
+                                        "LEFT or A: Previous",
+                                        "RIGHT or D: Next",
+                                    ],
+                                    config,
+                                    heading_size,
+                                )
+                            });
+
+                            columns[1].vertical(|ui| {
+                                render_section(
+                                    ui,
+                                    "Zoom",
+                                    &[
+                                        "Mouse Wheel",
+                                        "+ or W: Zoom in",
+                                        "- or S: Zoom out",
+                                        "0: Reset zoom",
+                                        "F: Toggle fit",
+                                    ],
+                                    config,
+                                    heading_size,
+                                )
+                            });
+
+                            columns[2].vertical(|ui| {
+                                render_section(
+                                    ui,
+                                    "Other",
+                                    &["H: Toggle help", "Q: Quit"],
+                                    config,
+                                    heading_size,
+                                )
+                            });
                         });
                     });
             });
+    }
+}
+
+fn render_section(
+    ui: &mut egui::Ui,
+    title: &str,
+    items: &[&str],
+    config: &HelpMenuConfig,
+    heading_size: f32,
+) {
+    ui.heading(
+        egui::RichText::new(title)
+            .color(Color32::from_rgba_unmultiplied(
+                config.text_color.r,
+                config.text_color.g,
+                config.text_color.b,
+                config.text_color.a,
+            ))
+            .size(heading_size),
+    );
+
+    ui.add_space(config.font_size as f32 * 0.5);
+
+    let text_color = Color32::from_rgba_unmultiplied(
+        config.text_color.r,
+        config.text_color.g,
+        config.text_color.b,
+        config.text_color.a,
+    );
+
+    for item in items {
+        ui.label(
+            egui::RichText::new(*item)
+                .color(text_color)
+                .size(config.font_size as f32),
+        );
     }
 }
