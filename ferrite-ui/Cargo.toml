@@ -1,0 +1,19 @@
+[package]
+name = "ferrite-ui"
+version.workspace = true
+edition.workspace = true
+description = "UI components for Ferrite image viewer"
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ferrite-config = { path = "../ferrite-config" }
+ferrite-image = { path = "../ferrite-image" }
+ferrite-cache = { path = "../ferrite-cache" }
+ferrite-logging = { path = "../ferrite-logging" }
+
+thiserror.workspace = true
+image.workspace = true
+eframe.workspace = true
+egui.workspace = true
+tracing.workspace = true

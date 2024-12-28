@@ -4,8 +4,8 @@ use std::{
 };
 use tracing::info;
 
-use crate::ui::zoom::ZoomHandler;
 use ferrite_image::{ImageManager, SupportedFormats};
+use ferrite_ui::ZoomHandler;
 
 pub struct NavigationManager {
     directory_images: Vec<PathBuf>,

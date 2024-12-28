@@ -1,4 +1,4 @@
-use crate::ui::zoom::ZoomHandler;
+use crate::ZoomHandler;
 use eframe::egui::{self, Context, Key, Rect, Ui};
 
 pub fn handle_input(

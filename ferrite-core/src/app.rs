@@ -2,10 +2,9 @@ use eframe::egui::{self, Context, Key};
 use ferrite_cache::CacheHandle;
 use std::{path::PathBuf, sync::Arc};
 
-use crate::{
-    navigation::NavigationManager,
-    ui::{render::ImageRenderer, zoom::ZoomHandler},
-};
+use ferrite_ui::{ImageRenderer, ZoomHandler};
+
+use crate::navigation::NavigationManager;
 use ferrite_config::FerriteConfig;
 
 pub struct FeriteApp {

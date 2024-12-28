@@ -7,11 +7,13 @@ members = [
     "ferrite-logging",
     "ferrite-cache",
     "ferrite-image",
+    "ferrite-ui",
 ]
+
 resolver = "2"
 
 [workspace.package]
-version = "0.1.12"
+version = "0.1.13"
 edition = "2021"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/master-of-zen/ferrite"

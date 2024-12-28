@@ -1,12 +1,8 @@
-use crate::ui::input;
+use crate::{input, FitMode, ZoomHandler};
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
 use ferrite_config::{Corner, FerriteConfig, IndicatorConfig};
 use image::GenericImageView;
-
-use crate::ui::zoom::ZoomHandler;
-
-use super::zoom::FitMode;
 
 pub struct ImageRenderer;
 
