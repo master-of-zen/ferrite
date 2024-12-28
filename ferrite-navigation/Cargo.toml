@@ -1,0 +1,14 @@
+[package]
+name = "ferrite-navigation"
+version.workspace = true
+edition.workspace = true
+description = "Navigation and path handling for Ferrite image viewer"
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+ferrite-config = { path = "../ferrite-config", version = "0.1.14" }
+ferrite-image = { path = "../ferrite-image", version = "0.1.14" }
+thiserror.workspace = true
+tracing.workspace = true
+serde.workspace = true

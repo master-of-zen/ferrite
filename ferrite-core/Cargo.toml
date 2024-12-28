@@ -16,6 +16,7 @@ ferrite-config = { path = "../ferrite-config", version = "0.1.14" }
 ferrite-image = { path = "../ferrite-image", version = "0.1.14" }
 ferrite-logging = { path = "../ferrite-logging", version = "0.1.14" }
 ferrite-ui = { path = "../ferrite-ui", version = "0.1.14" }
+ferrite-navigation = { path = "../ferrite-navigation", version = "0.1.14" }
 eframe = { workspace = true }
 egui = { workspace = true }
 image = { workspace = true }

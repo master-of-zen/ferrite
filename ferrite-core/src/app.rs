@@ -2,10 +2,9 @@ use eframe::egui::{self, Context, Key};
 use ferrite_cache::CacheHandle;
 use std::{path::PathBuf, sync::Arc};
 
-use ferrite_ui::{HelpMenu, ImageRenderer, ZoomHandler};
-
-use crate::navigation::NavigationManager;
 use ferrite_config::FerriteConfig;
+use ferrite_navigation::NavigationManager;
+use ferrite_ui::{HelpMenu, ImageRenderer, ZoomHandler};
 
 pub struct FeriteApp {
     config:        FerriteConfig,
@@ -15,6 +14,7 @@ pub struct FeriteApp {
     cache_manager: Arc<CacheHandle>,
     help_menu:     HelpMenu,
 }
+
 impl FeriteApp {
     pub fn new(
         _cc: &eframe::CreationContext<'_>,
@@ -25,8 +25,7 @@ impl FeriteApp {
         let image_manager =
             ferrite_image::ImageManager::new(cache_manager.clone());
         let navigation = NavigationManager::new();
-        let zoom_handler = ZoomHandler::new(config.zoom.default_zoom.clone());
-        let help = config.controls.clone();
+        let zoom_handler = ZoomHandler::new(config.zoom.default_zoom);
 
         let mut app = Self {
             config,
@@ -38,20 +37,12 @@ impl FeriteApp {
         };
 
         if let Some(path) = initial_image {
-            // First load the directory for navigation
-            if let Some(()) = app.navigation.load_current_directory(&path) {
-                tracing::info!("Successfully loaded directory for navigation");
-
-                // Then load the initial image
+            if let Ok(()) = app.navigation.load_current_directory(&path) {
                 if let Ok(image_data) =
                     app.cache_manager.get_image(path.clone())
                 {
-                    // Set the image in the image manager
                     app.image_manager.current_image = Some(image_data);
                     app.image_manager.set_path(path);
-                    tracing::info!("Successfully loaded initial image");
-                } else {
-                    tracing::error!("Failed to load initial image from cache");
                 }
             }
         }
@@ -70,11 +61,7 @@ impl eframe::App for FeriteApp {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
 
-        self.navigation.handle_keyboard_input(
-            ctx,
-            &mut self.image_manager,
-            &mut self.zoom_handler,
-        );
+        self.handle_navigation(ctx);
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ImageRenderer::render(
@@ -86,5 +73,26 @@ impl eframe::App for FeriteApp {
             );
             self.help_menu.render(ui, &self.config.help_menu);
         });
+    }
+}
+
+impl FeriteApp {
+    fn handle_navigation(&mut self, ctx: &Context) {
+        let next_pressed = ctx
+            .input(|i| i.key_pressed(Key::ArrowRight) || i.key_pressed(Key::D));
+        let prev_pressed = ctx
+            .input(|i| i.key_pressed(Key::ArrowLeft) || i.key_pressed(Key::A));
+
+        if next_pressed {
+            if let Some(next_path) = self.navigation.next_image() {
+                let _ = self.image_manager.load_image(next_path);
+                self.zoom_handler.reset_view_position();
+            }
+        } else if prev_pressed {
+            if let Some(prev_path) = self.navigation.previous_image() {
+                let _ = self.image_manager.load_image(prev_path);
+                self.zoom_handler.reset_view_position();
+            }
+        }
     }
 }
