@@ -28,6 +28,7 @@ pub use config::FerriteConfig;
 pub use error::{ConfigError, Result};
 
 // Re-export configuration component types
+pub use help_menu::HelpMenuConfig;
 pub use indicator::IndicatorConfig;
 pub use input::ControlsConfig;
 pub use window::WindowConfig;
@@ -40,10 +41,10 @@ pub use types::{Color32, ColorRGBA, Corner, Key, MouseButton, Vector2D};
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const CONFIG_VERSION: &str = "0.1";
 
-// Internal modules
 mod config;
 mod defaults;
 mod error;
+mod help_menu;
 mod indicator;
 mod input;
 mod navigation;
