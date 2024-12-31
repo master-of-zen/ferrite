@@ -1,4 +1,8 @@
-use crate::types::{Corner, MouseButton};
+use crate::{
+    error::Result,
+    types::{MouseButton, Position},
+};
+use serde::{Deserialize, Serialize};
 
 // Window defaults
 pub mod window {
@@ -32,7 +36,7 @@ pub mod indicator {
     pub const TEXT_COLOR: (u8, u8, u8, u8) = (255, 255, 255, 255);
     pub const PADDING_X: f64 = 5.0;
     pub const PADDING_Y: f64 = 5.0;
-    pub const CORNER: Corner = Corner::TopRight;
+    pub const POSITION: Position = Position::TopRight;
     pub const SHOW_PERCENTAGE: bool = true;
 }
 

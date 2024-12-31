@@ -62,6 +62,39 @@ impl NavigationManager {
         Ok(())
     }
 
+    pub fn get_nearby_paths(
+        &self,
+        count: usize,
+    ) -> (Vec<PathBuf>, Vec<PathBuf>) {
+        if self.directory_images.is_empty() {
+            return (Vec::new(), Vec::new());
+        }
+
+        let total_images = self.directory_images.len();
+        let mut next_paths = Vec::with_capacity(count);
+        let mut prev_paths = Vec::with_capacity(count);
+
+        for i in 1..=count {
+            // Get next images circularly
+            let next_index = (self.current_index + i) % total_images;
+            if next_index != self.current_index {
+                next_paths.push(self.directory_images[next_index].clone());
+            }
+
+            // Get previous images circularly
+            let prev_index = if i <= self.current_index {
+                self.current_index - i
+            } else {
+                total_images - (i - self.current_index)
+            };
+            if prev_index < total_images && prev_index != self.current_index {
+                prev_paths.push(self.directory_images[prev_index].clone());
+            }
+        }
+
+        (prev_paths, next_paths)
+    }
+
     pub fn next_image(&mut self) -> Option<PathBuf> {
         if self.directory_images.is_empty() {
             return None;

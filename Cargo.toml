@@ -1,24 +1,19 @@
 [workspace]
-members = [
-    "ferrite",
-    "ferrite-core",
-    "ferrite-config",
-    "ferrite-cli",
-    "ferrite-logging",
-    "ferrite-cache",
-    "ferrite-image",
-    "ferrite-ui",
-]
+members = ["crates/*"]
 
 resolver = "2"
 
 [workspace.package]
-version = "0.1.15"
-edition = "2021"
+version = "0.1.16"
 license = "GPL-3.0-or-later"
-repository = "https://github.com/master-of-zen/ferrite"
+repository = "https://github.com/master-of-zen/av1an"
 authors = ["master_of_zen master_of_zen@protonmail.com"]
 documentation = "https://docs.rs/ferrite"
+rust-version = "1.79"
+edition = "2021"
+description = """
+Cross-platform command-line AV1 / VP9 / HEVC / H264 encoding framework with per scene quality encoding [Core library]
+"""
 
 [workspace.dependencies]
 egui = "0.30"

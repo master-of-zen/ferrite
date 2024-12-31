@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::{input, FitMode, ZoomHandler};
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
-use ferrite_config::{Corner, FerriteConfig, IndicatorConfig};
+use ferrite_config::{FerriteConfig, IndicatorConfig, Position};
 use image::GenericImageView;
 
 pub struct ImageRenderer;
@@ -85,7 +85,11 @@ impl ImageRenderer {
                 );
             }
 
-            Self::render_zoom_indicator(ui, zoom_handler, &config.indicator);
+            render_resolution_indicator(
+                ui,
+                image_manager.get_current_dimensions(),
+                &config.indicator,
+            );
             Self::render_zoom_indicator(ui, zoom_handler, &config.indicator);
             Self::render_filename_indicator(
                 ui,
@@ -196,28 +200,48 @@ impl ImageRenderer {
             font_size + frame_margin * 2.0,
         );
 
-        let corner_pos = match config.corner {
-            Corner::TopLeft => Pos2::new(
+        let pos = match config.position {
+            Position::TopLeft => Pos2::new(
                 screen_rect.min.x + padding.x,
                 screen_rect.min.y + padding.y,
             ),
-            Corner::TopRight => Pos2::new(
+            Position::TopRight => Pos2::new(
                 screen_rect.max.x - box_size.x - padding.x,
                 screen_rect.min.y + padding.y,
             ),
-            Corner::BottomLeft => Pos2::new(
+            Position::BottomLeft => Pos2::new(
                 screen_rect.min.x + padding.x,
                 screen_rect.max.y - box_size.y - padding.y,
             ),
-            Corner::BottomRight => Pos2::new(
+            Position::BottomRight => Pos2::new(
                 screen_rect.max.x - box_size.x - padding.x,
                 screen_rect.max.y - box_size.y - padding.y,
+            ),
+            Position::Top => Pos2::new(
+                screen_rect.center().x - box_size.x / 2.0,
+                screen_rect.min.y + padding.y,
+            ),
+            Position::Bottom => Pos2::new(
+                screen_rect.center().x - box_size.x / 2.0,
+                screen_rect.max.y - box_size.y - padding.y,
+            ),
+            Position::Left => Pos2::new(
+                screen_rect.min.x + padding.x,
+                screen_rect.center().y - box_size.y / 2.0,
+            ),
+            Position::Right => Pos2::new(
+                screen_rect.max.x - box_size.x - padding.x,
+                screen_rect.center().y - box_size.y / 2.0,
+            ),
+            Position::Center => Pos2::new(
+                screen_rect.center().x - box_size.x / 2.0,
+                screen_rect.center().y - box_size.y / 2.0,
             ),
         };
 
         Area::new("zoom_indicator")
             .order(Order::Foreground)
-            .fixed_pos(corner_pos)
+            .fixed_pos(pos)
             .show(ui.ctx(), |ui| {
                 egui::Frame::none()
                     .fill(Color32::from_rgba_unmultiplied(
@@ -268,14 +292,14 @@ impl ImageRenderer {
             );
 
             // Position in top left
-            let corner_pos = Pos2::new(
+            let Position_pos = Pos2::new(
                 screen_rect.min.x + padding.x,
                 screen_rect.min.y + padding.y,
             );
 
             Area::new("filename_indicator")
                 .order(Order::Foreground)
-                .fixed_pos(corner_pos)
+                .fixed_pos(Position_pos)
                 .show(ui.ctx(), |ui| {
                     egui::Frame::none()
                         .fill(Color32::from_rgba_unmultiplied(
@@ -301,5 +325,59 @@ impl ImageRenderer {
                         });
                 });
         }
+    }
+}
+
+fn render_resolution_indicator(
+    ui: &mut Ui,
+    dimensions: Option<(u32, u32)>,
+    config: &IndicatorConfig,
+) {
+    if let Some((width, height)) = dimensions {
+        let resolution_text = format!("{}x{}", width, height);
+        let screen_rect = ui.ctx().screen_rect();
+        let padding =
+            Vec2::new(config.padding.x() as f32, config.padding.y() as f32);
+        let font_size = config.font_size as f32;
+        let char_width = font_size * 0.6;
+        let text_width = char_width * resolution_text.len() as f32;
+        let frame_margin = 8.0;
+        let box_size = Vec2::new(
+            text_width + frame_margin * 2.0,
+            font_size + frame_margin * 2.0,
+        );
+
+        let pos = Pos2::new(
+            screen_rect.center().x - box_size.x / 2.0,
+            screen_rect.min.y + padding.y,
+        );
+
+        Area::new("resolution_indicator")
+            .order(Order::Foreground)
+            .fixed_pos(pos)
+            .show(ui.ctx(), |ui| {
+                egui::Frame::none()
+                    .fill(Color32::from_rgba_unmultiplied(
+                        config.background_color.r,
+                        config.background_color.g,
+                        config.background_color.b,
+                        config.background_color.a,
+                    ))
+                    .rounding(4.0)
+                    .inner_margin(4.0)
+                    .show(ui, |ui| {
+                        let rich_text = RichText::new(resolution_text)
+                            .color(Color32::from_rgba_unmultiplied(
+                                config.text_color.r,
+                                config.text_color.g,
+                                config.text_color.b,
+                                config.text_color.a,
+                            ))
+                            .size(font_size)
+                            .family(FontFamily::Proportional);
+
+                        ui.label(rich_text);
+                    });
+            });
     }
 }
