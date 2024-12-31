@@ -8,6 +8,7 @@ use crate::{
     input::ControlsConfig,
     window::WindowConfig,
     zoom::ZoomConfig,
+    CacheConfig,
     HelpMenuConfig,
     IndicatorConfig,
     CONFIG_VERSION,
@@ -21,6 +22,7 @@ pub struct FerriteConfig {
     pub controls:  ControlsConfig,
     pub indicator: IndicatorConfig,
     pub help_menu: HelpMenuConfig,
+    pub cache:     CacheConfig,
 }
 
 impl Default for FerriteConfig {
@@ -33,6 +35,7 @@ impl Default for FerriteConfig {
             controls:  ControlsConfig::default(),
             indicator: IndicatorConfig::default(),
             help_menu: HelpMenuConfig::default(),
+            cache:     CacheConfig::default(),
         }
     }
 }

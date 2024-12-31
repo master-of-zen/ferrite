@@ -1,4 +1,8 @@
-use crate::types::{MouseButton, Position};
+use crate::{
+    error::Result,
+    types::{MouseButton, Position},
+};
+use serde::{Deserialize, Serialize};
 
 // Window defaults
 pub mod window {

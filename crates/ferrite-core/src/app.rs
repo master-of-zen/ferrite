@@ -43,11 +43,62 @@ impl FeriteApp {
                 {
                     app.image_manager.current_image = Some(image_data);
                     app.image_manager.set_path(path);
+                    app.cache_nearby_images();
                 }
             }
         }
 
         app
+    }
+
+    fn cache_nearby_images(&self) {
+        use tracing::{error, info};
+        let cache_count = self.config.cache.preload_count; // Cache 2 images in each direction
+        let (prev_paths, next_paths) =
+            self.navigation.get_nearby_paths(cache_count);
+
+        // Cache previous images
+        for path in prev_paths {
+            if let Err(e) = self.cache_manager.cache_image(path.clone()) {
+                error!(
+                    "Failed to cache previous image {}: {}",
+                    path.display(),
+                    e
+                );
+            } else {
+                info!("Successfully cached previous image: {}", path.display());
+            }
+        }
+
+        // Cache next images
+        for path in next_paths {
+            if let Err(e) = self.cache_manager.cache_image(path.clone()) {
+                error!("Failed to cache next image {}: {}", path.display(), e);
+            } else {
+                info!("Successfully cached next image: {}", path.display());
+            }
+        }
+    }
+
+    fn handle_navigation(&mut self, ctx: &Context) {
+        let next_pressed = ctx
+            .input(|i| i.key_pressed(Key::ArrowRight) || i.key_pressed(Key::D));
+        let prev_pressed = ctx
+            .input(|i| i.key_pressed(Key::ArrowLeft) || i.key_pressed(Key::A));
+
+        if next_pressed {
+            if let Some(next_path) = self.navigation.next_image() {
+                let _ = self.image_manager.load_image(next_path);
+                self.zoom_handler.reset_view_position();
+                self.cache_nearby_images();
+            }
+        } else if prev_pressed {
+            if let Some(prev_path) = self.navigation.previous_image() {
+                let _ = self.image_manager.load_image(prev_path);
+                self.zoom_handler.reset_view_position();
+                self.cache_nearby_images();
+            }
+        }
     }
 }
 
@@ -73,26 +124,5 @@ impl eframe::App for FeriteApp {
             );
             self.help_menu.render(ui, &self.config.help_menu);
         });
-    }
-}
-
-impl FeriteApp {
-    fn handle_navigation(&mut self, ctx: &Context) {
-        let next_pressed = ctx
-            .input(|i| i.key_pressed(Key::ArrowRight) || i.key_pressed(Key::D));
-        let prev_pressed = ctx
-            .input(|i| i.key_pressed(Key::ArrowLeft) || i.key_pressed(Key::A));
-
-        if next_pressed {
-            if let Some(next_path) = self.navigation.next_image() {
-                let _ = self.image_manager.load_image(next_path);
-                self.zoom_handler.reset_view_position();
-            }
-        } else if prev_pressed {
-            if let Some(prev_path) = self.navigation.previous_image() {
-                let _ = self.image_manager.load_image(prev_path);
-                self.zoom_handler.reset_view_position();
-            }
-        }
     }
 }
