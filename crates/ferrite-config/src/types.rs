@@ -152,7 +152,7 @@ impl From<&str> for SerializableKey {
     fn from(s: &str) -> Self {
         // Implement key string parsing
         Self(match s {
-            "Equal" => Key::Equals,
+            "Equals" => Key::Equals,
             "Plus" => Key::Plus,
             "Minus" => Key::Minus,
             "W" => Key::W,
@@ -168,7 +168,7 @@ impl From<&str> for SerializableKey {
 impl From<SerializableKey> for String {
     fn from(key: SerializableKey) -> Self {
         match key.0 {
-            Key::Equals => "Equal",
+            Key::Equals => "Equals",
             Key::Plus => "Plus",
             Key::Minus => "Minus",
             Key::W => "W",
