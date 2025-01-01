@@ -13,7 +13,7 @@ IT VIEWS IMAGES FAST
 cargo install ferrite
 ferrite [IMAGE_PATH]
 ```
-+ look up for your system how to make launch ferrite as default image viewer
++ Set it as default image viewer.
 [Here are instructions](/install/README.md)
 ## Keybindings
 
