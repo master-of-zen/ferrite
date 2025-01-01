@@ -12,6 +12,10 @@ categories = ["command-line-interface"]
 
 [dependencies]
 ferrite-config = { path = "../ferrite-config", version = "0.1.16" }
-clap.workspace = true
-thiserror.workspace = true
+clap = { version = "4.4", features = ["derive"] }
+thiserror = "1.0"
 ferrite-logging = { path = "../ferrite-logging", version = "0.1.16" }
+dirs = "5.0"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.50"

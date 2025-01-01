@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>Ferrite</string>
+    <key>CFBundleDisplayName</key>
+    <string>Ferrite Image Viewer</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.ferrite.imageviewer</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleExecutable</key>
+    <string>ferrite</string>
+    <key>CFBundleIconFile</key>
+    <string>ferrite.icns</string>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Images</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.image</string>
+                <string>public.jpeg</string>
+                <string>public.png</string>
+                <string>public.gif</string>
+                <string>public.tiff</string>
+                <string>com.microsoft.bmp</string>
+                <string>public.webp</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Ferrite Image Viewer
+Comment=Fast and efficient image viewer
+Exec=ferrite %f
+Icon=ferrite
+Terminal=false
+Categories=Graphics;Viewer;
+MimeType=image/jpeg;image/png;image/gif;image/bmp;image/tiff;image/webp;
+Keywords=Image;Picture;Photo;Viewer;
