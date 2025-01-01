@@ -1,0 +1,30 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Applications\ferrite.exe\shell]
+
+[HKEY_CLASSES_ROOT\Applications\ferrite.exe\shell\open]
+"FriendlyAppName"="Ferrite Image Viewer"
+
+[HKEY_CLASSES_ROOT\Applications\ferrite.exe\shell\open\command]
+@="\"%ProgramFiles%\\Ferrite\\ferrite.exe\" \"%1\""
+
+[HKEY_CLASSES_ROOT\.jpg\OpenWithProgids]
+"Applications.ferrite.exe"=""
+
+[HKEY_CLASSES_ROOT\.jpeg\OpenWithProgids]
+"Applications.ferrite.exe"=""
+
+[HKEY_CLASSES_ROOT\.png\OpenWithProgids]
+"Applications.ferrite.exe"=""
+
+[HKEY_CLASSES_ROOT\.gif\OpenWithProgids]
+"Applications.ferrite.exe"=""
+
+[HKEY_CLASSES_ROOT\.bmp\OpenWithProgids]
+"Applications.ferrite.exe"=""
+
+[HKEY_CLASSES_ROOT\.tiff\OpenWithProgids]
+"Applications.ferrite.exe"=""
+
+[HKEY_CLASSES_ROOT\.webp\OpenWithProgids]
+"Applications.ferrite.exe"=""
