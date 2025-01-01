@@ -29,7 +29,6 @@ ferrite [IMAGE_PATH]
 - `F`: Toggle fit mode
 
 ### 🖱️Mouse Controls
-- `Right Click + Drag`: Selection box
 - `Scroll`: Zoom in/out
 - `Left Click + Drag`: Pan image
 
