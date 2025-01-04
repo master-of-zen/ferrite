@@ -10,8 +10,9 @@ use image::{DynamicImage, GenericImageView};
 use tokio::{
     runtime::Runtime,
     sync::{mpsc, oneshot, RwLock},
+    time::Instant,
 };
-use tracing::{debug, info};
+use tracing::{debug, info, instrument};
 pub struct CacheManager {
     config:         CacheConfig,
     state:          Arc<RwLock<CacheState>>,
@@ -20,6 +21,7 @@ pub struct CacheManager {
 }
 
 impl CacheManager {
+    #[instrument(skip(config), fields(max_images = config.max_image_count))]
     pub fn new(config: CacheConfig) -> CacheHandle {
         let (request_tx, mut request_rx) = mpsc::unbounded_channel();
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
@@ -153,22 +155,41 @@ impl CacheManager {
         &self,
         path: PathBuf,
     ) -> CacheResult<Arc<DynamicImage>> {
-        let start_time = std::time::Instant::now();
+        let start_time = Instant::now();
         debug!(path = ?path, "Image requested from cache");
 
+        // Track cache lookup time
+        let lookup_start = Instant::now();
         if let Some(image) = self.lookup_image(&path).await {
-            let duration = start_time.elapsed();
-            debug!(path = ?path, duration = ?duration, "Cache hit");
+            let lookup_duration = lookup_start.elapsed();
+            let total_duration = start_time.elapsed();
+            debug!(
+                path = ?path,
+                lookup_time = ?lookup_duration,
+                total_time = ?total_duration,
+                "Cache hit"
+            );
             return Ok(image);
         }
 
         debug!(path = ?path, "Cache miss, loading from disk");
+
+        // Track disk load time
+        let load_start = Instant::now();
         let image = self.load_and_cache(path.clone()).await?;
-        let duration = start_time.elapsed();
-        debug!(path = ?path, duration = ?duration, "Total cache miss time");
+        let load_duration = load_start.elapsed();
+        let total_duration = start_time.elapsed();
+
+        debug!(
+            path = ?path,
+            load_time = ?load_duration,
+            total_time = ?total_duration,
+            "Cache miss handled"
+        );
         Ok(image)
     }
 
+    #[instrument(skip(self, path), fields(path = ?path))]
     pub async fn cache_image(
         &self,
         path: PathBuf,
@@ -273,17 +294,20 @@ impl CacheManager {
         &self,
         path: PathBuf,
     ) -> CacheResult<Arc<DynamicImage>> {
-        let load_start = std::time::Instant::now();
+        let load_start = Instant::now();
 
-        // Read file data
+        // Track file read time
+        let read_start = Instant::now();
         let file_data = tokio::fs::read(&path).await.map_err(|e| {
             CacheError::ImageLoad {
                 path:   path.clone(),
                 source: ImageLoadError::Io(e),
             }
         })?;
+        let read_duration = read_start.elapsed();
 
-        // Decode image immediately
+        // Track decode time
+        let decode_start = Instant::now();
         let decoded_image =
             image::load_from_memory(&file_data).map_err(|e| {
                 CacheError::ImageLoad {
@@ -291,33 +315,48 @@ impl CacheManager {
                     source: ImageLoadError::Format(e.to_string()),
                 }
             })?;
+        let decode_duration = decode_start.elapsed();
 
         let dimensions = decoded_image.dimensions();
+        let file_size = file_data.len();
 
         // Update cache state
+        let cache_start = Instant::now();
         let mut state = self.state.write().await;
 
-        // Handle cache eviction if needed
+        // Handle eviction if needed
         if state.entries.len() >= self.config.max_image_count {
+            debug!(
+                "Cache full ({}/{}), evicting oldest entry",
+                state.entries.len(),
+                self.config.max_image_count
+            );
             if let Some(oldest_path) = state.lru_list.first().cloned() {
-                info!(path = ?oldest_path, "Evicting least recently used image");
                 state.entries.remove(&oldest_path);
                 state.lru_list.remove(0);
             }
         }
 
+        let image_data = Arc::new(decoded_image);
+        state
+            .entries
+            .insert(path.clone(), (*image_data).clone());
+        state.lru_list.push(path.clone());
+
+        let cache_update_duration = cache_start.elapsed();
+        let total_duration = load_start.elapsed();
+
         debug!(
             path = ?path,
             width = dimensions.0,
             height = dimensions.1,
-            load_duration = ?load_start.elapsed(),
-            "Image loaded and decoded"
+            file_size = file_size,
+            read_time = ?read_duration,
+            decode_time = ?decode_duration,
+            cache_update_time = ?cache_update_duration,
+            total_time = ?total_duration,
+            "Image loaded and cached"
         );
-
-        // Store the decoded image
-        let image_data = Arc::new(decoded_image.clone());
-        state.entries.insert(path.clone(), decoded_image);
-        state.lru_list.push(path);
 
         Ok(image_data)
     }
@@ -332,5 +371,19 @@ impl CacheManager {
             list_size = state.lru_list.len(),
             "Updated LRU list"
         );
+    }
+}
+
+impl Drop for CacheManager {
+    fn drop(&mut self) {
+        debug!("CacheManager being dropped, cleaning up resources");
+
+        // Clear cache entries
+        let state = self.state.try_write();
+        if let Ok(mut state) = state {
+            state.entries.clear();
+            state.lru_list.clear();
+            debug!("Cache entries cleared");
+        }
     }
 }

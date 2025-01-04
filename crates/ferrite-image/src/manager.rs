@@ -31,6 +31,7 @@ impl ImageManager {
         self.current_path = Some(path);
     }
 
+    #[instrument(skip(self, path), fields(path = ?path))]
     pub fn load_image(&mut self, path: PathBuf) -> Result<()> {
         let metrics = PerformanceMetrics::new("image_loading", true);
 
@@ -64,7 +65,6 @@ impl ImageManager {
     }
 
     pub fn preload_image(&self, path: PathBuf) {
-        // Fire and forget preloading
         if let Err(e) = self.cache_manager.cache_image(path) {
             warn!("Failed to preload image: {}", e);
         }
