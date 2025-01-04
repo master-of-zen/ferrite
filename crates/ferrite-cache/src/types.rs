@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tracing::debug;
 
-use crate::CacheResult;
+use crate::{CacheError, CacheResult};
 use tokio::sync::oneshot;
 
 #[derive(Debug)]
@@ -101,5 +101,36 @@ impl CacheState {
         Self {
             entries: HashMap::new(), lru_list: Vec::new()
         }
+    }
+}
+
+impl CacheConfig {
+    const MAX_IMAGE_COUNT: usize = 1000;
+    const MAX_THREAD_COUNT: usize = 32;
+    const MIN_IMAGE_COUNT: usize = 10;
+    const MIN_THREAD_COUNT: usize = 1;
+
+    pub fn validate(&self) -> CacheResult<()> {
+        if self.thread_count < Self::MIN_THREAD_COUNT
+            || self.thread_count > Self::MAX_THREAD_COUNT
+        {
+            return Err(CacheError::Config(format!(
+                "Thread count must be between {} and {}",
+                Self::MIN_THREAD_COUNT,
+                Self::MAX_THREAD_COUNT
+            )));
+        }
+
+        if self.max_image_count < Self::MIN_IMAGE_COUNT
+            || self.max_image_count > Self::MAX_IMAGE_COUNT
+        {
+            return Err(CacheError::Config(format!(
+                "Max image count must be between {} and {}",
+                Self::MIN_IMAGE_COUNT,
+                Self::MAX_IMAGE_COUNT
+            )));
+        }
+
+        Ok(())
     }
 }

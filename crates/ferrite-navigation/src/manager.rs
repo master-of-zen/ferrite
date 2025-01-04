@@ -4,7 +4,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use tracing::info;
+use tracing::{info, instrument};
 
 pub struct NavigationManager {
     directory_images: Vec<PathBuf>,
@@ -18,6 +18,7 @@ impl NavigationManager {
         }
     }
 
+    #[instrument(skip(self, image_path), fields(path = ?image_path))]
     pub fn load_current_directory(&mut self, image_path: &Path) -> Result<()> {
         let absolute_path = fs::canonicalize(image_path)
             .map_err(NavigationError::DirectoryAccess)?;

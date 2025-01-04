@@ -75,11 +75,7 @@ pub fn init(config: LogConfig) {
         .with_thread_ids(true)
         .with_file(true)
         .with_timer(fmt::time::UtcTime::rfc_3339())
-        .with_span_events(if config.log_spans {
-            FmtSpan::NEW | FmtSpan::ENTER | FmtSpan::EXIT
-        } else {
-            FmtSpan::NONE
-        })
+        .with_span_events(FmtSpan::EXIT)
         .with_filter(filter.clone());
 
     let registry = Registry::default().with(fmt_layer);

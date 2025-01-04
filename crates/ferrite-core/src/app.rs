@@ -1,6 +1,7 @@
 use eframe::egui::{self, Context, Key};
 use ferrite_cache::CacheHandle;
 use std::{path::PathBuf, sync::Arc};
+use tracing::instrument;
 
 use ferrite_config::FerriteConfig;
 use ferrite_navigation::NavigationManager;
@@ -16,6 +17,7 @@ pub struct FeriteApp {
 }
 
 impl FeriteApp {
+    #[instrument(skip(_cc, config, cache_manager), fields(initial_image = ?initial_image))]
     pub fn new(
         _cc: &eframe::CreationContext<'_>,
         initial_image: Option<PathBuf>,

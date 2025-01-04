@@ -20,11 +20,11 @@ rayon.workspace = true
 tracing.workspace = true
 tokio.workspace = true
 
-ferrite-core = { path = "../ferrite-core", version = "0.1.16" }
-ferrite-config = { path = "../ferrite-config", version = "0.1.16" }
-ferrite-cli = { path = "../ferrite-cli", version = "0.1.16" }
-ferrite-logging = { path = "../ferrite-logging", version = "0.1.16" }
-ferrite-cache = { path = "../ferrite-cache", version = "0.1.16" }
+ferrite-core = { path = "../ferrite-core", version = "0.1.20" }
+ferrite-config = { path = "../ferrite-config", version = "0.1.20" }
+ferrite-cli = { path = "../ferrite-cli", version = "0.1.20" }
+ferrite-logging = { path = "../ferrite-logging", version = "0.1.20" }
+ferrite-cache = { path = "../ferrite-cache", version = "0.1.20" }
 
 [dev-dependencies]
 criterion = "0.5"

@@ -5,6 +5,7 @@ use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
 use ferrite_config::{FerriteConfig, IndicatorConfig, Position};
 use image::GenericImageView;
+use tracing::instrument;
 
 pub struct ImageRenderer;
 
