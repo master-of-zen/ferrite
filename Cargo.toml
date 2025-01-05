@@ -32,4 +32,4 @@ thiserror = "2"
 clap = { version = "4.4", features = ["derive"] }
 config = { version = "0.15", features = ["toml"] }
 directories = "5.0"
-eframe = "0.26.0"
+eframe = "0.30.0"

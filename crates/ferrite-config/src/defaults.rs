@@ -46,13 +46,14 @@ pub mod help_menu {
 }
 
 pub mod controls {
+    use egui::Key;
 
-    pub const ZOOM_IN_KEYS: &[&str] = &["Equals", "Plus", "W"];
-    pub const ZOOM_OUT_KEYS: &[&str] = &["Minus", "S"];
-    pub const RESET_ZOOM_KEY: &str = "Num0";
-    pub const TOGGLE_FIT_KEY: &str = "F";
-    pub const QUIT_KEY: &str = "Q";
-    pub const HELP_KEY: &str = "H";
+    pub const ZOOM_IN_KEYS: &[Key] = &[Key::Equals, Key::Plus, Key::W];
+    pub const ZOOM_OUT_KEYS: &[Key] = &[Key::Minus, Key::S];
+    pub const RESET_ZOOM_KEY: Key = Key::Num0;
+    pub const TOGGLE_FIT_KEY: Key = Key::F;
+    pub const QUIT_KEY: Key = Key::Q;
+    pub const HELP_KEY: Key = Key::H;
 }
 
 pub mod navigation {

@@ -29,7 +29,7 @@ impl HelpMenu {
         let total_width = column_width * 3.0 + spacing * 2.0;
 
         let screen_rect = ui.ctx().screen_rect();
-        egui::Area::new("help_menu")
+        egui::Area::new("help_menu".into())
             .fixed_pos(egui::pos2(
                 screen_rect.center().x - total_width * 0.5,
                 screen_rect.center().y - (heading_size + row_height * 4.0),

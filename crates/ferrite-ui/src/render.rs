@@ -3,7 +3,12 @@ use std::path::PathBuf;
 use crate::{input, FitMode, ZoomHandler};
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
-use ferrite_config::{FerriteConfig, IndicatorConfig, Position};
+use ferrite_config::{
+    ControlsConfig,
+    FerriteConfig,
+    IndicatorConfig,
+    Position,
+};
 use image::GenericImageView;
 use tracing::instrument;
 
@@ -16,9 +21,10 @@ impl ImageRenderer {
         image_manager: &mut ferrite_image::ImageManager,
         zoom_handler: &mut ZoomHandler,
         config: &FerriteConfig,
+        controls: &ControlsConfig,
     ) {
         let panel_rect = ui.available_rect_before_wrap();
-        input::handle_input(ctx, ui, zoom_handler, panel_rect);
+        input::handle_input(ctx, ui, zoom_handler, controls, panel_rect);
 
         let current_image_size =
             image_manager
@@ -240,7 +246,7 @@ impl ImageRenderer {
             ),
         };
 
-        Area::new("zoom_indicator")
+        Area::new("zoom_indicator".into())
             .order(Order::Foreground)
             .fixed_pos(pos)
             .show(ui.ctx(), |ui| {
@@ -298,7 +304,7 @@ impl ImageRenderer {
                 screen_rect.min.y + padding.y,
             );
 
-            Area::new("filename_indicator")
+            Area::new("filename_indicator".into())
                 .order(Order::Foreground)
                 .fixed_pos(Position_pos)
                 .show(ui.ctx(), |ui| {
@@ -353,7 +359,7 @@ fn render_resolution_indicator(
             screen_rect.min.y + padding.y,
         );
 
-        Area::new("resolution_indicator")
+        Area::new("resolution_indicator".into())
             .order(Order::Foreground)
             .fixed_pos(pos)
             .show(ui.ctx(), |ui| {

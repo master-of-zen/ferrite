@@ -106,11 +106,11 @@ impl FeriteApp {
 
 impl eframe::App for FeriteApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        if ctx.input(|i| i.key_pressed(Key::H)) {
+        if ctx.input(|i| i.key_pressed(self.config.controls.help_key)) {
             self.help_menu.toggle();
         }
 
-        if ctx.input(|i| i.key_pressed(Key::Q)) {
+        if ctx.input(|i| i.key_pressed(self.config.controls.quit_key)) {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
         }
 
@@ -123,6 +123,7 @@ impl eframe::App for FeriteApp {
                 &mut self.image_manager,
                 &mut self.zoom_handler,
                 &self.config,
+                &self.config.controls,
             );
             self.help_menu.render(ui, &self.config.help_menu);
         });
