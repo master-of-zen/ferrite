@@ -125,7 +125,11 @@ impl eframe::App for FeriteApp {
                 &self.config,
                 &self.config.controls,
             );
-            self.help_menu.render(ui, &self.config.help_menu);
+            self.help_menu.render(
+                ui,
+                &self.config.help_menu,
+                &self.config.controls,
+            );
         });
     }
 }

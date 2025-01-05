@@ -1,5 +1,5 @@
 use eframe::egui::{self, Color32, Frame, Rounding};
-use ferrite_config::HelpMenuConfig;
+use ferrite_config::{ControlsConfig, HelpMenuConfig};
 
 pub struct HelpMenu {
     visible: bool,
@@ -16,7 +16,12 @@ impl HelpMenu {
         self.visible = !self.visible;
     }
 
-    pub fn render(&self, ui: &mut egui::Ui, config: &HelpMenuConfig) {
+    pub fn render(
+        &self,
+        ui: &mut egui::Ui,
+        config: &HelpMenuConfig,
+        controls: &ControlsConfig,
+    ) {
         if !self.visible {
             return;
         }
@@ -35,14 +40,14 @@ impl HelpMenu {
                 screen_rect.center().y - (heading_size + row_height * 4.0),
             ))
             .show(ui.ctx(), |ui| {
-                Frame::none()
+                egui::Frame::none()
                     .fill(Color32::from_rgba_unmultiplied(
                         config.background_color.r,
                         config.background_color.g,
                         config.background_color.b,
                         config.background_color.a,
                     ))
-                    .rounding(Rounding::same(row_height * 0.5))
+                    .rounding(egui::Rounding::same(row_height * 0.5))
                     .inner_margin(spacing)
                     .show(ui, |ui| {
                         ui.set_max_width(total_width);
@@ -66,15 +71,32 @@ impl HelpMenu {
                             });
 
                             columns[1].vertical(|ui| {
+                                let zoom_in_keys = format!(
+                                    "{:?}: Zoom in",
+                                    controls.zoom_in_keys
+                                );
+                                let zoom_out_keys = format!(
+                                    "{:?}: Zoom out",
+                                    controls.zoom_out_keys
+                                );
+                                let reset_zoom = format!(
+                                    "{:?}: Reset zoom",
+                                    controls.reset_zoom_key
+                                );
+                                let toggle_fit = format!(
+                                    "{:?}: Toggle fit",
+                                    controls.toggle_fit_key
+                                );
+
                                 render_section(
                                     ui,
                                     "Zoom",
                                     &[
                                         "Mouse Wheel",
-                                        "+ or W: Zoom in",
-                                        "- or S: Zoom out",
-                                        "0: Reset zoom",
-                                        "F: Toggle fit",
+                                        &zoom_in_keys,
+                                        &zoom_out_keys,
+                                        &reset_zoom,
+                                        &toggle_fit,
                                     ],
                                     config,
                                     heading_size,
@@ -82,10 +104,17 @@ impl HelpMenu {
                             });
 
                             columns[2].vertical(|ui| {
+                                let help_text = format!(
+                                    "{:?}: Toggle help",
+                                    controls.help_key
+                                );
+                                let quit_text =
+                                    format!("{:?}: Quit", controls.quit_key);
+
                                 render_section(
                                     ui,
                                     "Other",
-                                    &["H: Toggle help", "Q: Quit"],
+                                    &[&help_text, &quit_text],
                                     config,
                                     heading_size,
                                 )
