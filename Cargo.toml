@@ -16,7 +16,7 @@ Cross-platform command-line AV1 / VP9 / HEVC / H264 encoding framework with per 
 """
 
 [workspace.dependencies]
-egui = "0.30"
+egui = { version = "0.30", features = ["serde", "default_fonts", "rayon"] }
 futures = "0.3"
 image = "0.25"
 lru = "0.12"
