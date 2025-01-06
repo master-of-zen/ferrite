@@ -1,5 +1,5 @@
 # Ferrite
-![Crates.io Version](https://img.shields.io/crates/v/ferrite)
+[![](https://img.shields.io/crates/v/ferrite.svg)](https://crates.io/crates/ferrite)
 [![](https://tokei.rs/b1/github/master-of-zen/ferrite?category=code)](https://github.com/master-of-zen/ferrite)
 
 
