@@ -1,4 +1,7 @@
 # Ferrite
+![Crates.io Version](https://img.shields.io/crates/v/ferrite)
+[![](https://tokei.rs/b1/github/master-of-zen/ferrite?category=code)](https://github.com/master-of-zen/ferrite)
+
 
 IT VIEWS IMAGES FAST
 
