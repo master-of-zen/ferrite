@@ -36,7 +36,6 @@ fn main() -> Result<(), Error> {
     }
 
     let mut native_options = eframe::NativeOptions::default();
-    native_options.default_theme = eframe::Theme::Dark;
 
     let width: f32 = 1920.;
     let height: f32 = 1080.;
@@ -55,7 +54,7 @@ fn main() -> Result<(), Error> {
                 config,
                 cache_manager,
             ));
-            app
+            Ok(app)
         }),
     )
 }

@@ -1,27 +1,34 @@
 // /ferrite-ui/src/input.rs
 use crate::ZoomHandler;
-use eframe::egui::{self, Context, Key, Rect, Ui};
+use eframe::egui::{Context, Rect, Ui};
+use ferrite_config::ControlsConfig;
 
 #[inline]
 pub fn handle_input(
     ctx: &Context,
     ui: &Ui,
     zoom_handler: &mut ZoomHandler,
+    controls: &ControlsConfig,
     _panel_rect: Rect,
 ) {
-    if ctx.input(|i| i.key_pressed(Key::F)) {
+    if ctx.input(|i| i.key_pressed(controls.toggle_fit_key)) {
         zoom_handler.reset_to_default_fit_mode();
     }
 
     if ctx.input(|i| {
-        i.key_pressed(egui::Key::Equals)
-            || i.key_pressed(egui::Key::Plus)
-            || i.key_pressed(egui::Key::W)
+        controls
+            .zoom_in_keys
+            .iter()
+            .any(|&key| i.key_pressed(key))
     }) {
         handle_zoom(ui, zoom_handler, 1.0);
     }
+
     if ctx.input(|i| {
-        i.key_pressed(egui::Key::Minus) || i.key_pressed(egui::Key::S)
+        controls
+            .zoom_out_keys
+            .iter()
+            .any(|&key| i.key_pressed(key))
     }) {
         handle_zoom(ui, zoom_handler, -1.0);
     }
@@ -31,11 +38,10 @@ pub fn handle_input(
         handle_zoom(ui, zoom_handler, scroll_delta.into());
     }
 
-    if ctx.input(|i| i.key_pressed(egui::Key::Num0)) {
+    if ctx.input(|i| i.key_pressed(controls.reset_zoom_key)) {
         zoom_handler.reset();
     }
 }
-
 #[inline]
 fn handle_zoom(ui: &Ui, zoom_handler: &mut ZoomHandler, scroll_delta: f64) {
     if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
