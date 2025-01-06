@@ -11,12 +11,12 @@ keywords = ["ferrite"]
 categories = ["development-tools::debugging"]
 
 [dependencies]
-ferrite-cache = { path = "../ferrite-cache", version = "0.1.20" }
-ferrite-config = { path = "../ferrite-config", version = "0.1.20" }
-ferrite-image = { path = "../ferrite-image", version = "0.1.20" }
-ferrite-logging = { path = "../ferrite-logging", version = "0.1.20" }
-ferrite-ui = { path = "../ferrite-ui", version = "0.1.20" }
-ferrite-navigation = { path = "../ferrite-navigation", version = "0.1.20" }
+ferrite-cache = { path = "../ferrite-cache", version = "0.1.21" }
+ferrite-config = { path = "../ferrite-config", version = "0.1.21" }
+ferrite-image = { path = "../ferrite-image", version = "0.1.21" }
+ferrite-logging = { path = "../ferrite-logging", version = "0.1.21" }
+ferrite-ui = { path = "../ferrite-ui", version = "0.1.21" }
+ferrite-navigation = { path = "../ferrite-navigation", version = "0.1.21" }
 eframe = { workspace = true }
 egui = { workspace = true }
 image = { workspace = true }
