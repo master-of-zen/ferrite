@@ -51,7 +51,6 @@ impl From<LogLevel> for Level {
 pub struct LogConfig {
     pub level:        LogLevel,
     pub enable_tracy: bool,
-    // Adding new configuration options for performance logging
     pub log_spans:    bool,
 }
 
