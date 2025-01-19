@@ -27,3 +27,4 @@ Cargo.lock
 test/
 publish-all.sh
 publish-dry-run.sh
+.cargo/config.toml
