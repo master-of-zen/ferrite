@@ -10,9 +10,9 @@ authors.workspace = true
 
 
 [dependencies]
-ferrite-cache = { path = "../ferrite-cache", version = "0.1.21" }
-ferrite-config = { path = "../ferrite-config", version = "0.1.21" }
-ferrite-logging = { path = "../ferrite-logging", version = "0.1.21" }
+ferrite-cache = { path = "../ferrite-cache", version = "0.1.22" }
+ferrite-config = { path = "../ferrite-config", version = "0.1.22" }
+ferrite-logging = { path = "../ferrite-logging", version = "0.1.22" }
 
 eframe = { workspace = true }
 egui = { workspace = true }
