@@ -37,13 +37,9 @@ fn main() -> Result<(), Error> {
 
     let mut native_options = eframe::NativeOptions::default();
 
-    let (width, height) = match &config.window.dimensions {
-        Some(dims) => (dims.width as f32, dims.height as f32),
-        None => (
-            ferrite_config::defaults::window::DEFAULT_WIDTH as f32,
-            ferrite_config::defaults::window::DEFAULT_HEIGHT as f32,
-        ),
-    };
+    // Use the width and height directly from config
+    let width = config.window.width as f32;
+    let height = config.window.height as f32;
 
     native_options.viewport = ViewportBuilder::default()
         .with_inner_size([width, height])

@@ -5,69 +5,57 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WindowDimensions {
-    pub width:  u32,
-    pub height: u32,
-}
-
-impl WindowDimensions {
-    pub fn new(width: u32, height: u32) -> Result<Self> {
-        if width < MIN_WIDTH {
-            return Err(ConfigError::ValidationError(format!(
-                "Window width must be at least {}",
-                MIN_WIDTH
-            )));
-        }
-        if height < MIN_HEIGHT {
-            return Err(ConfigError::ValidationError(format!(
-                "Window height must be at least {}",
-                MIN_HEIGHT
-            )));
-        }
-        Ok(Self {
-            width,
-            height,
-        })
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WindowConfig {
-    pub dimensions: Option<WindowDimensions>,
+    #[serde(default = "default_width")]
+    pub width:      u32,
+    #[serde(default = "default_height")]
+    pub height:     u32,
     pub borderless: bool,
+}
+
+fn default_width() -> u32 {
+    DEFAULT_WIDTH
+}
+
+fn default_height() -> u32 {
+    DEFAULT_HEIGHT
 }
 
 impl Default for WindowConfig {
     fn default() -> Self {
         Self {
-            dimensions: None, borderless: BORDERLESS
+            width:      DEFAULT_WIDTH,
+            height:     DEFAULT_HEIGHT,
+            borderless: BORDERLESS,
         }
     }
 }
 
 impl WindowConfig {
     pub fn validate(&self) -> Result<()> {
-        if let Some(ref dims) = self.dimensions {
-            if dims.width < MIN_WIDTH {
-                return Err(ConfigError::ValidationError(format!(
-                    "Window width must be at least {}",
-                    MIN_WIDTH
-                )));
-            }
-            if dims.height < MIN_HEIGHT {
-                return Err(ConfigError::ValidationError(format!(
-                    "Window height must be at least {}",
-                    MIN_HEIGHT
-                )));
-            }
+        if self.width < MIN_WIDTH {
+            return Err(ConfigError::ValidationError(format!(
+                "Window width must be at least {}",
+                MIN_WIDTH
+            )));
+        }
+        if self.height < MIN_HEIGHT {
+            return Err(ConfigError::ValidationError(format!(
+                "Window height must be at least {}",
+                MIN_HEIGHT
+            )));
         }
         Ok(())
     }
 
     pub fn with_dimensions(width: u32, height: u32) -> Result<Self> {
-        Ok(Self {
-            dimensions: Some(WindowDimensions::new(width, height)?),
+        let config = Self {
+            width,
+            height,
             ..Self::default()
-        })
+        };
+
+        config.validate()?;
+        Ok(config)
     }
 }
