@@ -4,6 +4,8 @@ use crate::types::Position;
 pub mod window {
     pub const MIN_WIDTH: u32 = 640;
     pub const MIN_HEIGHT: u32 = 480;
+    pub const DEFAULT_WIDTH: u32 = 1920;
+    pub const DEFAULT_HEIGHT: u32 = 1080;
     pub const BORDERLESS: bool = true;
 }
 

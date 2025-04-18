@@ -15,7 +15,7 @@ pub const CONFIG_VERSION: &str = "0.1";
 
 mod cache;
 mod config;
-mod defaults;
+pub mod defaults;
 mod error;
 mod help_menu;
 mod indicator;
