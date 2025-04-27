@@ -387,6 +387,19 @@ fn render_resolution_indicator(
     }
 }
 
+/// Helper function to precisely measure text dimensions
+fn measure_text(ctx: &Context, text: &str, font_size: f32) -> Vec2 {
+    let font_id = FontId::new(font_size, FontFamily::Proportional);
+    ctx.fonts(|f| {
+        let galley = f.layout_no_wrap(
+            text.to_string(),
+            font_id,
+            Color32::WHITE, // Color doesn't affect measurement
+        );
+        galley.size()
+    })
+}
+
 /// Calculate position based on specified placement
 fn calculate_position(
     screen_rect: Rect,
