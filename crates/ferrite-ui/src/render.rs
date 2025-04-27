@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{input, FitMode, ZoomHandler};
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
-use egui::{Area, Color32, Context, FontFamily, Order, RichText, Sense, Vec2};
+use egui::{Area, Color32, Context, FontFamily, FontId, Label, Order, RichText, Sense, Vec2};
 use ferrite_config::{
     ControlsConfig,
     FerriteConfig,
@@ -199,13 +199,7 @@ impl ImageRenderer {
         let padding =
             Vec2::new(config.padding.x() as f32, config.padding.y() as f32);
         let font_size = config.font_size as f32;
-        let char_width = font_size * 0.6;
-        let text_width = char_width * percentage_text.len() as f32;
-        let frame_margin = 8.0;
-        let box_size = Vec2::new(
-            text_width + frame_margin * 2.0,
-            font_size + frame_margin * 2.0,
-        );
+        let box_size = measure_text(ui.ctx(),&percentage_text, font_size);
 
         let pos = match config.position {
             Position::TopLeft => Pos2::new(
@@ -270,7 +264,8 @@ impl ImageRenderer {
                             .size(font_size)
                             .family(FontFamily::Proportional);
 
-                        ui.label(rich_text);
+                        let new_lab = Label::new(rich_text).extend();
+                        ui.add(new_lab);
                     });
             });
     }
@@ -328,7 +323,9 @@ impl ImageRenderer {
                                 .size(font_size)
                                 .family(FontFamily::Proportional);
 
-                            ui.label(rich_text);
+                            // This is the current fix for text wrap
+                            let new_lab = Label::new(rich_text).extend();
+                            ui.add(new_lab);
                         });
                 });
         }
@@ -383,8 +380,56 @@ fn render_resolution_indicator(
                             .size(font_size)
                             .family(FontFamily::Proportional);
 
-                        ui.label(rich_text);
+                        let new_lab = Label::new(rich_text).extend();
+                        ui.add(new_lab);
                     });
             });
+    }
+}
+
+/// Calculate position based on specified placement
+fn calculate_position(
+    screen_rect: Rect,
+    content_size: Vec2,
+    position_type: Position,
+    padding: Vec2,
+) -> Pos2 {
+    match position_type {
+        Position::TopLeft => Pos2::new(
+            screen_rect.min.x + padding.x,
+            screen_rect.min.y + padding.y,
+        ),
+        Position::TopRight => Pos2::new(
+            screen_rect.max.x - content_size.x - padding.x,
+            screen_rect.min.y + padding.y,
+        ),
+        Position::BottomLeft => Pos2::new(
+            screen_rect.min.x + padding.x,
+            screen_rect.max.y - content_size.y - padding.y,
+        ),
+        Position::BottomRight => Pos2::new(
+            screen_rect.max.x - content_size.x - padding.x,
+            screen_rect.max.y - content_size.y - padding.y,
+        ),
+        Position::Top => Pos2::new(
+            screen_rect.center().x - content_size.x / 2.0,
+            screen_rect.min.y + padding.y,
+        ),
+        Position::Bottom => Pos2::new(
+            screen_rect.center().x - content_size.x / 2.0,
+            screen_rect.max.y - content_size.y - padding.y,
+        ),
+        Position::Left => Pos2::new(
+            screen_rect.min.x + padding.x,
+            screen_rect.center().y - content_size.y / 2.0,
+        ),
+        Position::Right => Pos2::new(
+            screen_rect.max.x - content_size.x - padding.x,
+            screen_rect.center().y - content_size.y / 2.0,
+        ),
+        Position::Center => Pos2::new(
+            screen_rect.center().x - content_size.x / 2.0,
+            screen_rect.center().y - content_size.y / 2.0,
+        ),
     }
 }
