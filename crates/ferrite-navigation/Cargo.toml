@@ -7,8 +7,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ferrite-config = { path = "../ferrite-config", version = "0.1.22" }
-ferrite-image = { path = "../ferrite-image", version = "0.1.22" }
+ferrite-config = { path = "../ferrite-config", version = "0.1.23" }
+ferrite-image = { path = "../ferrite-image", version = "0.1.23" }
 thiserror.workspace = true
 tracing.workspace = true
 serde.workspace = true

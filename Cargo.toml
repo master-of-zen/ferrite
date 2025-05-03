@@ -4,7 +4,7 @@ members = ["crates/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.22"
+version = "0.1.23"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/master-of-zen/av1an"
 authors = ["master_of_zen master_of_zen@protonmail.com"]
