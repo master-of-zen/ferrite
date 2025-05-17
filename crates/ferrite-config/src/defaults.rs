@@ -28,7 +28,7 @@ pub mod zoom {
 pub mod indicator {
     use super::*;
 
-    pub const FONT_SIZE: f64 = 40.0;
+    pub const FONT_SIZE: f64 = 18.0;
     pub const FONT_FAMILY: &str = "system-ui";
     pub const BACKGROUND_COLOR: (u8, u8, u8, u8) = (0, 0, 0, 128);
     pub const TEXT_COLOR: (u8, u8, u8, u8) = (255, 255, 255, 255);
@@ -39,7 +39,7 @@ pub mod indicator {
 }
 
 pub mod help_menu {
-    pub const FONT_SIZE: f64 = 24.0;
+    pub const FONT_SIZE: f64 = 32.0;
     pub const FONT_FAMILY: &str = "system-ui";
     pub const BACKGROUND_COLOR: (u8, u8, u8, u8) = (0, 0, 0, 128);
     pub const TEXT_COLOR: (u8, u8, u8, u8) = (255, 255, 255, 255);
