@@ -45,7 +45,7 @@ impl HelpMenu {
                         config.background_color.b,
                         config.background_color.a,
                     ))
-                    .rounding(egui::Rounding::same(row_height * 0.5))
+                    .corner_radius(row_height * 0.5)
                     .inner_margin(spacing)
                     .show(ui, |ui| {
                         ui.set_max_width(total_width);
