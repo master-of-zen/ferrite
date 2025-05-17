@@ -10,14 +10,6 @@ readme = "README.md"
 keywords = ["ferrite"]
 categories = ["development-tools::debugging"]
 
-[[bin]]
-name = "read_directory"
-path = "src/bin/read_directory.rs"
-
-[[bin]]
-name = "read_image"
-path = "src/bin/read_image.rs"
-
 [dependencies]
 
 image.workspace = true

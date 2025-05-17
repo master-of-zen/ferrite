@@ -21,7 +21,8 @@ fn main() -> Result<(), Error> {
     });
 
     // Initialize logging using settings from CLI and FerriteConfig
-    init(LogConfig {
+    // Store the guard to keep the file logger alive.
+    let _log_guard = init(LogConfig {
         level: args.get_log_level().unwrap_or_else(|err| {
             eprintln!(
                 "Warning: Failed to parse log level from CLI: {}. Defaulting to Info.",
@@ -73,7 +74,7 @@ fn main() -> Result<(), Error> {
         .with_decorations(!config.window.borderless)
         .with_title("Ferrite"); // Set a default title
 
-    eframe::run_native(
+    let result = eframe::run_native(
         "Ferrite", // Internal name for eframe
         native_options,
         Box::new(move |cc| {
@@ -86,5 +87,8 @@ fn main() -> Result<(), Error> {
             ));
             Ok(app)
         }),
-    )
+    );
+
+    // _log_guard is dropped here, ensuring logs are flushed.
+    result
 }

@@ -16,6 +16,8 @@ tracing-subscriber = { workspace = true, features = [
     "env-filter",
     "registry",
     "time",
+
 ] }
+tracing-appender = { workspace = true }
 tracing-tracy.workspace = true
 tracy-client.workspace = true
