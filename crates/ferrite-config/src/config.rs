@@ -8,34 +8,31 @@ use crate::{
     input::ControlsConfig,
     window::WindowConfig,
     zoom::ZoomConfig,
-    CacheConfig,
-    HelpMenuConfig,
-    IndicatorConfig,
-    CONFIG_VERSION,
+    CacheConfig, HelpMenuConfig, IndicatorConfig, CONFIG_VERSION,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FerriteConfig {
-    version:       String,
-    pub window:    WindowConfig,
-    pub zoom:      ZoomConfig,
-    pub controls:  ControlsConfig,
+    version: String,
+    pub window: WindowConfig,
+    pub zoom: ZoomConfig,
+    pub controls: ControlsConfig,
     pub indicator: IndicatorConfig,
     pub help_menu: HelpMenuConfig,
-    pub cache:     CacheConfig,
+    pub cache: CacheConfig,
 }
 
 impl Default for FerriteConfig {
     fn default() -> Self {
         info!("Creating default configuration");
         Self {
-            version:   CONFIG_VERSION.to_string(),
-            window:    WindowConfig::default(),
-            zoom:      ZoomConfig::default(),
-            controls:  ControlsConfig::default(),
+            version: CONFIG_VERSION.to_string(),
+            window: WindowConfig::default(),
+            zoom: ZoomConfig::default(),
+            controls: ControlsConfig::default(),
             indicator: IndicatorConfig::default(),
             help_menu: HelpMenuConfig::default(),
-            cache:     CacheConfig::default(),
+            cache: CacheConfig::default(),
         }
     }
 }
@@ -96,7 +93,7 @@ impl FerriteConfig {
 
         if config.version != CONFIG_VERSION {
             return Err(ConfigError::VersionError {
-                found:     config.version.clone(),
+                found: config.version.clone(),
                 supported: CONFIG_VERSION.to_string(),
             });
         }

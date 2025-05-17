@@ -17,15 +17,13 @@ impl Default for SortOrder {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NavigationConfig {
-    pub sort_order:    SortOrder,
+    pub sort_order: SortOrder,
     pub reverse_order: bool,
 }
 
 impl Default for NavigationConfig {
     fn default() -> Self {
-        Self {
-            sort_order: SortOrder::default(), reverse_order: false
-        }
+        Self { sort_order: SortOrder::default(), reverse_order: false }
     }
 }
 

@@ -80,7 +80,7 @@ mod tests {
         );
 
         let err = ConfigError::VersionError {
-            found:     "0.2".to_string(),
+            found: "0.2".to_string(),
             supported: "0.1".to_string(),
         };
         assert_eq!(

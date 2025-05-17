@@ -17,32 +17,32 @@ struct Args {
 
 #[derive(Default)]
 struct ImageStats {
-    file_size:      u64,
-    memory_size:    usize,
-    dimensions:     (u32, u32),
-    cache_time:     f64,
+    file_size: u64,
+    memory_size: usize,
+    dimensions: (u32, u32),
+    cache_time: f64,
     retrieval_time: f64,
 }
 
 struct DirectoryStats {
-    total_start:       Instant,
-    scan_time:         std::time::Duration,
-    image_stats:       HashMap<PathBuf, ImageStats>,
-    cache_times:       Vec<f64>,
-    retrieval_times:   Vec<f64>,
-    total_file_size:   u64,
+    total_start: Instant,
+    scan_time: std::time::Duration,
+    image_stats: HashMap<PathBuf, ImageStats>,
+    cache_times: Vec<f64>,
+    retrieval_times: Vec<f64>,
+    total_file_size: u64,
     total_memory_size: usize,
 }
 
 impl DirectoryStats {
     fn new() -> Self {
         Self {
-            total_start:       Instant::now(),
-            scan_time:         std::time::Duration::default(),
-            image_stats:       HashMap::new(),
-            cache_times:       Vec::new(),
-            retrieval_times:   Vec::new(),
-            total_file_size:   0,
+            total_start: Instant::now(),
+            scan_time: std::time::Duration::default(),
+            image_stats: HashMap::new(),
+            cache_times: Vec::new(),
+            retrieval_times: Vec::new(),
+            total_file_size: 0,
             total_memory_size: 0,
         }
     }
@@ -146,7 +146,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cache_handle = CacheManager::new(CacheConfig {
         max_image_count: args.max_images,
-        thread_count:    4,
+        thread_count: 4,
     });
 
     if !args.directory.is_dir() {
@@ -178,10 +178,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let file_size = std::fs::metadata(path)?.len();
         stats.total_file_size += file_size;
 
-        let mut image_stats = ImageStats {
-            file_size,
-            ..Default::default()
-        };
+        let mut image_stats = ImageStats { file_size, ..Default::default() };
 
         // Cache image
         let start = Instant::now();

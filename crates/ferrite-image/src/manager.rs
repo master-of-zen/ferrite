@@ -9,8 +9,8 @@ use crate::error::{ImageError, Result};
 
 pub struct ImageManager {
     pub current_image: Option<Arc<DynamicImage>>,
-    pub texture:       Option<egui::TextureHandle>,
-    pub current_path:  Option<PathBuf>,
+    pub texture: Option<egui::TextureHandle>,
+    pub current_path: Option<PathBuf>,
     pub cache_manager: Arc<CacheHandle>,
 }
 

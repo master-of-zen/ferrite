@@ -4,8 +4,7 @@ use tracing_subscriber::{
     fmt::{self, format::FmtSpan},
     layer::SubscriberExt,
     util::SubscriberInitExt,
-    Layer,
-    Registry,
+    Layer, Registry,
 };
 
 // Export our new metrics module
@@ -49,19 +48,15 @@ impl From<LogLevel> for Level {
 
 #[derive(Debug)]
 pub struct LogConfig {
-    pub level:        LogLevel,
+    pub level: LogLevel,
     pub enable_tracy: bool,
     // Adding new configuration options for performance logging
-    pub log_spans:    bool,
+    pub log_spans: bool,
 }
 
 impl Default for LogConfig {
     fn default() -> Self {
-        Self {
-            level:        LogLevel::Info,
-            enable_tracy: false,
-            log_spans:    true,
-        }
+        Self { level: LogLevel::Info, enable_tracy: false, log_spans: true }
     }
 }
 

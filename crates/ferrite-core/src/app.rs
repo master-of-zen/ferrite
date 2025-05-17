@@ -8,12 +8,12 @@ use ferrite_navigation::NavigationManager;
 use ferrite_ui::{HelpMenu, ImageRenderer, ZoomHandler};
 
 pub struct FeriteApp {
-    config:        FerriteConfig,
+    config: FerriteConfig,
     image_manager: ferrite_image::ImageManager,
-    navigation:    NavigationManager,
-    zoom_handler:  ZoomHandler,
+    navigation: NavigationManager,
+    zoom_handler: ZoomHandler,
     cache_manager: Arc<CacheHandle>,
-    help_menu:     HelpMenu,
+    help_menu: HelpMenu,
 }
 
 impl FeriteApp {

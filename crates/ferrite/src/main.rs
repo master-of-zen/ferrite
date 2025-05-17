@@ -12,9 +12,9 @@ fn main() -> Result<(), Error> {
     // just for now unwrap
     // TODO: HANDLE THIS CORRECTLY
     init(LogConfig {
-        level:        args.get_log_level().unwrap(),
+        level: args.get_log_level().unwrap(),
         enable_tracy: true,
-        log_spans:    true,
+        log_spans: true,
     });
 
     let config = args.handle_config().unwrap_or_else(|e| {

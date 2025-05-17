@@ -56,35 +56,35 @@ impl Default for FitMode {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ZoomConfig {
-    pub min_zoom:              f64,
-    pub max_zoom:              f64,
-    pub default_zoom:          f64,
-    pub zoom_step:             f64,
-    pub use_predefined_steps:  bool,
-    pub zoom_steps:            ZoomSteps,
-    pub focal_point_enabled:   bool,
-    pub transition_enabled:    bool,
-    pub transition_duration:   f64,
-    pub fit_to_window:         bool,
+    pub min_zoom: f64,
+    pub max_zoom: f64,
+    pub default_zoom: f64,
+    pub zoom_step: f64,
+    pub use_predefined_steps: bool,
+    pub zoom_steps: ZoomSteps,
+    pub focal_point_enabled: bool,
+    pub transition_enabled: bool,
+    pub transition_duration: f64,
+    pub fit_to_window: bool,
     pub maintain_aspect_ratio: bool,
-    pub default_fit_mode:      FitMode,
+    pub default_fit_mode: FitMode,
 }
 
 impl Default for ZoomConfig {
     fn default() -> Self {
         Self {
-            min_zoom:              MIN_ZOOM,
-            max_zoom:              MAX_ZOOM,
-            default_zoom:          DEFAULT_ZOOM,
-            zoom_step:             ZOOM_STEP,
-            use_predefined_steps:  USE_PREDEFINED_STEPS,
-            zoom_steps:            ZoomSteps::default(),
-            focal_point_enabled:   FOCAL_POINT_ENABLED,
-            transition_enabled:    TRANSITION_ENABLED,
-            transition_duration:   TRANSITION_DURATION,
-            fit_to_window:         FIT_TO_WINDOW,
+            min_zoom: MIN_ZOOM,
+            max_zoom: MAX_ZOOM,
+            default_zoom: DEFAULT_ZOOM,
+            zoom_step: ZOOM_STEP,
+            use_predefined_steps: USE_PREDEFINED_STEPS,
+            zoom_steps: ZoomSteps::default(),
+            focal_point_enabled: FOCAL_POINT_ENABLED,
+            transition_enabled: TRANSITION_ENABLED,
+            transition_duration: TRANSITION_DURATION,
+            fit_to_window: FIT_TO_WINDOW,
             maintain_aspect_ratio: MAINTAIN_ASPECT_RATIO,
-            default_fit_mode:      FitMode::default(),
+            default_fit_mode: FitMode::default(),
         }
     }
 }

@@ -2,12 +2,12 @@ use std::path::PathBuf;
 
 use crate::{input, FitMode, ZoomHandler};
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
-use egui::{Area, Color32, Context, FontFamily, FontId, Label, Order, RichText, Sense, Vec2};
+use egui::{
+    Area, Color32, Context, FontFamily, FontId, Label, Order, RichText, Sense,
+    Vec2,
+};
 use ferrite_config::{
-    ControlsConfig,
-    FerriteConfig,
-    IndicatorConfig,
-    Position,
+    ControlsConfig, FerriteConfig, IndicatorConfig, Position,
 };
 use image::GenericImageView;
 use tracing::instrument;
@@ -199,7 +199,7 @@ impl ImageRenderer {
         let padding =
             Vec2::new(config.padding.x() as f32, config.padding.y() as f32);
         let font_size = config.font_size as f32;
-        let box_size = measure_text(ui.ctx(),&percentage_text, font_size);
+        let box_size = measure_text(ui.ctx(), &percentage_text, font_size);
 
         let pos = match config.position {
             Position::TopLeft => Pos2::new(

@@ -8,9 +8,7 @@ pub struct CacheConfig {
 
 impl Default for CacheConfig {
     fn default() -> Self {
-        Self {
-            preload_count: 2
-        }
+        Self { preload_count: 2 }
     }
 }
 

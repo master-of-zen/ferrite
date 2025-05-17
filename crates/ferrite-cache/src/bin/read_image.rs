@@ -16,12 +16,12 @@ struct Args {
 }
 
 struct TimingData {
-    file_size:   u64,
+    file_size: u64,
     memory_size: usize,
-    read_time:   std::time::Duration,
+    read_time: std::time::Duration,
     decode_time: std::time::Duration,
-    first_load:  std::time::Duration,
-    cache_hit:   std::time::Duration,
+    first_load: std::time::Duration,
+    cache_hit: std::time::Duration,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cache_handle = CacheManager::new(CacheConfig {
         max_image_count: args.max_cache,
-        thread_count:    4,
+        thread_count: 4,
     });
 
     if !args.image.is_file() {

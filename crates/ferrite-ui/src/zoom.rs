@@ -9,25 +9,25 @@ pub enum FitMode {
 }
 
 pub struct ZoomHandler {
-    zoom_level:          f64,
-    pan_offset:          Vec2,
-    fit_mode:            FitMode,
-    default_fit_mode:    FitMode,
+    zoom_level: f64,
+    pan_offset: Vec2,
+    fit_mode: FitMode,
+    default_fit_mode: FitMode,
     manual_zoom_applied: bool,
-    min_zoom:            f64,
-    max_zoom:            f64,
+    min_zoom: f64,
+    max_zoom: f64,
 }
 
 impl ZoomHandler {
     pub fn new(default_zoom: f64) -> Self {
         Self {
-            zoom_level:          default_zoom,
-            pan_offset:          Vec2::ZERO,
-            fit_mode:            FitMode::FitLonger,
-            default_fit_mode:    FitMode::FitLonger,
+            zoom_level: default_zoom,
+            pan_offset: Vec2::ZERO,
+            fit_mode: FitMode::FitLonger,
+            default_fit_mode: FitMode::FitLonger,
             manual_zoom_applied: false,
-            min_zoom:            0.1,
-            max_zoom:            10.0,
+            min_zoom: 0.1,
+            max_zoom: 10.0,
         }
     }
 

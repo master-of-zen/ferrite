@@ -2,9 +2,7 @@ use std::{path::PathBuf, sync::Arc, thread};
 
 use crate::{
     types::{CacheConfig, CacheHandle, CacheRequest, CacheState},
-    CacheError,
-    CacheResult,
-    ImageLoadError,
+    CacheError, CacheResult, ImageLoadError,
 };
 use image::{DynamicImage, GenericImageView};
 use tokio::{
@@ -14,10 +12,10 @@ use tokio::{
 };
 use tracing::{debug, info, instrument};
 pub struct CacheManager {
-    config:         CacheConfig,
-    state:          Arc<RwLock<CacheState>>,
+    config: CacheConfig,
+    state: Arc<RwLock<CacheState>>,
     runtime_handle: Arc<Runtime>,
-    _shutdown_tx:   oneshot::Sender<()>,
+    _shutdown_tx: oneshot::Sender<()>,
 }
 
 impl CacheManager {
@@ -94,7 +92,7 @@ impl CacheManager {
         runtime.spawn(async move {
             let file_size = tokio::fs::metadata(&path).await.map_err(|e| {
                 CacheError::ImageLoad {
-                    path:   path.clone(),
+                    path: path.clone(),
                     source: ImageLoadError::Io(e),
                 }
             })?;
@@ -105,7 +103,7 @@ impl CacheManager {
             // Continue loading in background
             let image_data = tokio::fs::read(&path).await.map_err(|e| {
                 CacheError::ImageLoad {
-                    path:   path.clone(),
+                    path: path.clone(),
                     source: ImageLoadError::Io(e),
                 }
             })?;
@@ -113,7 +111,7 @@ impl CacheManager {
             let decoded_image =
                 image::load_from_memory(&image_data).map_err(|e| {
                     CacheError::ImageLoad {
-                        path:   path.clone(),
+                        path: path.clone(),
                         source: ImageLoadError::Format(e.to_string()),
                     }
                 })?;
@@ -197,7 +195,7 @@ impl CacheManager {
         let file_size = tokio::fs::metadata(&path)
             .await
             .map_err(|e| CacheError::ImageLoad {
-                path:   path.clone(),
+                path: path.clone(),
                 source: ImageLoadError::Io(e),
             })?
             .len();
@@ -211,7 +209,7 @@ impl CacheManager {
         // Read the file contents using tokio's async file IO
         let image_data = tokio::fs::read(&path).await.map_err(|e| {
             CacheError::ImageLoad {
-                path:   path.clone(),
+                path: path.clone(),
                 source: ImageLoadError::Io(e),
             }
         })?;
@@ -300,7 +298,7 @@ impl CacheManager {
         let read_start = Instant::now();
         let file_data = tokio::fs::read(&path).await.map_err(|e| {
             CacheError::ImageLoad {
-                path:   path.clone(),
+                path: path.clone(),
                 source: ImageLoadError::Io(e),
             }
         })?;
@@ -311,7 +309,7 @@ impl CacheManager {
         let decoded_image =
             image::load_from_memory(&file_data).map_err(|e| {
                 CacheError::ImageLoad {
-                    path:   path.clone(),
+                    path: path.clone(),
                     source: ImageLoadError::Format(e.to_string()),
                 }
             })?;

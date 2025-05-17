@@ -7,9 +7,7 @@ pub struct HelpMenu {
 
 impl HelpMenu {
     pub fn new() -> Self {
-        Self {
-            visible: false
-        }
+        Self { visible: false }
     }
 
     pub fn toggle(&mut self) {

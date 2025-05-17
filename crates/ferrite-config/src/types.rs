@@ -18,12 +18,7 @@ pub struct ColorRGBA {
 impl ColorRGBA {
     /// Creates a new color from RGBA components
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
-        Self {
-            r,
-            g,
-            b,
-            a,
-        }
+        Self { r, g, b, a }
     }
 
     /// Creates a color from a hexadecimal string (e.g., "#FF0000FF")
@@ -67,10 +62,7 @@ impl Vector2D {
     /// Creates a new vector with validation
     pub fn new(x: f64, y: f64) -> Result<Self> {
         if x.is_finite() && y.is_finite() {
-            Ok(Self {
-                x,
-                y,
-            })
+            Ok(Self { x, y })
         } else {
             Err(ConfigError::ValidationError(
                 "Vector components must be finite numbers".to_string(),

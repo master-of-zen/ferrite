@@ -3,7 +3,7 @@ use tracing::{info, info_span};
 
 pub struct PerformanceMetrics {
     start_time: Instant,
-    operation:  &'static str,
+    operation: &'static str,
     mark_frame: bool,
 }
 
@@ -18,11 +18,7 @@ impl PerformanceMetrics {
             info!("Starting operation: {}", operation);
         });
 
-        Self {
-            start_time: Instant::now(),
-            operation,
-            mark_frame,
-        }
+        Self { start_time: Instant::now(), operation, mark_frame }
     }
 
     pub fn finish(self) -> Duration {

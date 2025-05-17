@@ -8,23 +8,23 @@ use crate::{
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ControlsConfig {
-    pub zoom_in_keys:   Vec<Key>,
-    pub zoom_out_keys:  Vec<Key>,
+    pub zoom_in_keys: Vec<Key>,
+    pub zoom_out_keys: Vec<Key>,
     pub reset_zoom_key: Key,
     pub toggle_fit_key: Key,
-    pub quit_key:       Key,
-    pub help_key:       Key,
+    pub quit_key: Key,
+    pub help_key: Key,
 }
 
 impl Default for ControlsConfig {
     fn default() -> Self {
         Self {
-            zoom_in_keys:   vec![Key::Equals, Key::Plus, Key::W],
-            zoom_out_keys:  vec![Key::Minus, Key::S],
+            zoom_in_keys: vec![Key::Equals, Key::Plus, Key::W],
+            zoom_out_keys: vec![Key::Minus, Key::S],
             reset_zoom_key: Key::Num0,
             toggle_fit_key: Key::F,
-            quit_key:       Key::Q,
-            help_key:       Key::H,
+            quit_key: Key::Q,
+            help_key: Key::H,
         }
     }
 }

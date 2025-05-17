@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WindowConfig {
     #[serde(default = "default_width")]
-    pub width:      u32,
+    pub width: u32,
     #[serde(default = "default_height")]
-    pub height:     u32,
+    pub height: u32,
     pub borderless: bool,
 }
 
@@ -24,8 +24,8 @@ fn default_height() -> u32 {
 impl Default for WindowConfig {
     fn default() -> Self {
         Self {
-            width:      DEFAULT_WIDTH,
-            height:     DEFAULT_HEIGHT,
+            width: DEFAULT_WIDTH,
+            height: DEFAULT_HEIGHT,
             borderless: BORDERLESS,
         }
     }
@@ -49,11 +49,7 @@ impl WindowConfig {
     }
 
     pub fn with_dimensions(width: u32, height: u32) -> Result<Self> {
-        let config = Self {
-            width,
-            height,
-            ..Self::default()
-        };
+        let config = Self { width, height, ..Self::default() };
 
         config.validate()?;
         Ok(config)
