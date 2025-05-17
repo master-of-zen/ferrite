@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::str::FromStr;
 use tracing::{instrument, Level};
 use tracing_subscriber::{
@@ -7,7 +8,6 @@ use tracing_subscriber::{
     Layer, Registry,
 };
 
-// Export our new metrics module
 pub mod metrics;
 pub use metrics::PerformanceMetrics;
 
@@ -50,13 +50,18 @@ impl From<LogLevel> for Level {
 pub struct LogConfig {
     pub level: LogLevel,
     pub enable_tracy: bool,
-    // Adding new configuration options for performance logging
     pub log_spans: bool,
+    pub file_path: Option<PathBuf>,
 }
 
 impl Default for LogConfig {
     fn default() -> Self {
-        Self { level: LogLevel::Info, enable_tracy: false, log_spans: true }
+        Self {
+            level: LogLevel::Info,
+            enable_tracy: false,
+            log_spans: true,
+            file_path: None,
+        }
     }
 }
 
@@ -76,7 +81,6 @@ pub fn init(config: LogConfig) {
     let registry = Registry::default().with(fmt_layer);
 
     if config.enable_tracy {
-        // Create the tracy layer with the correct configuration
         let tracy_layer =
             tracing_tracy::TracyLayer::default().with_filter(filter);
 
@@ -85,8 +89,6 @@ pub fn init(config: LogConfig) {
             .try_init()
             .expect("Failed to initialize logging with tracy");
 
-        // After initialization, we can use tracy-client directly for frame
-        // marking
         tracy_client::frame_mark();
     } else {
         registry

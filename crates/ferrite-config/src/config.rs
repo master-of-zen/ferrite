@@ -1,5 +1,6 @@
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::{fs, path::PathBuf};
 use tracing::{debug, info};
 
@@ -20,6 +21,7 @@ pub struct FerriteConfig {
     pub indicator: IndicatorConfig,
     pub help_menu: HelpMenuConfig,
     pub cache: CacheConfig,
+    pub log_file: Option<PathBuf>,
 }
 
 impl Default for FerriteConfig {
@@ -33,11 +35,10 @@ impl Default for FerriteConfig {
             indicator: IndicatorConfig::default(),
             help_menu: HelpMenuConfig::default(),
             cache: CacheConfig::default(),
+            log_file: None,
         }
     }
 }
-
-use std::env;
 
 impl FerriteConfig {
     /// Determines the configuration file path by checking:

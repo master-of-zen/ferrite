@@ -67,7 +67,7 @@ impl CacheHandle {
 
 use image::DynamicImage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CacheConfig {
     pub max_image_count: usize,
     pub thread_count: usize,
