@@ -2,7 +2,7 @@ use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::{fs, path::PathBuf};
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use crate::{
     error::{ConfigError, Result},
@@ -27,6 +27,22 @@ pub struct FerriteConfig {
 impl Default for FerriteConfig {
     fn default() -> Self {
         info!("Creating default configuration");
+
+        // Determine platform-specific default log file path
+        let default_log_file_path =
+            ProjectDirs::from("com", "ferrite", "ferrite").map(|proj_dirs| {
+                let log_dir = proj_dirs.data_local_dir().join("logs"); // Or cache_dir(), or state_dir()
+                                                                       // We'll store the absolute path in the config by default.
+                                                                       // The user can change it to a relative path if they prefer.
+                log_dir.join("ferrite.log")
+            });
+
+        // Fallback if ProjectDirs fails (should be rare)
+        let log_file = default_log_file_path.or_else(|| {
+            warn!("Could not determine platform-specific log directory. Defaulting log file to 'ferrite.log' in CWD or next to config.");
+            Some(PathBuf::from("ferrite.log")) // This will be CWD-relative if config path resolution also fails
+        });
+
         Self {
             version: CONFIG_VERSION.to_string(),
             window: WindowConfig::default(),
@@ -35,7 +51,7 @@ impl Default for FerriteConfig {
             indicator: IndicatorConfig::default(),
             help_menu: HelpMenuConfig::default(),
             cache: CacheConfig::default(),
-            log_file: None,
+            log_file, // Use the determined default log file path
         }
     }
 }
