@@ -3,7 +3,6 @@ use crate::ZoomHandler;
 use eframe::egui::{Context, Rect, Ui};
 use ferrite_config::ControlsConfig;
 
-#[inline]
 pub fn handle_input(
     ctx: &Context,
     ui: &Ui,
@@ -42,7 +41,7 @@ pub fn handle_input(
         zoom_handler.reset();
     }
 }
-#[inline]
+
 fn handle_zoom(ui: &Ui, zoom_handler: &mut ZoomHandler, scroll_delta: f64) {
     if let Some(mouse_pos) = ui.input(|i| i.pointer.hover_pos()) {
         let panel_rect = ui.available_rect_before_wrap();

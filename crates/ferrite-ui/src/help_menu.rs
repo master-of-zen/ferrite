@@ -123,7 +123,6 @@ impl HelpMenu {
     }
 }
 
-#[inline]
 fn render_section(
     ui: &mut egui::Ui,
     title: &str,

@@ -19,7 +19,7 @@ Cross-platform command-line AV1 / VP9 / HEVC / H264 encoding framework with per 
 egui = { version = "0.31.1", features = ["serde", "default_fonts", "rayon"] }
 eframe = "0.31.1"
 futures = "0.3"
-image = "0.25.6"
+image = { version = "0.25.6", features = ["rayon", "avif-native", "serde"]}
 lru = "0.14"
 rayon = "1.10"
 serde = { version = "1.0", features = ["derive"] }
