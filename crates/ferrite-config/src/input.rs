@@ -1,10 +1,7 @@
 use egui::Key;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    defaults::controls::*,
-    error::{ConfigError, Result},
-};
+use crate::error::{ConfigError, Result};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ControlsConfig {

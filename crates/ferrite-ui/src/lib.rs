@@ -1,4 +1,3 @@
-mod error;
 mod help_menu;
 mod input;
 mod render;

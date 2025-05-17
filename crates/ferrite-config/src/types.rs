@@ -114,7 +114,7 @@ impl Default for MouseButton {
 }
 
 /// Re-export eframe types for consistency
-pub use eframe::egui::{Color32, Key};
+pub use eframe::egui::Key;
 
 #[cfg(test)]
 mod tests {

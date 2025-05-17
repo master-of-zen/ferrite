@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32, Frame, Rounding};
+use eframe::egui::{self, Color32};
 use ferrite_config::{ControlsConfig, HelpMenuConfig};
 
 pub struct HelpMenu {
@@ -38,7 +38,7 @@ impl HelpMenu {
                 screen_rect.center().y - (heading_size + row_height * 4.0),
             ))
             .show(ui.ctx(), |ui| {
-                egui::Frame::none()
+                egui::Frame::new()
                     .fill(Color32::from_rgba_unmultiplied(
                         config.background_color.r,
                         config.background_color.g,

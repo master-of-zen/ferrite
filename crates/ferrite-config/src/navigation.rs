@@ -1,4 +1,3 @@
-use crate::error::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -27,8 +26,9 @@ impl Default for NavigationConfig {
     }
 }
 
-impl NavigationConfig {
-    pub fn validate(&self) -> Result<()> {
-        Ok(())
-    }
-}
+// TODO: Impl navigation config validation
+// impl NavigationConfig {
+//     pub fn validate(&self) -> Result<()> {
+//         Ok(())
+//     }
+// }

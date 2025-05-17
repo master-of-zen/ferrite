@@ -10,7 +10,6 @@ use ferrite_config::{
     ControlsConfig, FerriteConfig, IndicatorConfig, Position,
 };
 use image::GenericImageView;
-use tracing::instrument;
 
 pub struct ImageRenderer;
 
@@ -244,14 +243,14 @@ impl ImageRenderer {
             .order(Order::Foreground)
             .fixed_pos(pos)
             .show(ui.ctx(), |ui| {
-                egui::Frame::none()
+                egui::Frame::new()
                     .fill(Color32::from_rgba_unmultiplied(
                         config.background_color.r,
                         config.background_color.g,
                         config.background_color.b,
                         config.background_color.a,
                     ))
-                    .rounding(4.0)
+                    .corner_radius(4.0)
                     .inner_margin(4.0)
                     .show(ui, |ui| {
                         let rich_text = RichText::new(percentage_text)
@@ -285,32 +284,25 @@ impl ImageRenderer {
             let padding =
                 Vec2::new(config.padding.x() as f32, config.padding.y() as f32);
             let font_size = config.font_size as f32;
-            let char_width = font_size * 0.6;
-            let text_width = char_width * filename.len() as f32;
-            let frame_margin = 8.0;
-            let box_size = Vec2::new(
-                text_width + frame_margin * 2.0,
-                font_size + frame_margin * 2.0,
-            );
 
             // Position in top left
-            let Position_pos = Pos2::new(
+            let position_pos = Pos2::new(
                 screen_rect.min.x + padding.x,
                 screen_rect.min.y + padding.y,
             );
 
             Area::new("filename_indicator".into())
                 .order(Order::Foreground)
-                .fixed_pos(Position_pos)
+                .fixed_pos(position_pos)
                 .show(ui.ctx(), |ui| {
-                    egui::Frame::none()
+                    egui::Frame::new()
                         .fill(Color32::from_rgba_unmultiplied(
                             config.background_color.r,
                             config.background_color.g,
                             config.background_color.b,
                             config.background_color.a,
                         ))
-                        .rounding(4.0)
+                        .corner_radius(4.0)
                         .inner_margin(4.0)
                         .show(ui, |ui| {
                             let rich_text = RichText::new(filename)
@@ -360,14 +352,14 @@ fn render_resolution_indicator(
             .order(Order::Foreground)
             .fixed_pos(pos)
             .show(ui.ctx(), |ui| {
-                egui::Frame::none()
+                egui::Frame::new()
                     .fill(Color32::from_rgba_unmultiplied(
                         config.background_color.r,
                         config.background_color.g,
                         config.background_color.b,
                         config.background_color.a,
                     ))
-                    .rounding(4.0)
+                    .corner_radius(4.0)
                     .inner_margin(4.0)
                     .show(ui, |ui| {
                         let rich_text = RichText::new(resolution_text)
@@ -401,7 +393,7 @@ fn measure_text(ctx: &Context, text: &str, font_size: f32) -> Vec2 {
 }
 
 /// Calculate position based on specified placement
-fn calculate_position(
+fn _calculate_position(
     screen_rect: Rect,
     content_size: Vec2,
     position_type: Position,

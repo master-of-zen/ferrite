@@ -90,7 +90,8 @@ impl CacheManager {
         let runtime = self.runtime();
 
         runtime.spawn(async move {
-            let file_size = tokio::fs::metadata(&path).await.map_err(|e| {
+            // TODO: Unused
+            let _file_size = tokio::fs::metadata(&path).await.map_err(|e| {
                 CacheError::ImageLoad {
                     path: path.clone(),
                     source: ImageLoadError::Io(e),
