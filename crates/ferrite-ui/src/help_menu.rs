@@ -108,11 +108,13 @@ impl HelpMenu {
                                 );
                                 let quit_text =
                                     format!("{:?}: Quit", controls.quit_key);
+                                let delete_text =
+                                    format!("{:?}: Delete file", controls.delete_key);
 
                                 render_section(
                                     ui,
                                     "Other",
-                                    &[&help_text, &quit_text],
+                                    &[&help_text, &quit_text, &delete_text],
                                     config,
                                     heading_size,
                                 )

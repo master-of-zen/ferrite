@@ -114,4 +114,32 @@ impl NavigationManager {
         };
         Some(self.directory_images[self.current_index].clone())
     }
+
+    /// Remove a deleted file from the directory listing and navigate to the next available image
+    /// Returns the path of the next image to display, or None if no images remain
+    #[instrument(skip(self, deleted_path), fields(deleted_path = ?deleted_path))]
+    pub fn remove_deleted_file(&mut self, deleted_path: &std::path::Path) -> Option<PathBuf> {
+        if let Some(pos) = self.directory_images.iter().position(|p| p == deleted_path) {
+            self.directory_images.remove(pos);
+
+            if self.directory_images.is_empty() {
+                info!("No more images in directory after deletion");
+                return None;
+            }
+
+            // Adjust current index if necessary
+            if self.current_index >= self.directory_images.len() {
+                self.current_index = self.directory_images.len() - 1;
+            } else if pos <= self.current_index && self.current_index > 0 {
+                self.current_index -= 1;
+            }
+
+            let next_path = self.directory_images[self.current_index].clone();
+            info!("Next image after deletion: {}", next_path.display());
+            Some(next_path)
+        } else {
+            info!("Deleted file was not in current directory listing");
+            None
+        }
+    }
 }

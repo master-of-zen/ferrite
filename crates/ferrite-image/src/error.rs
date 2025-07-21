@@ -15,6 +15,9 @@ pub enum ImageError {
 
     #[error("Cache error: {0}")]
     CacheError(#[from] ferrite_cache::CacheError),
+
+    #[error("{0}")]
+    Other(String),
 }
 
 pub type Result<T> = std::result::Result<T, ImageError>;

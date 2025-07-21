@@ -5,15 +5,15 @@ use tracing::instrument;
 
 use ferrite_config::FerriteConfig;
 use ferrite_navigation::NavigationManager;
-use ferrite_ui::{HelpMenu, ImageRenderer, ZoomHandler};
+use ferrite_ui::{HelpMenu, ImageRenderer, RenderResult, ZoomHandler};
 
 pub struct FeriteApp {
-    config: FerriteConfig,
+    config:        FerriteConfig,
     image_manager: ferrite_image::ImageManager,
-    navigation: NavigationManager,
-    zoom_handler: ZoomHandler,
+    navigation:    NavigationManager,
+    zoom_handler:  ZoomHandler,
     cache_manager: Arc<CacheHandle>,
-    help_menu: HelpMenu,
+    help_menu:     HelpMenu,
 }
 
 impl FeriteApp {
@@ -87,8 +87,12 @@ impl FeriteApp {
             .input(|i| i.key_pressed(Key::ArrowRight) || i.key_pressed(Key::D));
         let prev_pressed = ctx
             .input(|i| i.key_pressed(Key::ArrowLeft) || i.key_pressed(Key::A));
+        let delete_pressed =
+            ctx.input(|i| i.key_pressed(self.config.controls.delete_key));
 
-        if next_pressed {
+        if delete_pressed {
+            self.handle_delete();
+        } else if next_pressed {
             if let Some(next_path) = self.navigation.next_image() {
                 let _ = self.image_manager.load_image(next_path);
                 self.zoom_handler.reset_view_position();
@@ -100,6 +104,43 @@ impl FeriteApp {
                 self.zoom_handler.reset_view_position();
                 self.cache_nearby_images();
             }
+        }
+    }
+
+    fn handle_delete(&mut self) {
+        use tracing::{error, info};
+
+        // Delete the current file
+        match self.image_manager.delete_current_file() {
+            Ok(Some(deleted_path)) => {
+                info!("Successfully deleted file: {}", deleted_path.display());
+
+                // Remove the deleted file from navigation and get next image
+                if let Some(next_path) =
+                    self.navigation.remove_deleted_file(&deleted_path)
+                {
+                    // Load the next image
+                    if let Err(e) =
+                        self.image_manager.load_image(next_path.clone())
+                    {
+                        error!(
+                            "Failed to load next image after deletion: {}",
+                            e
+                        );
+                    } else {
+                        self.zoom_handler.reset_view_position();
+                        self.cache_nearby_images();
+                    }
+                } else {
+                    info!("No more images to display after deletion");
+                }
+            },
+            Ok(None) => {
+                info!("No file to delete");
+            },
+            Err(e) => {
+                error!("Failed to delete file: {}", e);
+            },
         }
     }
 }
@@ -117,7 +158,7 @@ impl eframe::App for FeriteApp {
         self.handle_navigation(ctx);
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            ImageRenderer::render(
+            let render_result: RenderResult = ImageRenderer::render(
                 ui,
                 ctx,
                 &mut self.image_manager,
@@ -125,6 +166,12 @@ impl eframe::App for FeriteApp {
                 &self.config,
                 &self.config.controls,
             );
+
+            // Handle delete button click
+            if render_result.delete_requested {
+                self.handle_delete();
+            }
+
             self.help_menu.render(
                 ui,
                 &self.config.help_menu,

@@ -56,6 +56,7 @@ pub mod controls {
     pub const TOGGLE_FIT_KEY: Key = Key::F;
     pub const QUIT_KEY: Key = Key::Q;
     pub const HELP_KEY: Key = Key::H;
+    pub const DELETE_KEY: Key = Key::Delete;
 }
 
 pub mod navigation {

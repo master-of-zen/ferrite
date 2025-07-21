@@ -3,15 +3,31 @@ use std::path::PathBuf;
 use crate::{input, FitMode, ZoomHandler};
 use eframe::egui::{self, ColorImage, Pos2, Rect, TextureOptions, Ui};
 use egui::{
-    Area, Color32, Context, FontFamily, FontId, Label, Order, RichText, Sense,
+    Area,
+    Color32,
+    Context,
+    FontFamily,
+    FontId,
+    Label,
+    Order,
+    RichText,
+    Sense,
     Vec2,
 };
 use ferrite_config::{
-    ControlsConfig, FerriteConfig, IndicatorConfig, Position,
+    ControlsConfig,
+    FerriteConfig,
+    IndicatorConfig,
+    Position,
 };
 use image::GenericImageView;
 
 pub struct ImageRenderer;
+
+#[derive(Debug, Default)]
+pub struct RenderResult {
+    pub delete_requested: bool,
+}
 
 impl ImageRenderer {
     pub fn render(
@@ -21,7 +37,8 @@ impl ImageRenderer {
         zoom_handler: &mut ZoomHandler,
         config: &FerriteConfig,
         controls: &ControlsConfig,
-    ) {
+    ) -> RenderResult {
+        let mut result = RenderResult::default();
         let panel_rect = ui.available_rect_before_wrap();
         input::handle_input(ctx, ui, zoom_handler, controls, panel_rect);
 
@@ -102,6 +119,15 @@ impl ImageRenderer {
                 image_manager.current_path.as_ref(),
                 &config.indicator,
             );
+
+            // Render delete button
+            if Self::render_delete_button(
+                ui,
+                image_manager.current_path.as_ref(),
+            ) {
+                result.delete_requested = true;
+            }
+
             ui.painter().image(
                 texture.id(),
                 image_rect,
@@ -109,6 +135,8 @@ impl ImageRenderer {
                 Color32::WHITE,
             );
         }
+
+        result
     }
 
     fn handle_zoom(
@@ -392,49 +420,42 @@ fn measure_text(ctx: &Context, text: &str, font_size: f32) -> Vec2 {
     })
 }
 
-/// Calculate position based on specified placement
-fn _calculate_position(
-    screen_rect: Rect,
-    content_size: Vec2,
-    position_type: Position,
-    padding: Vec2,
-) -> Pos2 {
-    match position_type {
-        Position::TopLeft => Pos2::new(
+impl ImageRenderer {
+    fn render_delete_button(
+        ui: &mut Ui,
+        current_path: Option<&PathBuf>,
+    ) -> bool {
+        if current_path.is_none() {
+            return false;
+        }
+
+        let screen_rect = ui.ctx().screen_rect();
+        let padding = Vec2::new(10.0, 10.0);
+        let button_size = Vec2::new(80.0, 30.0);
+
+        // Position in bottom left corner
+        let pos = Pos2::new(
             screen_rect.min.x + padding.x,
-            screen_rect.min.y + padding.y,
-        ),
-        Position::TopRight => Pos2::new(
-            screen_rect.max.x - content_size.x - padding.x,
-            screen_rect.min.y + padding.y,
-        ),
-        Position::BottomLeft => Pos2::new(
-            screen_rect.min.x + padding.x,
-            screen_rect.max.y - content_size.y - padding.y,
-        ),
-        Position::BottomRight => Pos2::new(
-            screen_rect.max.x - content_size.x - padding.x,
-            screen_rect.max.y - content_size.y - padding.y,
-        ),
-        Position::Top => Pos2::new(
-            screen_rect.center().x - content_size.x / 2.0,
-            screen_rect.min.y + padding.y,
-        ),
-        Position::Bottom => Pos2::new(
-            screen_rect.center().x - content_size.x / 2.0,
-            screen_rect.max.y - content_size.y - padding.y,
-        ),
-        Position::Left => Pos2::new(
-            screen_rect.min.x + padding.x,
-            screen_rect.center().y - content_size.y / 2.0,
-        ),
-        Position::Right => Pos2::new(
-            screen_rect.max.x - content_size.x - padding.x,
-            screen_rect.center().y - content_size.y / 2.0,
-        ),
-        Position::Center => Pos2::new(
-            screen_rect.center().x - content_size.x / 2.0,
-            screen_rect.center().y - content_size.y / 2.0,
-        ),
+            screen_rect.max.y - button_size.y - padding.y,
+        );
+
+        Area::new("delete_button".into())
+            .order(Order::Foreground)
+            .fixed_pos(pos)
+            .show(ui.ctx(), |ui| {
+                let button = egui::Button::new("🗑 Delete")
+                    .fill(Color32::from_rgba_unmultiplied(180, 60, 60, 200))
+                    .stroke(egui::Stroke::new(
+                        1.0,
+                        Color32::from_rgba_unmultiplied(200, 80, 80, 255),
+                    ))
+                    .min_size(button_size);
+
+                if ui.add(button).clicked() {
+                    return true;
+                }
+                false
+            })
+            .inner
     }
 }

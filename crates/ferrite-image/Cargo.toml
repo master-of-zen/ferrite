@@ -18,7 +18,8 @@ eframe = { workspace = true }
 egui = { workspace = true }
 image = { workspace = true }
 tracing = { workspace = true }
-thiserror = "1.0"
+thiserror = { workspace = true }
+trash = { workspace = true }
 
 [dev-dependencies]
 criterion = "0.5"

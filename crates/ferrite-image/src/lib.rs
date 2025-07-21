@@ -5,8 +5,10 @@
 mod error;
 mod formats;
 mod manager;
+mod operations;
 
 // Re-export primary types
 pub use error::ImageError;
 pub use formats::SupportedFormats;
 pub use manager::ImageManager;
+pub use operations::{FileOperationError, FileOperations};

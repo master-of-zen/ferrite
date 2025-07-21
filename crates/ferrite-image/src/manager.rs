@@ -9,8 +9,8 @@ use crate::error::{ImageError, Result};
 
 pub struct ImageManager {
     pub current_image: Option<Arc<DynamicImage>>,
-    pub texture: Option<egui::TextureHandle>,
-    pub current_path: Option<PathBuf>,
+    pub texture:       Option<egui::TextureHandle>,
+    pub current_path:  Option<PathBuf>,
     pub cache_manager: Arc<CacheHandle>,
 }
 
@@ -96,5 +96,32 @@ impl ImageManager {
                 ));
             }
         });
+    }
+
+    /// Delete the current image file by moving it to trash
+    ///
+    /// Returns the path that was deleted if successful
+    #[instrument(skip(self))]
+    pub fn delete_current_file(
+        &mut self,
+    ) -> crate::error::Result<Option<PathBuf>> {
+        use crate::operations::FileOperations;
+
+        if let Some(current_path) = self.current_path.take() {
+            // Clear current image and texture since we're deleting the file
+            self.current_image = None;
+            self.texture = None;
+
+            // Move to trash
+            FileOperations::delete_file(&current_path).map_err(|e| {
+                crate::ImageError::Other(format!("Delete failed: {}", e))
+            })?;
+
+            info!("Successfully deleted file: {}", current_path.display());
+            Ok(Some(current_path))
+        } else {
+            warn!("No current file to delete");
+            Ok(None)
+        }
     }
 }
