@@ -1,19 +1,30 @@
-[workspace]
-members = ["crates/*"]
-
-resolver = "2"
-
-[workspace.package]
-version = "0.1.24"
+[package]
+name = "ferrite"
+version = "0.1.25"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/master-of-zen/ferrite"
 authors = ["master_of_zen master_of_zen@protonmail.com"]
 documentation = "https://docs.rs/ferrite"
 rust-version = "1.79"
 edition = "2021"
-description = """
-Cross-platform command-line AV1 / VP9 / HEVC / H264 encoding framework with per scene quality encoding [Core library]
-"""
+description = "Fast and efficient image viewer with focus on performance"
+readme = "README.md"
+keywords = ["image", "viewer", "gui", "egui"]
+categories = ["graphics", "gui"]
+
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.25"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/master-of-zen/ferrite"
+authors = ["master_of_zen master_of_zen@protonmail.com"]
+documentation = "https://docs.rs/ferrite"
+rust-version = "1.79"
+edition = "2021"
+description = "Fast and efficient image viewer with focus on performance"
 
 [workspace.dependencies]
 egui = { version = "0.31.1", features = ["serde", "default_fonts", "rayon"] }
@@ -35,3 +46,30 @@ clap = { version = "4.5", features = ["derive"] }
 config = { version = "0.15", features = ["toml"] }
 directories = "6.0"
 trash = "5.2"
+
+# Dependencies for the main ferrite crate
+[dependencies]
+# External dependencies
+eframe.workspace = true
+egui.workspace = true
+futures.workspace = true
+image.workspace = true
+lru.workspace = true
+rayon.workspace = true
+tracing.workspace = true
+tokio.workspace = true
+serde.workspace = true
+toml.workspace = true
+thiserror.workspace = true
+clap.workspace = true
+directories.workspace = true
+
+# Internal ferrite crates
+ferrite-core = { path = "crates/ferrite-core", version = "*" }
+ferrite-config = { path = "crates/ferrite-config", version = "*" }
+ferrite-cli = { path = "crates/ferrite-cli", version = "*" }
+ferrite-logging = { path = "crates/ferrite-logging", version = "*" }
+ferrite-cache = { path = "crates/ferrite-cache", version = "*" }
+ferrite-ui = { path = "crates/ferrite-ui", version = "*" }
+ferrite-navigation = { path = "crates/ferrite-navigation", version = "*" }
+ferrite-image = { path = "crates/ferrite-image", version = "*" }

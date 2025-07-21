@@ -1,13 +1,13 @@
-use std::path::PathBuf;
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use eframe::{egui::ViewportBuilder, Error};
-use ferrite_cache::CacheManager;
-use ferrite_cli::Args;
-use ferrite_config::FerriteConfig;
-use ferrite_core::FeriteApp;
-use ferrite_logging::{init, LogConfig, LogLevel};
-// No need to import ProjectDirs here unless you want to re-calculate if config.log_file is None
+use ferrite::{
+    cache::CacheManager,
+    cli::Args,
+    config::FerriteConfig,
+    core::FeriteApp,
+    logging::{init, LogConfig, LogLevel},
+};
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
@@ -29,28 +29,34 @@ fn main() -> Result<(), Error> {
             // If the path in config is absolute, use it directly.
             final_log_path = Some(log_file_in_config.clone());
         } else {
-            // It's a relative path, resolve it against the config file's directory.
+            // It's a relative path, resolve it against the config file's
+            // directory.
             match FerriteConfig::resolve_config_path() {
                 Ok(config_file_actual_path) => {
                     if let Some(config_dir) = config_file_actual_path.parent() {
                         final_log_path =
                             Some(config_dir.join(log_file_in_config));
                     } else {
-                        // config_file_actual_path has no parent (e.g., "config.toml" in CWD)
+                        // config_file_actual_path has no parent (e.g.,
+                        // "config.toml" in CWD)
                         // Log path is relative to CWD.
                         final_log_path = Some(log_file_in_config.clone());
                         tracing::debug!(
-                            "Config file path {} has no parent. Log path {} will be relative to CWD.",
+                            "Config file path {} has no parent. Log path {} \
+                             will be relative to CWD.",
                             config_file_actual_path.display(),
                             log_file_in_config.display()
                         );
                     }
                 },
                 Err(e) => {
-                    // Could not resolve config directory. Log path will be relative to CWD.
+                    // Could not resolve config directory. Log path will be
+                    // relative to CWD.
                     final_log_path = Some(log_file_in_config.clone());
                     tracing::warn!(
-                        "Could not resolve config directory to make log_file path absolute: {}. Log path {} will be relative to CWD.",
+                        "Could not resolve config directory to make log_file \
+                         path absolute: {}. Log path {} will be relative to \
+                         CWD.",
                         e,
                         log_file_in_config.display()
                     );
@@ -61,16 +67,17 @@ fn main() -> Result<(), Error> {
     // If config.log_file was None, final_log_path remains None.
 
     let _log_guard = init(LogConfig {
-        level: args.get_log_level().unwrap_or_else(|err| {
+        level:        args.get_log_level().unwrap_or_else(|err| {
             eprintln!(
-                "Warning: Failed to parse log level from CLI: {}. Defaulting to Info.",
+                "Warning: Failed to parse log level from CLI: {}. Defaulting \
+                 to Info.",
                 err
             );
             LogLevel::Info
         }),
         enable_tracy: true,
-        log_spans: true,
-        file_path: final_log_path.clone(), // Pass the resolved or original absolute/None path
+        log_spans:    true,
+        file_path:    final_log_path.clone(), /* Pass the resolved or original absolute/None path */
     });
 
     tracing::info!("Ferrite application starting...");
@@ -79,9 +86,11 @@ fn main() -> Result<(), Error> {
     if let Some(p) = &final_log_path {
         tracing::info!("Logging to file: {}", p.display());
     } else if config.log_file.is_some() {
-        // This case implies resolution might have failed but a path was configured
+        // This case implies resolution might have failed but a path was
+        // configured
         tracing::info!(
-            "Attempting to log to file (path might be CWD relative if config dir resolution failed): {}",
+            "Attempting to log to file (path might be CWD relative if config \
+             dir resolution failed): {}",
             config.log_file.as_ref().unwrap().display()
         );
     } else {
@@ -90,9 +99,9 @@ fn main() -> Result<(), Error> {
 
     tracing::debug!("Parsed CLI arguments: {:?}", args);
 
-    let cache_manager_config = ferrite_cache::CacheConfig {
+    let cache_manager_config = ferrite::cache::CacheConfig {
         max_image_count: config.cache.max_memory_items,
-        thread_count: config.cache.worker_threads,
+        thread_count:    config.cache.worker_threads,
     };
     let cache_manager = Arc::new(CacheManager::new(cache_manager_config));
 
@@ -118,6 +127,7 @@ fn main() -> Result<(), Error> {
 
     native_options.viewport = ViewportBuilder::default()
         .with_inner_size([width, height])
+        .with_min_inner_size([640.0, 480.0])
         .with_decorations(!config.window.borderless)
         .with_title("Ferrite");
 
