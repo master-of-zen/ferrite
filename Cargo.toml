@@ -65,11 +65,11 @@ clap.workspace = true
 directories.workspace = true
 
 # Internal ferrite crates
-ferrite-core = { path = "crates/ferrite-core", version = "*" }
-ferrite-config = { path = "crates/ferrite-config", version = "*" }
-ferrite-cli = { path = "crates/ferrite-cli", version = "*" }
-ferrite-logging = { path = "crates/ferrite-logging", version = "*" }
-ferrite-cache = { path = "crates/ferrite-cache", version = "*" }
-ferrite-ui = { path = "crates/ferrite-ui", version = "*" }
-ferrite-navigation = { path = "crates/ferrite-navigation", version = "*" }
-ferrite-image = { path = "crates/ferrite-image", version = "*" }
+ferrite-core = { path = "crates/ferrite-core", version = "0.1.25" }
+ferrite-config = { path = "crates/ferrite-config", version = "0.1.25" }
+ferrite-cli = { path = "crates/ferrite-cli", version = "0.1.25" }
+ferrite-logging = { path = "crates/ferrite-logging", version = "0.1.25" }
+ferrite-cache = { path = "crates/ferrite-cache", version = "0.1.25" }
+ferrite-ui = { path = "crates/ferrite-ui", version = "0.1.25" }
+ferrite-navigation = { path = "crates/ferrite-navigation", version = "0.1.25" }
+ferrite-image = { path = "crates/ferrite-image", version = "0.1.25" }
