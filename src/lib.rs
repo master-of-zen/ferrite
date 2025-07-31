@@ -20,22 +20,23 @@
 //! // ... application setup
 //! ```
 
-pub use ferrite_cache as cache;
-pub use ferrite_cli as cli;
-pub use ferrite_config as config;
-pub use ferrite_core as core;
-pub use ferrite_image as image;
-pub use ferrite_logging as logging;
-pub use ferrite_navigation as navigation;
-pub use ferrite_ui as ui;
+// Module declarations for the unified crate
+pub mod cache;
+pub mod cli;
+pub mod config;
+pub mod core;
+pub mod image;
+pub mod logging;
+pub mod navigation;
+pub mod ui;
 
 // Re-export main application components for convenience
-pub use ferrite_cli::{Args, CliError};
-pub use ferrite_config::FerriteConfig;
-pub use ferrite_core::FeriteApp;
-pub use ferrite_logging::{LogConfig, LogLevel};
+pub use cli::{Args, CliError};
+pub use config::FerriteConfig;
+pub use core::FeriteApp;
+pub use logging::{LogConfig, LogLevel};
 
 // Re-export key types that users might need
-pub use ferrite_cache::{CacheConfig, CacheManager};
-pub use ferrite_image::SupportedFormats;
-pub use ferrite_ui::{FitMode, ZoomHandler};
+pub use cache::{CacheConfig, CacheManager};
+pub use image::SupportedFormats;
+pub use ui::{FitMode, ZoomHandler};
