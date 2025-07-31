@@ -17,6 +17,8 @@ These formats are recognized by their extensions. Support level (e.g., animation
 - [x] **TGA** (`.tga`)
 - [x] **WebP** (`.webp`)
     - [ ] **Note:** Verify if animated WebP is supported or only static. The `image` crate has WebP animation support, but the UI needs to handle it.
+- [x] **HEIC/HEIF** (`.heic`, `.heif`)
+    - **Implementation:** Uses `libheif-rs` bindings to libheif library for decoding
 
 ## To Be Supported (High Priority - Modern Essentials)
 
@@ -28,9 +30,7 @@ These formats are crucial for a modern, competitive image viewer.
 - [ ] **JPEG XL (JXL)** (`.jxl`)
     - **Why:** Excellent for both lossy and lossless, progressive decoding, animation, HDR. Royalty-free.
     - **Potential Crates:** `jxl-oxide` (pure Rust), `libjxl-rs` (bindings to libjxl).
-- [ ] **HEIC/HEIF** (`.heic`, `.heif`)
-    - **Why:** Common on Apple devices, good compression.
-    - **Potential Crates:** `libheif-rs` (bindings to libheif). Note potential patent/licensing considerations for distribution if using certain decoders.
+
 - [ ] **RAW Image Formats** (Various extensions: `.cr2`, `.cr3`, `.nef`, `.arw`, `.dng`, `.raf`, etc.)
     - **Why:** Essential for photographers.
     - **Potential Crates:** `rawloader` (uses libraw), `kamadak-exif` (might include raw decoding capabilities or point to them). This usually involves more than just decoding pixels (demosaicing, color profiles).

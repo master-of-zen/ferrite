@@ -6,6 +6,7 @@ use super::{
     CacheResult,
     ImageLoadError,
 };
+use crate::image::ImageLoader;
 use image::{DynamicImage, GenericImageView};
 use tokio::{
     runtime::Runtime,
@@ -111,8 +112,9 @@ impl CacheManager {
                 }
             })?;
 
+            let loader = ImageLoader::from_path(&path);
             let decoded_image =
-                image::load_from_memory(&image_data).map_err(|e| {
+                loader.load_from_memory(&image_data).map_err(|e| {
                     CacheError::ImageLoad {
                         path:   path.clone(),
                         source: ImageLoadError::Format(e.to_string()),
@@ -217,7 +219,8 @@ impl CacheManager {
             }
         })?;
 
-        let image_data = image::load_from_memory(&image_data).unwrap();
+        let loader = ImageLoader::from_path(&path);
+        let image_data = loader.load_from_memory(&image_data).unwrap();
 
         let mut state = self.state.write().await;
 
@@ -309,8 +312,9 @@ impl CacheManager {
 
         // Track decode time
         let decode_start = Instant::now();
+        let loader = ImageLoader::from_path(&path);
         let decoded_image =
-            image::load_from_memory(&file_data).map_err(|e| {
+            loader.load_from_memory(&file_data).map_err(|e| {
                 CacheError::ImageLoad {
                     path:   path.clone(),
                     source: ImageLoadError::Format(e.to_string()),
