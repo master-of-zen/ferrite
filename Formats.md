@@ -19,6 +19,8 @@ These formats are recognized by their extensions. Support level (e.g., animation
     - [ ] **Note:** Verify if animated WebP is supported or only static. The `image` crate has WebP animation support, but the UI needs to handle it.
 - [x] **HEIC/HEIF** (`.heic`, `.heif`)
     - **Implementation:** Uses `libheif-rs` bindings to libheif library for decoding
+- [x] **JPEG XL (JXL)** (`.jxl`)
+    - **Implementation:** Uses `jpegxl-rs` for decoding. Supports RGB, RGBA, and grayscale images.
 
 ## To Be Supported (High Priority - Modern Essentials)
 
@@ -27,9 +29,7 @@ These formats are crucial for a modern, competitive image viewer.
 - [ ] **AVIF** (`.avif`)
     - **Why:** Successor to HEIC, excellent compression, HDR, wide color gamut. Royalty-free.
     - **Potential Crates:** `libavif-rs` (bindings to libavif), `rav1e` (for encoding, but might expose decoding components or relevant knowledge), or direct integration with `image` crate if/when its support matures.
-- [ ] **JPEG XL (JXL)** (`.jxl`)
-    - **Why:** Excellent for both lossy and lossless, progressive decoding, animation, HDR. Royalty-free.
-    - **Potential Crates:** `jxl-oxide` (pure Rust), `libjxl-rs` (bindings to libjxl).
+
 
 - [ ] **RAW Image Formats** (Various extensions: `.cr2`, `.cr3`, `.nef`, `.arw`, `.dng`, `.raf`, etc.)
     - **Why:** Essential for photographers.

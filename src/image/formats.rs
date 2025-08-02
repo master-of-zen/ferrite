@@ -7,7 +7,7 @@ pub struct SupportedFormats;
 impl SupportedFormats {
     /// List of supported file extensions
     pub const EXTENSIONS: &'static [&'static str] =
-        &["jpg", "jpeg", "png", "gif", "bmp", "ico", "tiff", "tga", "webp", "heic", "heif"];
+        &["jpg", "jpeg", "png", "gif", "bmp", "ico", "tiff", "tga", "webp", "heic", "heif", "jxl"];
 
     /// Checks if a given file extension is supported
     pub fn is_supported(extension: Option<&OsStr>) -> bool {
@@ -39,6 +39,8 @@ mod tests {
         assert!(SupportedFormats::is_supported(Some(OsStr::new("PNG"))));
         assert!(SupportedFormats::is_supported(Some(OsStr::new("heic"))));
         assert!(SupportedFormats::is_supported(Some(OsStr::new("HEIF"))));
+        assert!(SupportedFormats::is_supported(Some(OsStr::new("jxl"))));
+        assert!(SupportedFormats::is_supported(Some(OsStr::new("JXL"))));
 
         // Test invalid extensions
         assert!(!SupportedFormats::is_supported(Some(OsStr::new("txt"))));

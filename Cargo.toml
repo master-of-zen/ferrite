@@ -1,6 +1,6 @@
 [package]
 name = "ferrite"
-version = "0.1.27"
+version = "0.1.28"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/master-of-zen/ferrite"
 authors = ["master_of_zen master_of_zen@protonmail.com"]
@@ -17,7 +17,7 @@ tracy = []
 
 
 [workspace.package]
-version = "0.1.27"
+version = "0.1.28"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/master-of-zen/ferrite"
 authors = ["master_of_zen master_of_zen@protonmail.com"]
@@ -51,6 +51,7 @@ config = { version = "0.15", features = ["toml"] }
 directories = "6.0"
 trash = "5.2"
 libheif-rs = "2.2"
+jpegxl-rs = "0.10"
 
 # Dependencies for the main ferrite crate
 [dependencies]
@@ -71,6 +72,7 @@ directories.workspace = true
 config.workspace = true
 trash.workspace = true
 libheif-rs.workspace = true
+jpegxl-rs.workspace = true
 tracing-subscriber.workspace = true
 tracing-appender.workspace = true
 tracing-tracy.workspace = true
